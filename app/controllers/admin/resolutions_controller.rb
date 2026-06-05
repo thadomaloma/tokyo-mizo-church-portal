@@ -58,4 +58,17 @@ module Admin
       @users = User.active.order(:name)
       @meeting_minutes = MeetingMinute.latest
     end
+
+    def resolution_params
+      params.require(:resolution).permit(
+        :title,
+        :description,
+        :status,
+        :priority,
+        :due_date,
+        :meeting_minute_id,
+        :assigned_to_id
+      )
+    end
+  end
 end
