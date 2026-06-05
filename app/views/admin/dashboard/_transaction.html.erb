@@ -1,0 +1,38 @@
+<div class="p-4 transition hover:bg-slate-50 sm:p-5">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex min-w-0 gap-3">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 <%= transaction.income? ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : "bg-rose-50 text-rose-600 ring-rose-100" %>">
+        <%= heroicon transaction.income? ? "arrow-trending-up" : "arrow-trending-down",
+            variant: :outline,
+            options: { class: "h-5 w-5" } %>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="break-words font-black leading-5 text-slate-900">
+          <%= transaction.description.presence || transaction.finance_category.name %>
+        </p>
+
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+            <%= transaction.finance_category.name %>
+          </span>
+
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+            <%= transaction.transaction_date.strftime("%d %b %Y") %>
+          </span>
+
+          <span class="rounded-full px-3 py-1 text-xs font-bold <%= transaction.income? ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700" %>">
+            <%= transaction.transaction_type.humanize %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right sm:bg-transparent sm:p-0">
+      <p class="whitespace-nowrap text-lg font-black <%= transaction.income? ? "text-emerald-600" : "text-rose-600" %>">
+        <%= transaction.income? ? "+" : "-" %>
+        ¥<%= number_with_delimiter(transaction.amount) %>
+      </p>
+    </div>
+  </div>
+</div>

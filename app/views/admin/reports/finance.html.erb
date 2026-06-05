@@ -1,0 +1,93 @@
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+          Finance Report
+        </p>
+
+        <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+          Yearly finance summary.
+        </h1>
+
+        <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+          Income, expense and balance records prepared for review.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <%= link_to finance_admin_reports_path(format: :pdf),
+            class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
+          <%= heroicon "document-arrow-down",
+              variant: :outline,
+              options: { class: "h-5 w-5" } %>
+          Export PDF
+        <% end %>
+
+        <%= link_to finance_admin_reports_path(format: :xlsx),
+            class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15" do %>
+          <%= heroicon "table-cells",
+              variant: :outline,
+              options: { class: "h-5 w-5" } %>
+          Export Excel
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+    <%= render "report_card",
+        title: "Total Income",
+        value: "¥#{number_with_delimiter(@income)}",
+        color: "emerald",
+        icon: "banknotes" %>
+
+    <%= render "report_card",
+        title: "Total Expense",
+        value: "¥#{number_with_delimiter(@expense)}",
+        color: "rose",
+        icon: "arrow-trending-down" %>
+
+    <%= render "report_card",
+        title: "Balance",
+        value: "¥#{number_with_delimiter(@balance)}",
+        color: "sky",
+        icon: "wallet" %>
+  </div>
+
+  <section class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-100 p-5 lg:p-6">
+      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+        Ledger
+      </p>
+
+      <h2 class="mt-2 text-2xl font-black text-slate-950">Transactions This Year</h2>
+    </div>
+
+    <% if @transactions.any? %>
+      <div class="divide-y divide-slate-100">
+        <% @transactions.each do |transaction| %>
+          <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0">
+              <p class="break-words font-black text-slate-950"><%= transaction.description.presence || transaction.finance_category.name %></p>
+              <p class="mt-1 text-sm text-slate-500">
+                <%= transaction.transaction_date.strftime("%d %b %Y") %>
+                · <%= transaction.finance_category.name %>
+                · <%= transaction.recorded_by&.name || "Not recorded" %>
+              </p>
+            </div>
+
+            <p class="shrink-0 rounded-2xl bg-slate-50 px-4 py-3 text-right font-black <%= transaction.income? ? "text-emerald-600" : "text-rose-600" %>">
+              <%= transaction.income? ? "+" : "-" %>
+              ¥<%= number_with_delimiter(transaction.amount) %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="p-10 text-center text-sm font-semibold text-slate-400">
+        No transactions found for this year.
+      </div>
+    <% end %>
+  </section>
+</div>

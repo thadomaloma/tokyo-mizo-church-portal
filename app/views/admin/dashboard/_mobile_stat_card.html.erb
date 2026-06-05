@@ -1,0 +1,25 @@
+<% bg =
+  case color
+  when "emerald" then "bg-emerald-50 text-emerald-600"
+  when "rose" then "bg-rose-50 text-rose-600"
+  when "blue" then "bg-blue-50 text-blue-600"
+  when "amber" then "bg-amber-50 text-amber-600"
+  else "bg-sky-50 text-sky-600"
+  end
+%>
+
+<div class="rounded-3xl <%= bg %> p-5 shadow-sm lg:bg-white lg:text-slate-900">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm font-semibold"><%= title %></p>
+      <h2 class="mt-2 text-2xl font-black"><%= value %></h2>
+      <% if note.present? %>
+        <p class="mt-1 text-xs font-bold"><%= note %></p>
+      <% end %>
+    </div>
+
+    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/70 text-lg">
+      <%= icon %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<%= render "admin/shared/page_header",
+    title: @meeting_minute.archive_only? ? "Edit Archived PDF" : "Edit Minute",
+    subtitle: @meeting_minute.archive_only? ? "Update archived PDF details." : "Update the simple minute record." %>
+
+<% if @meeting_minute.archive_only? %>
+  <%= render "archive_form", meeting_minute: @meeting_minute %>
+<% else %>
+  <%= render "form", meeting_minute: @meeting_minute %>
+<% end %>

@@ -1,0 +1,17 @@
+<%
+  base_class = "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black transition"
+  active_class = "bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-[0_14px_32px_rgba(15,23,42,0.18)]"
+  inactive_class = "text-slate-500 hover:bg-sky-50 hover:text-sky-700"
+%>
+
+<%= link_to path,
+    class: "#{base_class} #{active ? active_class : inactive_class}" do %>
+
+  <%= heroicon icon,
+      variant: :outline,
+      options: { class: "h-5 w-5 shrink-0 #{active ? 'text-white' : 'text-slate-400 group-hover:text-sky-700'}" } %>
+
+  <span class="truncate">
+    <%= name %>
+  </span>
+<% end %>

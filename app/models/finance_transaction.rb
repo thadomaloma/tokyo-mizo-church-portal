@@ -1,0 +1,37 @@
+class FinanceTransaction < ApplicationRecord
+  belongs_to :finance_category
+  belongs_to :recorded_by, class_name: "User"
+
+  enum :payment_location, {
+    cash: "cash",
+    bank: "bank"
+  }, prefix: true
+
+  validates :transaction_type, presence: true, inclusion: { in: %w[income expense] }
+  validates :amount, numericality: { greater_than: 0 }
+  validates :transaction_date, presence: true
+  validates :payment_location, presence: true
+
+  scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
+  scope :income, -> { where(transaction_type: "income") }
+  scope :expense, -> { where(transaction_type: "expense") }
+  scope :this_month, -> { where(transaction_date: Date.current.beginning_of_month..Date.current.end_of_month) }
+  scope :cash_records, -> { where(payment_location: "cash") }
+  scope :bank_records, -> { where(payment_location: "bank") }
+
+  scope :this_year, -> {
+    where(transaction_date: Date.current.beginning_of_year..Date.current.end_of_year)
+  }
+
+  scope :for_category, ->(category_name) {
+    joins(:finance_category).where(finance_categories: { name: category_name })
+  }
+
+  def income?
+    transaction_type == "income"
+  end
+
+  def expense?
+    transaction_type == "expense"
+  end
+end

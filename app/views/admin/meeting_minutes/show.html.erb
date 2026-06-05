@@ -1,0 +1,198 @@
+<%= render "admin/shared/page_header",
+    title: @meeting_minute.title,
+    subtitle: "Minute record" %>
+
+<% time_text = [
+  @meeting_minute.start_time&.strftime("%I:%M %p"),
+  @meeting_minute.end_time&.strftime("%I:%M %p")
+].compact.join(" - ") %>
+
+<% detail_items = [
+  [ "Meeting Type", @meeting_minute.meeting_type ],
+  [ "Meeting Date", @meeting_minute.meeting_date&.strftime("%B %d, %Y") ],
+  [ "Time", time_text ],
+  [ "Location", @meeting_minute.location ],
+  [ "Chairman", @meeting_minute.chairperson ],
+  [ "Secretary", @meeting_minute.secretary_name.presence || @meeting_minute.uploaded_by&.name ]
+] %>
+
+<% attendance_sections = [
+  { title: "Members Present", body: @meeting_minute.attendees },
+  { title: "Members Absent / Apology", body: @meeting_minute.absentees }
+] %>
+
+<% minute_sections = [
+  { title: "Opening Prayer", body: @meeting_minute.opening_prayer },
+  { title: "Call to Order", body: @meeting_minute.call_to_order },
+  { title: "Reports", body: @meeting_minute.reports },
+  { title: "Previous Minute Approval", body: @meeting_minute.previous_minutes },
+  { title: "Agenda Items", body: @meeting_minute.agenda_items },
+  { title: "Decisions / Resolutions", body: @meeting_minute.motions },
+  { title: "Follow-up Actions", body: @meeting_minute.action_items },
+  { title: "Adjournment", body: @meeting_minute.adjournment }
+] %>
+
+<div class="mx-auto max-w-5xl space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+    <%= link_to admin_meeting_minutes_path,
+        class: "inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-200" do %>
+      <%= heroicon "arrow-left", variant: :outline, options: { class: "h-5 w-5" } %>
+      Back
+    <% end %>
+
+    <% if @meeting_minute.archive_only? && @meeting_minute.pdf_file.attached? %>
+      <%= link_to rails_blob_path(@meeting_minute.pdf_file, disposition: "inline"),
+          target: "_blank",
+          rel: "noopener",
+          class: "inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white hover:bg-sky-700" do %>
+        <%= heroicon "document-arrow-down", variant: :outline, options: { class: "h-5 w-5" } %>
+        Open PDF
+      <% end %>
+    <% end %>
+
+    <% unless @meeting_minute.archive_only? %>
+      <%= link_to admin_meeting_minute_path(@meeting_minute, format: :pdf),
+          class: "inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white hover:bg-sky-700" do %>
+        <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "h-5 w-5" } %>
+        Export PDF
+      <% end %>
+    <% end %>
+
+    <% if can_manage_church? %>
+      <%= link_to edit_admin_meeting_minute_path(@meeting_minute),
+          class: "inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white hover:bg-sky-700" do %>
+        <%= heroicon "pencil-square", variant: :outline, options: { class: "h-5 w-5" } %>
+        Edit
+      <% end %>
+    <% end %>
+  </div>
+
+  <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+    <div class="border-b border-slate-200 pb-6 text-center">
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+        Tokyo Mizo Church
+      </p>
+
+      <h2 class="mt-3 text-2xl font-black text-slate-900 md:text-3xl">
+        <%= @meeting_minute.title %>
+      </h2>
+
+    </div>
+
+    <dl class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <% detail_items.each do |label, value| %>
+        <% next if value.blank? %>
+
+        <div class="rounded-xl bg-slate-50 p-4">
+          <dt class="text-xs font-black uppercase text-slate-400"><%= label %></dt>
+          <dd class="mt-1 break-words text-sm font-black text-slate-900"><%= value %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </article>
+
+  <% if attendance_sections.any? { |section| section[:body].present? } %>
+    <section class="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <% attendance_sections.each do |section| %>
+        <% next if section[:body].blank? %>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 class="font-black text-slate-900"><%= section[:title] %></h3>
+          <div class="mt-3 text-sm leading-7 text-slate-600 [&_li]:my-1 [&_li]:pl-1 [&_ol]:ml-5 [&_ol]:list-decimal [&_ul]:ml-5 [&_ul]:list-disc">
+            <%= rich_minute_content(section[:body]) %>
+          </div>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
+  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+    <div class="border-b border-slate-200 pb-5">
+      <h3 class="font-black text-slate-900">Minute Record</h3>
+      <p class="mt-1 text-sm leading-6 text-slate-500">
+        Agenda items, decisions, and follow-up actions are shown in order.
+      </p>
+    </div>
+
+    <div class="divide-y divide-slate-100">
+      <% minute_sections.each do |section| %>
+        <% next if section[:body].blank? %>
+
+        <div class="py-6">
+          <h4 class="text-sm font-black uppercase text-slate-400"><%= section[:title] %></h4>
+          <div class="mt-3 text-sm leading-7 text-slate-700 [&_li]:my-1 [&_li]:pl-1 [&_ol]:ml-5 [&_ol]:list-decimal [&_ul]:ml-5 [&_ul]:list-disc">
+            <%= rich_minute_content(section[:body]) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @meeting_minute.church_resolutions.any? %>
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+      <div class="border-b border-slate-200 pb-5">
+        <h3 class="font-black text-slate-900">Linked Follow-up / Resolutions</h3>
+        <p class="mt-1 text-sm leading-6 text-slate-500">
+          Follow-up actions saved from this minute are tracked here.
+        </p>
+      </div>
+
+      <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <% @meeting_minute.church_resolutions.order(created_at: :desc).each do |resolution| %>
+          <%= link_to admin_church_resolution_path(resolution),
+              class: "block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100" do %>
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="break-words font-black text-slate-900">
+                  <%= resolution.title %>
+                </p>
+
+                <p class="mt-1 text-sm text-slate-500">
+                  Due: <%= resolution.due_date || "No due date" %>
+                </p>
+              </div>
+
+              <span class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">
+                <%= resolution.status.humanize %>
+              </span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @meeting_minute.next_meeting_date.present? || @meeting_minute.approved_by.present? || @meeting_minute.secretary_signature.attached? %>
+    <section class="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <% if @meeting_minute.next_meeting_date.present? %>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 class="font-black text-slate-900">Next Meeting Date</h3>
+          <p class="mt-2 text-sm font-semibold text-slate-600">
+            <%= @meeting_minute.next_meeting_date.strftime("%B %d, %Y") %>
+          </p>
+        </div>
+      <% end %>
+
+      <% if @meeting_minute.approved_by.present? || @meeting_minute.secretary_signature.attached? %>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 class="font-black text-slate-900">Secretary Signature</h3>
+
+          <% if @meeting_minute.secretary_signature.attached? %>
+            <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-black uppercase text-slate-400">Secretary Signature</p>
+              <%= image_tag rails_blob_path(@meeting_minute.secretary_signature, disposition: "inline"),
+                  alt: "Secretary Signature",
+                  class: "mt-3 max-h-24 w-auto object-contain" %>
+            </div>
+          <% end %>
+
+          <% if @meeting_minute.approved_by.present? %>
+            <p class="mt-2 text-sm font-semibold text-slate-600">
+              Secretary: <%= @meeting_minute.approved_by %>
+            </p>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>

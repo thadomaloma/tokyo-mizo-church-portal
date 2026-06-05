@@ -1,0 +1,145 @@
+<%= form_with model: [:admin, user],
+    class: "mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" do |form| %>
+
+  <% if user.errors.any? %>
+    <div class="mb-6 rounded-xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+      <p class="mb-2 font-black">Please fix these errors:</p>
+
+      <ul class="list-inside list-disc">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-5">
+    <div class="rounded-2xl bg-slate-50 p-5">
+      <div class="flex items-center gap-4">
+        <%= render "admin/shared/user_avatar",
+            user: user,
+            size_class: "h-14 w-14",
+            text_class: "text-lg" %>
+
+        <div class="min-w-0">
+          <p class="font-black text-slate-900">
+            <%= user.name.presence || "New Member" %>
+          </p>
+
+          <p class="break-words text-sm text-slate-500">
+            <%= user.email.presence || "Email will appear here" %>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div>
+        <%= form.label :name,
+            "Full Name",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+        <%= form.text_field :name,
+            placeholder: "Enter full name",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :email,
+            "Email Address",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+        <%= form.email_field :email,
+            placeholder: "Enter email",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div>
+        <%= form.label :phone,
+            "Phone Number",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+        <%= form.text_field :phone,
+            placeholder: "Enter phone number",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :role,
+            "Role",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+        <%= form.select :role,
+            User::ROLE_OPTIONS,
+            { prompt: "Select role" },
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+      <div class="flex items-start gap-3">
+        <%= form.check_box :active,
+            class: "mt-1 rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
+
+        <div>
+          <%= form.label :active,
+              "Active Account",
+              class: "font-bold text-slate-800" %>
+
+          <p class="mt-1 text-sm text-slate-500">
+            Active member can login. Inactive member cannot access the portal.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <h2 class="font-black text-slate-900">
+        Password
+      </h2>
+
+      <% if user.persisted? %>
+        <p class="mt-1 text-sm text-slate-500">
+          Leave password fields blank if you do not want to change password.
+        </p>
+      <% else %>
+        <p class="mt-1 text-sm text-slate-500">
+          Set a temporary password for this member.
+        </p>
+      <% end %>
+
+      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div>
+          <%= form.label :password,
+              "Password",
+              class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+          <%= form.password_field :password,
+              placeholder: user.persisted? ? "Leave blank to keep current password" : "Minimum 6 characters",
+              class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+        </div>
+
+        <div>
+          <%= form.label :password_confirmation,
+              "Confirm Password",
+              class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+          <%= form.password_field :password_confirmation,
+              placeholder: "Confirm password",
+              class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
+    <%= form.submit user.persisted? ? "Update Member" : "Create Member",
+        class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700" %>
+
+    <%= link_to "Cancel",
+        admin_users_path,
+        class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+<% end %>

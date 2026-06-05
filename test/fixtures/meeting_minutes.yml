@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  meeting_type: MyString
+  meeting_date: 2026-05-30
+  description: MyText
+  uploaded_by: one
+
+two:
+  title: MyString
+  meeting_type: MyString
+  meeting_date: 2026-05-30
+  description: MyText
+  uploaded_by: two

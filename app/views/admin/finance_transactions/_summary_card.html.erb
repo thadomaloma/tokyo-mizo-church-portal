@@ -1,0 +1,31 @@
+<%
+  color_classes = {
+    "emerald" => "bg-emerald-50 text-emerald-600",
+    "rose" => "bg-rose-50 text-rose-600",
+    "amber" => "bg-amber-50 text-amber-600",
+    "blue" => "bg-blue-50 text-blue-600",
+    "sky" => "bg-sky-50 text-sky-600"
+  }
+
+  selected_color = color_classes[color] || color_classes["sky"]
+%>
+
+<div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+  <div class="flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="text-[11px] font-black uppercase tracking-wide text-slate-400">
+        <%= title %>
+      </p>
+
+      <p class="mt-2 break-words text-xl font-black text-slate-950 lg:text-2xl">
+        <%= value %>
+      </p>
+    </div>
+
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl <%= selected_color %>">
+      <%= heroicon icon,
+          variant: :outline,
+          options: { class: "h-6 w-6" } %>
+    </div>
+  </div>
+</div>

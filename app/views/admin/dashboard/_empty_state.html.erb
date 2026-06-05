@@ -1,0 +1,21 @@
+<div class="p-8 text-center">
+  <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+    <%= heroicon icon,
+        variant: :outline,
+        options: { class: "h-7 w-7" } %>
+  </div>
+
+  <p class="mt-4 font-black text-slate-700">
+    <%= title %>
+  </p>
+
+  <p class="mt-1 text-sm text-slate-500">
+    <%= message %>
+  </p>
+
+  <% if local_assigns[:path].present? && local_assigns[:action].present? %>
+    <%= link_to action,
+        path,
+        class: "mt-5 inline-flex rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700" %>
+  <% end %>
+</div>

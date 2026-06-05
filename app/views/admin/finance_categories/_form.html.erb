@@ -1,0 +1,47 @@
+<%= form_with model: [:admin, finance_category],
+    class: "mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" do |form| %>
+
+  <% if finance_category.errors.any? %>
+    <div class="mb-6 rounded-xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+      <p class="mb-2 font-black">Please fix these errors:</p>
+
+      <ul class="list-inside list-disc">
+        <% finance_category.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-5">
+    <div>
+      <%= form.label :name,
+          "Category Name",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :name,
+          placeholder: "Enter category name",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+
+    <div>
+      <%= form.label :category_type,
+          "Category Type",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.select :category_type,
+          [["Income", "income"], ["Expense", "expense"]],
+          {},
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
+    <%= form.submit "Save Category",
+        class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700" %>
+
+    <%= link_to "Cancel",
+        admin_finance_categories_path,
+        class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+<% end %>

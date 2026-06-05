@@ -1,0 +1,27 @@
+<div class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+  <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+    <div>
+      <h2 class="text-lg font-black text-slate-950">Recent Transactions</h2>
+      <p class="text-sm text-slate-500">Latest finance records</p>
+    </div>
+
+    <%= link_to "View All",
+        admin_finance_transactions_path,
+        class: "shrink-0 rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+
+  <% if transactions.any? %>
+    <div class="divide-y divide-slate-100">
+      <%= render partial: "transaction",
+          collection: transactions,
+          as: :transaction %>
+    </div>
+  <% else %>
+    <%= render "empty_state",
+        icon: "banknotes",
+        title: "No transactions yet",
+        message: "Add income or expense records to show them here.",
+        path: new_admin_finance_transaction_path,
+        action: "Add Entry" %>
+  <% end %>
+</div>

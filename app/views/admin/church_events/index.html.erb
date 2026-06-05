@@ -1,0 +1,144 @@
+<%
+  upcoming_events = @church_events.select { |event| event.start_date.present? && event.start_date >= Time.current }
+  next_event = upcoming_events.first || @church_events.first
+  today_count = @church_events.count { |event| event.start_date.present? && event.start_date.to_date == Date.current }
+  month_count = @church_events.count { |event| event.start_date.present? && Date.current.all_month.cover?(event.start_date.to_date) }
+%>
+
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+      <div class="p-6 sm:p-8 lg:p-10">
+        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+          Church Calendar
+        </p>
+
+        <h1 class="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+          Plan church events clearly.
+        </h1>
+
+        <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+          View upcoming services, meetings and special programs.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <% if can_manage_church? %>
+            <%= link_to new_admin_church_event_path,
+                class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
+              <%= heroicon "plus", variant: :outline, options: { class: "h-5 w-5" } %>
+              Add Event
+            <% end %>
+          <% end %>
+
+          <% if next_event.present? %>
+            <%= link_to admin_church_event_path(next_event),
+                class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15" do %>
+              <%= heroicon "calendar-days", variant: :outline, options: { class: "h-5 w-5" } %>
+              View Next Event
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="border-t border-white/10 bg-white/[0.04] p-6 sm:p-8 lg:border-l lg:border-t-0">
+        <% if next_event.present? %>
+          <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+              Next Event
+            </p>
+
+            <div class="mt-5 flex gap-4">
+              <div class="w-20 shrink-0 rounded-2xl bg-sky-700 p-3 text-center text-white">
+                <p class="text-xs font-black uppercase text-white/60">
+                  <%= next_event.start_date&.strftime("%b") %>
+                </p>
+
+                <p class="text-3xl font-black">
+                  <%= next_event.start_date&.strftime("%d") %>
+                </p>
+              </div>
+
+              <div class="min-w-0">
+                <h2 class="break-words text-lg font-black">
+                  <%= next_event.title %>
+                </h2>
+
+                <p class="mt-2 text-sm font-semibold text-slate-500">
+                  <%= next_event.start_date&.strftime("%A, %B %d · %I:%M %p") %>
+                </p>
+
+                <% if next_event.location.present? %>
+                  <p class="mt-2 break-words text-sm text-slate-500">
+                    <%= next_event.location %>
+                  </p>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <div class="rounded-[1.5rem] border border-dashed border-white/20 p-6 text-center">
+            <p class="font-black">No events scheduled yet.</p>
+            <p class="mt-2 text-sm leading-6 text-white/60">
+              New events will appear here.
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-2xl font-black text-slate-950"><%= @church_events.count %></p>
+      <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Total Events</p>
+    </div>
+
+    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-2xl font-black text-slate-950"><%= month_count %></p>
+      <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">This Month</p>
+    </div>
+
+    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-2xl font-black text-slate-950"><%= today_count %></p>
+      <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Today</p>
+    </div>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+          Schedule
+        </p>
+
+        <h2 class="mt-2 text-2xl font-black text-slate-950">
+          All Church Events
+        </h2>
+      </div>
+    </div>
+
+    <% if @church_events.any? %>
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <%= render @church_events %>
+      </div>
+    <% else %>
+      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm">
+          <%= heroicon "calendar-days", variant: :outline, options: { class: "h-7 w-7" } %>
+        </div>
+
+        <p class="mt-4 font-black text-slate-700">No church events yet.</p>
+
+        <% if can_manage_church? %>
+          <p class="mt-2 text-sm text-slate-500">
+            Add upcoming church activities to the calendar.
+          </p>
+        <% else %>
+          <p class="mt-2 text-sm text-slate-500">
+            No church calendar activities are available to view yet.
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

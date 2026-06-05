@@ -1,0 +1,67 @@
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="p-6 sm:p-8 lg:p-10">
+      <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+        Resolution Report
+      </p>
+
+      <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+        Follow-up status for church decisions.
+      </h1>
+
+      <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+        Pending, completed and overdue items in a clean review format.
+      </p>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+    <%= render "report_card",
+        title: "Pending",
+        value: @pending_count,
+        color: "amber",
+        icon: "clock" %>
+
+    <%= render "report_card",
+        title: "Completed",
+        value: @completed_count,
+        color: "emerald",
+        icon: "check-circle" %>
+
+    <%= render "report_card",
+        title: "Overdue",
+        value: @overdue_count,
+        color: "rose",
+        icon: "exclamation-triangle" %>
+  </div>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <div class="mb-5">
+      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+        Details
+      </p>
+
+      <h2 class="mt-2 text-2xl font-black text-slate-950">Resolution Items</h2>
+    </div>
+
+    <div class="space-y-4">
+      <% @church_resolutions.each do |resolution| %>
+        <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+          <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div class="min-w-0">
+              <h3 class="break-words font-black text-slate-950"><%= resolution.title %></h3>
+              <p class="mt-1 text-sm text-slate-500">
+                Assigned to: <%= resolution.assigned_to&.name || "Not assigned" %>
+                · Due: <%= resolution.due_date || "No due date" %>
+              </p>
+            </div>
+
+            <span class="w-fit rounded-full bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm">
+              <%= resolution.status.humanize %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

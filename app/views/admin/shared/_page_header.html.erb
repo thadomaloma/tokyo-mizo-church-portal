@@ -1,0 +1,14 @@
+<div class="mb-6 flex flex-col justify-between gap-4 md:mb-8 md:flex-row md:items-end">
+  <div class="min-w-0">
+    <h1 class="break-words text-2xl font-black tracking-tight text-slate-950 sm:text-3xl md:text-4xl"><%= title %></h1>
+    <% if local_assigns[:subtitle].present? %>
+      <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base"><%= subtitle %></p>
+    <% end %>
+  </div>
+
+  <% if local_assigns[:button_text].present? && local_assigns[:button_path].present? %>
+    <%= link_to button_text,
+        button_path,
+        class: "inline-flex w-full items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700 sm:w-auto" %>
+  <% end %>
+</div>

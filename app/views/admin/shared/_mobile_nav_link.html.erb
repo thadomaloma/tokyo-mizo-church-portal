@@ -1,0 +1,11 @@
+<%= link_to path,
+    class: "flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[1.15rem] px-1 py-2 transition #{active ? 'bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm' : 'text-slate-400 hover:bg-sky-50 hover:text-sky-700'}" do %>
+
+  <%= heroicon icon,
+      variant: :outline,
+      options: { class: "h-5 w-5 shrink-0" } %>
+
+  <span class="max-w-full truncate text-[10px] font-black leading-none">
+    <%= name %>
+  </span>
+<% end %>

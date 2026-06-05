@@ -1,0 +1,41 @@
+<div class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-lg font-black text-slate-950">Upcoming Events</h2>
+      <p class="text-sm text-slate-500">
+        <%= today_events_count %> today · <%= events_this_month %> this month
+      </p>
+    </div>
+
+    <% if can_manage_church? %>
+      <%= link_to new_admin_church_event_path,
+          class: "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-700 px-4 py-2 text-sm font-black text-white hover:bg-sky-700 sm:w-auto" do %>
+        <%= heroicon "plus", variant: :outline, options: { class: "h-4 w-4" } %>
+        Add Event
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if events.present? %>
+    <div class="divide-y divide-slate-100">
+      <% events.each do |event| %>
+        <%= render "event", event: event %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+        <%= heroicon "calendar-days", variant: :outline, options: { class: "h-7 w-7" } %>
+      </div>
+
+      <p class="mt-4 font-black text-slate-700">No events found</p>
+      <p class="mt-1 text-sm text-slate-500">
+        <% if can_manage_church? %>
+          Add the first church activity using the button above.
+        <% else %>
+          New church activities will appear here.
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</div>

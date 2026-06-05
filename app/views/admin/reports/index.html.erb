@@ -1,0 +1,103 @@
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="p-6 sm:p-8 lg:p-10">
+      <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+        Reports
+      </p>
+
+      <h1 class="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+        Clear reports for church records.
+      </h1>
+
+      <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+        Review finance, follow-up and member information in one place.
+      </p>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <%= link_to finance_admin_reports_path,
+        class: "group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" do %>
+      <div class="bg-emerald-50 p-6 text-emerald-700">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+          <%= heroicon "banknotes",
+              variant: :outline,
+              options: { class: "h-7 w-7" } %>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+          Finance
+        </p>
+
+        <h2 class="mt-3 text-2xl font-black text-slate-950">Finance Report</h2>
+
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          Income, expense, balance, Sawmapakhat, Mission and Thawhlawm records.
+        </p>
+
+        <div class="mt-6 inline-flex items-center gap-2 text-sm font-black text-slate-900">
+          Open report
+          <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" } %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= link_to resolutions_admin_reports_path,
+        class: "group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" do %>
+      <div class="bg-amber-50 p-6 text-amber-700">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+          <%= heroicon "clipboard-document-check",
+              variant: :outline,
+              options: { class: "h-7 w-7" } %>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+          Follow-up
+        </p>
+
+        <h2 class="mt-3 text-2xl font-black text-slate-950">Resolution Report</h2>
+
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          Pending, completed and overdue follow-up records.
+        </p>
+
+        <div class="mt-6 inline-flex items-center gap-2 text-sm font-black text-slate-900">
+          Open report
+          <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" } %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= link_to members_admin_reports_path,
+        class: "group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" do %>
+      <div class="bg-blue-50 p-6 text-blue-700">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+          <%= heroicon "users",
+              variant: :outline,
+              options: { class: "h-7 w-7" } %>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+          Members
+        </p>
+
+        <h2 class="mt-3 text-2xl font-black text-slate-950">Member Report</h2>
+
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          Active, inactive and role-based member records.
+        </p>
+
+        <div class="mt-6 inline-flex items-center gap-2 text-sm font-black text-slate-900">
+          Open report
+          <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

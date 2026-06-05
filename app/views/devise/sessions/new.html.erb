@@ -1,0 +1,92 @@
+<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50">
+  <div class="flex min-h-screen items-center justify-center px-6 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Logo & Header -->
+      <div class="mb-8 text-center">
+
+        <div class="mb-5 flex justify-center">
+          <%= image_tag "tokyo_mizo_church_logo.png",
+              alt: "Tokyo Mizo Church Logo",
+              class: "h-24 w-24 rounded-full border-4 border-white bg-white object-contain shadow-xl ring-1 ring-sky-100" %>
+        </div>
+
+        <h1 class="text-3xl font-black tracking-tight text-slate-900">
+          Tokyo Mizo Church
+        </h1>
+
+        <p class="mt-2 text-sm font-bold text-sky-600">
+          Church Management Portal
+        </p>
+
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          Sign in to access finance reports, meeting minutes, church calendar and member management.
+        </p>
+
+      </div>
+
+      <!-- Login Card -->
+      <div class="rounded-[32px] border border-sky-100 bg-white/95 p-8 shadow-[0_24px_70px_rgba(14,165,233,0.18)]">
+
+        <%= form_for(resource,
+            as: resource_name,
+            url: session_path(resource_name)) do |f| %>
+
+          <div class="space-y-5">
+
+            <div>
+              <%= f.label :email,
+                  class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+              <%= f.email_field :email,
+                  autofocus: true,
+                  autocomplete: "email",
+                  placeholder: "Enter email",
+                  class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200" %>
+            </div>
+
+            <div>
+              <%= f.label :password,
+                  class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+              <%= f.password_field :password,
+                  autocomplete: "current-password",
+                  placeholder: "Enter password",
+                  class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200" %>
+            </div>
+
+            <% if devise_mapping.rememberable? %>
+              <div class="flex items-center gap-2">
+                <%= f.check_box :remember_me,
+                    class: "rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
+
+                <%= f.label :remember_me,
+                    class: "text-sm font-medium text-slate-600" %>
+              </div>
+            <% end %>
+
+            <%= f.submit "Sign In",
+                class: "w-full rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-sky-700" %>
+
+          </div>
+
+        <% end %>
+
+        <div class="mt-6 text-center">
+          <%= link_to "Forgot your password?",
+              new_password_path(resource_name),
+              class: "text-sm font-bold text-sky-600 hover:text-sky-700" %>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center">
+        <p class="text-xs font-medium text-slate-400">
+          © <%= Date.current.year %> Tokyo Mizo Church, Japan
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>

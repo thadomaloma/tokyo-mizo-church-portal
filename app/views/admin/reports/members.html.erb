@@ -1,0 +1,64 @@
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="p-6 sm:p-8 lg:p-10">
+      <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+        Member Report
+      </p>
+
+      <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+        Member status and role summary.
+      </h1>
+
+      <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+        Active account, inactive account and role-based records for review.
+      </p>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+    <%= render "report_card",
+        title: "Total Members",
+        value: @total_members,
+        color: "sky",
+        icon: "users" %>
+
+    <%= render "report_card",
+        title: "Active Members",
+        value: @active_members,
+        color: "emerald",
+        icon: "user-circle" %>
+
+    <%= render "report_card",
+        title: "Inactive Members",
+        value: @inactive_members,
+        color: "rose",
+        icon: "user-minus" %>
+  </div>
+
+  <section class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-100 p-5 lg:p-6">
+      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+        Directory
+      </p>
+
+      <h2 class="mt-2 text-2xl font-black text-slate-950">Members</h2>
+    </div>
+
+    <div class="divide-y divide-slate-100">
+      <% @users.each do |user| %>
+        <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <p class="break-words font-black text-slate-950"><%= user.name %></p>
+            <p class="mt-1 break-words text-sm text-slate-500">
+              <%= user.email %> · <%= user.role.humanize %>
+            </p>
+          </div>
+
+          <span class="w-fit rounded-full px-4 py-2 text-sm font-black <%= user.active? ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700" %>">
+            <%= user.active? ? "Active" : "Inactive" %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

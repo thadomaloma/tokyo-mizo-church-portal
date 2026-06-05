@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tokyo Mizo Church Portal</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-sky-50 text-slate-900">
+    <div class="min-h-screen lg:flex">
+      <aside class="hidden w-[304px] border-r border-sky-100 bg-white/95 shadow-[18px_0_60px_rgba(14,165,233,0.08)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+        <div class="p-6 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
+              <%= image_tag "tokyo_mizo_church_logo.png",
+                  alt: "Tokyo Mizo Church logo",
+                  class: "h-10 w-10 object-contain" %>
+            </div>
+
+            <div>
+              <h1 class="text-base font-black leading-5 tracking-tight">TOKYO MIZO</h1>
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-sky-500">Church Portal</p>
+            </div>
+          </div>
+        </div>
+
+        <nav class="flex-1 space-y-1.5 px-4 py-2">
+          <%= render "admin/shared/sidebar_link",
+              name: "Dashboard",
+              path: admin_root_path,
+              active: current_page?(admin_root_path),
+              icon: "home" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Finance Management",
+              path: admin_finance_transactions_path,
+              active: request.path.start_with?("/admin/finance_transactions") ||
+                      request.path.start_with?("/admin/finance_categories"),
+              icon: "banknotes" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Meeting Minutes",
+              path: admin_meeting_minutes_path,
+              active: request.path.start_with?("/admin/meeting_minutes"),
+              icon: "document-text" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Resolutions / Follow-up",
+              path: admin_church_resolutions_path,
+              active: request.path.start_with?("/admin/church_resolutions"),
+              icon: "clipboard-document-check" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Church Calendar",
+              path: admin_church_events_path,
+              active: request.path.start_with?("/admin/church_events"),
+              icon: "calendar-days" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Member Management",
+              path: admin_users_path,
+              active: request.path.start_with?("/admin/users"),
+              icon: "users" %>
+
+          <%= render "admin/shared/sidebar_link",
+              name: "Reports",
+              path: admin_reports_path,
+              active: request.path.start_with?("/admin/reports"),
+              icon: "document-chart-bar" %>
+        </nav>
+
+        <div class="border-t border-sky-100 p-5">
+          <div class="rounded-2xl border border-sky-100 bg-sky-50 p-3">
+            <div class="flex items-center gap-3">
+              <%= render "admin/shared/user_avatar",
+                  user: current_user,
+                  size_class: "h-9 w-9",
+                  text_class: "text-xs" %>
+
+              <div class="min-w-0">
+                <p class="truncate font-bold leading-5">
+                  <%= current_user.name %>
+                </p>
+
+                <p class="truncate text-xs text-slate-500">
+                  <%= current_user.role.humanize %>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <%= button_to destroy_user_session_path,
+              method: :delete,
+              class: "mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-100" do %>
+            <%= heroicon "arrow-left-on-rectangle",
+                variant: :outline,
+                options: { class: "h-5 w-5" } %>
+            Logout
+          <% end %>
+        </div>
+      </aside>
+
+      <div class="flex-1">
+        <header class="sticky top-0 z-40 border-b border-sky-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+          <div class="flex items-center justify-between gap-3">
+            <%= link_to admin_root_path, class: "flex min-w-0 items-center gap-3" do %>
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
+                <%= image_tag "tokyo_mizo_church_logo.png",
+                    alt: "Tokyo Mizo Church logo",
+                    class: "h-8 w-8 object-contain" %>
+              </div>
+
+              <div class="min-w-0">
+                <p class="truncate text-sm font-black leading-4 text-slate-900">TOKYO MIZO</p>
+                <p class="truncate text-[11px] font-bold uppercase tracking-wide text-sky-500">Church Portal</p>
+              </div>
+            <% end %>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <%= render "admin/shared/notification_dropdown",
+                  notifications: @notifications,
+                  notifications_count: @notifications_count %>
+
+              <%= render "admin/shared/user_menu",
+                  user: current_user %>
+            </div>
+          </div>
+        </header>
+
+        <main class="mx-auto w-full max-w-[1600px] p-4 pb-[7.5rem] sm:p-5 lg:p-10 lg:pb-10">
+          <% flash.each do |type, message| %>
+            <% next if message.blank? %>
+
+            <% tone_classes =
+              type.to_s == "alert" ?
+                "border-rose-200 bg-rose-50 text-rose-700" :
+                "border-emerald-200 bg-emerald-50 text-emerald-700" %>
+
+            <div class="mb-5 rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm <%= tone_classes %>">
+              <%= message %>
+            </div>
+          <% end %>
+
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+
+    <nav class="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[1.5rem] border border-sky-100 bg-white/95 p-1 text-center text-[11px] font-bold text-slate-500 shadow-[0_18px_50px_rgba(14,165,233,0.2)] backdrop-blur lg:hidden">
+      <% mobile_nav_items.each do |item| %>
+        <%= render "admin/shared/mobile_nav_link", **item %>
+      <% end %>
+    </nav>
+  </body>
+</html>

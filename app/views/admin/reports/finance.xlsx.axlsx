@@ -1,0 +1,173 @@
+wb = xlsx_package.workbook
+
+wb.add_worksheet(name: "Finance Report") do |sheet|
+  sheet.page_setup.orientation = :portrait
+  sheet.page_setup.paper_size = 9
+  sheet.page_setup.fit_to_width = 1
+  sheet.page_setup.fit_to_height = 0
+
+  sheet.page_margins.left = 0.4
+  sheet.page_margins.right = 0.4
+  sheet.page_margins.top = 0.6
+  sheet.page_margins.bottom = 0.6
+
+  title_style = wb.styles.add_style(
+    b: true,
+    sz: 18,
+    alignment: { horizontal: :center, vertical: :center }
+  )
+
+  subtitle_style = wb.styles.add_style(
+    sz: 11,
+    alignment: { horizontal: :center, vertical: :center }
+  )
+
+  section_style = wb.styles.add_style(
+    b: true,
+    sz: 13
+  )
+
+  summary_label_style = wb.styles.add_style(
+    border: { style: :thin, color: "CBD5E1" }
+  )
+
+  summary_value_style = wb.styles.add_style(
+    alignment: { horizontal: :right },
+    border: { style: :thin, color: "CBD5E1" }
+  )
+
+  balance_label_style = wb.styles.add_style(
+    b: true,
+    bg_color: "DCFCE7",
+    fg_color: "166534",
+    border: { style: :thin, color: "CBD5E1" }
+  )
+
+  balance_value_style = wb.styles.add_style(
+    b: true,
+    bg_color: "DCFCE7",
+    fg_color: "166534",
+    alignment: { horizontal: :right },
+    border: { style: :thin, color: "CBD5E1" }
+  )
+
+  table_header_style = wb.styles.add_style(
+    b: true,
+    bg_color: "E2E8F0",
+    alignment: { horizontal: :center, vertical: :center },
+    border: { style: :thin, color: "CBD5E1" }
+  )
+
+  body_style = wb.styles.add_style(
+    sz: 9,
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { vertical: :center }
+  )
+
+  center_style = wb.styles.add_style(
+    sz: 9,
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { horizontal: :center, vertical: :center }
+  )
+
+  amount_style = wb.styles.add_style(
+    sz: 9,
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { horizontal: :right, vertical: :center }
+  )
+
+  income_type_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: "047857",
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { horizontal: :center, vertical: :center }
+  )
+
+  expense_type_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: "BE123C",
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { horizontal: :center, vertical: :center }
+  )
+
+  cash_balance =
+    @transactions.select(&:payment_location_cash?).sum do |transaction|
+      transaction.income? ? transaction.amount : -transaction.amount
+    end
+
+  bank_balance =
+    @transactions.select(&:payment_location_bank?).sum do |transaction|
+      transaction.income? ? transaction.amount : -transaction.amount
+    end
+
+  yen = ->(amount) { "JPY #{amount.to_i.to_fs(:delimited)}" }
+
+  sheet.add_row ["Tokyo Mizo Church"], style: title_style
+  sheet.merge_cells "A1:F1"
+
+  sheet.add_row ["Finance Report"], style: subtitle_style
+  sheet.merge_cells "A2:F2"
+
+  sheet.add_row ["Generated on #{Date.current.strftime('%B %d, %Y')}"], style: subtitle_style
+  sheet.merge_cells "A3:F3"
+
+  sheet.add_row []
+
+  sheet.add_row ["Summary"], style: section_style
+  sheet.merge_cells "A5:F5"
+
+  summary_data = [
+    ["Total Income", yen.call(@income)],
+    ["Total Expense", yen.call(@expense)],
+    ["Balance", yen.call(@balance)],
+    ["Cash Balance", yen.call(cash_balance)],
+    ["Bank Account Balance", yen.call(bank_balance)]
+  ]
+
+  summary_data.each do |row|
+    is_balance = row.first == "Balance"
+
+    sheet.add_row row,
+                  style: [
+                    is_balance ? balance_label_style : summary_label_style,
+                    is_balance ? balance_value_style : summary_value_style
+                  ]
+  end
+
+  sheet.add_row []
+
+  sheet.add_row ["Transactions"], style: section_style
+  sheet.merge_cells "A12:F12"
+
+  sheet.add_row [
+    "Date",
+    "Type",
+    "Category",
+    "Location",
+    "Description",
+    "Amount"
+  ], style: table_header_style
+
+  @transactions.each do |transaction|
+    type_style =
+      transaction.income? ? income_type_style : expense_type_style
+
+    sheet.add_row [
+      transaction.transaction_date&.strftime("%Y-%m-%d"),
+      transaction.transaction_type.humanize,
+      transaction.finance_category&.name || "-",
+      transaction.payment_location_bank? ? "Bank" : "Cash",
+      transaction.description.presence || "-",
+      yen.call(transaction.amount)
+    ], style: [
+      center_style,
+      type_style,
+      body_style,
+      center_style,
+      body_style,
+      amount_style
+    ]
+  end
+
+  sheet.column_widths 14, 12, 18, 16, 34, 16
+end

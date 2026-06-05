@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  status: 1
+  priority: 1
+  due_date: 2026-05-30
+  completed_at: 2026-05-30 21:26:51
+  meeting_minute: one
+  assigned_to: one
+
+two:
+  title: MyString
+  description: MyText
+  status: 1
+  priority: 1
+  due_date: 2026-05-30
+  completed_at: 2026-05-30 21:26:51
+  meeting_minute: two
+  assigned_to: two

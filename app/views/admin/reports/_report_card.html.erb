@@ -1,0 +1,28 @@
+<%
+  colors = {
+    "emerald" => "bg-emerald-50 text-emerald-600",
+    "rose" => "bg-rose-50 text-rose-600",
+    "amber" => "bg-amber-50 text-amber-600",
+    "blue" => "bg-blue-50 text-blue-600",
+    "sky" => "bg-sky-50 text-sky-600"
+  }
+
+  card_color = local_assigns.fetch(:color, "sky")
+  card_icon = local_assigns.fetch(:icon, "chart-bar")
+%>
+
+<div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <p class="text-xs font-black uppercase tracking-wide text-slate-400"><%= title %></p>
+      <h2 class="mt-2 text-3xl font-black text-slate-950"><%= value %></h2>
+      <% if local_assigns[:note].present? %>
+        <p class="mt-1 text-xs font-semibold text-slate-400"><%= note %></p>
+      <% end %>
+    </div>
+
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl <%= colors[card_color] || colors["sky"] %>">
+      <%= heroicon card_icon, variant: :outline, options: { class: "h-6 w-6" } %>
+    </div>
+  </div>
+</div>

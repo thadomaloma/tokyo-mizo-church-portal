@@ -1,0 +1,66 @@
+<%= render "admin/shared/page_header",
+    title: @user.name,
+    subtitle: "Member detail" %>
+
+<div class="max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+  <div class="flex items-center gap-4 border-b border-slate-100 pb-6">
+    <%= render "admin/shared/user_avatar",
+        user: @user,
+        size_class: "h-16 w-16",
+        text_class: "text-lg" %>
+
+    <div>
+      <h2 class="text-2xl font-black text-slate-900">
+        <%= @user.name %>
+      </h2>
+
+      <p class="mt-1 text-sm text-slate-500">
+        <%= @user.email %>
+      </p>
+    </div>
+  </div>
+
+  <dl class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div class="rounded-2xl bg-slate-50 p-4">
+      <dt class="text-sm font-bold text-slate-500">Role</dt>
+      <dd class="mt-1 font-black text-slate-900">
+        <%= @user.role.humanize %>
+      </dd>
+    </div>
+
+    <div class="rounded-2xl bg-slate-50 p-4">
+      <dt class="text-sm font-bold text-slate-500">Status</dt>
+      <dd class="mt-1 font-black <%= @user.active? ? 'text-emerald-600' : 'text-rose-600' %>">
+        <%= @user.active? ? "Active" : "Inactive" %>
+      </dd>
+    </div>
+
+    <% if @user.phone.present? %>
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <dt class="text-sm font-bold text-slate-500">Phone</dt>
+        <dd class="mt-1 font-black text-slate-900">
+          <%= @user.phone %>
+        </dd>
+      </div>
+    <% end %>
+
+    <div class="rounded-2xl bg-slate-50 p-4">
+      <dt class="text-sm font-bold text-slate-500">Created At</dt>
+      <dd class="mt-1 font-black text-slate-900">
+        <%= @user.created_at.strftime("%B %d, %Y") %>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-6">
+    <% if can_manage_church? %>
+      <%= link_to "Edit",
+          edit_admin_user_path(@user),
+          class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white hover:bg-sky-700" %>
+    <% end %>
+
+    <%= link_to "Back",
+        admin_users_path,
+        class: "rounded-xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+</div>

@@ -1,0 +1,130 @@
+<%
+  office_bearers = @users.select(&:office_bearer?)
+  executive_members = @users.select(&:executive_committee?)
+  other_members = @users.reject { |user| user.office_bearer? || user.executive_committee? }
+  active_count = @users.count(&:active?)
+  inactive_count = @users.size - active_count
+%>
+
+<div class="space-y-6 lg:space-y-8">
+  <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-500 text-white shadow-sm">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div class="p-6 sm:p-8 lg:p-10">
+        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+          Member Management
+        </p>
+
+        <h1 class="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+          Manage church members by role.
+        </h1>
+
+        <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+          Keep office bearers, executive members and other members organized.
+        </p>
+
+        <% if can_manage_church? %>
+          <div class="mt-8">
+            <%= link_to new_admin_user_path,
+                class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
+              <%= heroicon "user-plus", variant: :outline, options: { class: "h-5 w-5" } %>
+              Add Member
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-white/[0.04] p-6 sm:grid-cols-4 sm:p-8 lg:grid-cols-2 lg:border-l lg:border-t-0">
+        <div class="rounded-[1.5rem] bg-white p-4 text-slate-950 shadow-sm">
+          <p class="text-3xl font-black"><%= @users.size %></p>
+          <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Total</p>
+        </div>
+
+        <div class="rounded-[1.5rem] bg-white p-4 text-slate-950 shadow-sm">
+          <p class="text-3xl font-black"><%= active_count %></p>
+          <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Active</p>
+        </div>
+
+        <div class="rounded-[1.5rem] bg-white p-4 text-slate-950 shadow-sm">
+          <p class="text-3xl font-black"><%= office_bearers.size %></p>
+          <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">OB</p>
+        </div>
+
+        <div class="rounded-[1.5rem] bg-white p-4 text-slate-950 shadow-sm">
+          <p class="text-3xl font-black"><%= executive_members.size %></p>
+          <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">EC</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if inactive_count.positive? %>
+    <div class="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+      <%= pluralize(inactive_count, "inactive member") %> currently cannot access the portal.
+    </div>
+  <% end %>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Office Bearers</p>
+        <h2 class="mt-2 text-2xl font-black text-slate-950">OB Members</h2>
+      </div>
+
+      <span class="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+        <%= pluralize(office_bearers.size, "member") %>
+      </span>
+    </div>
+
+    <% if office_bearers.any? %>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <%= render office_bearers %>
+      </div>
+    <% else %>
+      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+        <p class="font-black text-slate-700">No OB members yet.</p>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Executive Committee</p>
+        <h2 class="mt-2 text-2xl font-black text-slate-950">EC Members</h2>
+      </div>
+
+      <span class="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+        <%= pluralize(executive_members.size, "member") %>
+      </span>
+    </div>
+
+    <% if executive_members.any? %>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <%= render executive_members %>
+      </div>
+    <% else %>
+      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+        <p class="font-black text-slate-700">No EC members yet.</p>
+      </div>
+    <% end %>
+  </section>
+
+  <% if other_members.any? %>
+    <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+      <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Others</p>
+          <h2 class="mt-2 text-2xl font-black text-slate-950">Other Members</h2>
+        </div>
+
+        <span class="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+          <%= pluralize(other_members.size, "member") %>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <%= render other_members %>
+      </div>
+    </section>
+  <% end %>
+</div>
