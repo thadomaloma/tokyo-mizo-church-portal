@@ -2,6 +2,16 @@
 
 Tokyo Mizo Church Portal is a modern church management system built with Ruby on Rails 8. It helps church leaders manage members, finances, meeting minutes, announcements, events, and notifications from a single platform.
 
+![Tokyo Mizo Church Portal dashboard preview](docs/dashboard-preview.png)
+
+## Live Demo
+
+Demo site: https://tokyo-mizo-church-portal.onrender.com
+
+| Email | Password | Access |
+| --- | --- | --- |
+| demo@tokyomizochurch.org | Demo@2026 | Limited demo account |
+
 ## Features
 
 * Member Management
@@ -36,14 +46,5 @@ Tokyo Mizo Church Portal is a modern church management system built with Ruby on
 ## Purpose
 
 The portal is designed to improve church administration, record keeping, communication, and financial transparency while providing a secure and user-friendly experience for church leaders and members.
-
-# Demo Login
-
-https://tokyo-mizo-church-portal.onrender.com
-
-Email: demo@tokyomizochurch.org
-Password: Demo@2026
-
-This account is provided for demonstration purposes only and has limited permissions.
 
 Developed for Tokyo Mizo Church, Japan.
