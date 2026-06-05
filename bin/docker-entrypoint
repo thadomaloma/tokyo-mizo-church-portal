@@ -3,7 +3,12 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
-  ./bin/rails db:seed
+
+  if [ -n "$SEED_ADMIN_EMAIL" ] && [ -n "$SEED_ADMIN_PASSWORD" ]; then
+    ./bin/rails db:seed
+  else
+    echo "Skipping db:seed because SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are not both set."
+  fi
 fi
 
 exec "${@}"

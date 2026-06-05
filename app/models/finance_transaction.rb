@@ -27,6 +27,20 @@ class FinanceTransaction < ApplicationRecord
     joins(:finance_category).where(finance_categories: { name: category_name })
   }
 
+  def self.for_category_keywords(*keywords)
+    patterns = keywords
+      .flatten
+      .compact
+      .map { |keyword| keyword.to_s.strip }
+      .reject(&:blank?)
+      .map { |keyword| "%#{sanitize_sql_like(keyword)}%" }
+
+    return none if patterns.blank?
+
+    joins(:finance_category)
+      .where(patterns.map { "finance_categories.name ILIKE ?" }.join(" OR "), *patterns)
+  end
+
   def income?
     transaction_type == "income"
   end

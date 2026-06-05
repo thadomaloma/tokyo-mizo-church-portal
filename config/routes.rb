@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "manifest.json", to: "pwa#manifest", as: :pwa_manifest
+
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   devise_for :users, skip: [ :registrations ]

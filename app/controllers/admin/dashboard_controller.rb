@@ -5,9 +5,9 @@ module Admin
 
       @current_balance = FinanceTransaction.income.sum(:amount) - FinanceTransaction.expense.sum(:amount)
 
-      @sawmapakhat_total = monthly_income_for("Sawmapakhat")
-      @mission_total = monthly_income_for("Mission")
-      @weekly_offering_total = monthly_income_for("Thawhlawm")
+      @sawmapakhat_total = monthly_income_for("Sawmapakhat", "Sawm Pakhat", "Tithe")
+      @mission_total = monthly_income_for("Mission", "Missionary", "Mission Fund")
+      @weekly_offering_total = monthly_income_for("Thawhlawm", "Offering", "Weekly Offering")
 
       @pending_resolutions = ChurchResolution.where(status: 0).count
       @overdue_resolutions = ChurchResolution.overdue.count
@@ -35,11 +35,11 @@ module Admin
 
     private
 
-    def monthly_income_for(category_name)
+    def monthly_income_for(*category_keywords)
       FinanceTransaction
         .income
         .this_month
-        .for_category(category_name)
+        .for_category_keywords(category_keywords)
         .sum(:amount)
     end
   end

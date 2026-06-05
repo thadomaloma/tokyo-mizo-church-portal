@@ -72,8 +72,7 @@
       </div>
     <% end %>
 
-    <%= link_to members_admin_reports_path,
-        class: "group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" do %>
+    <article class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div class="bg-blue-50 p-6 text-blue-700">
         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
           <%= heroicon "users",
@@ -93,11 +92,26 @@
           Active, inactive and role-based member records.
         </p>
 
-        <div class="mt-6 inline-flex items-center gap-2 text-sm font-black text-slate-900">
-          Open report
-          <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" } %>
+        <div class="mt-6 grid grid-cols-1 gap-2">
+          <%= link_to members_admin_reports_path,
+              class: "inline-flex items-center gap-2 text-sm font-black text-slate-900" do %>
+            Open report
+            <%= heroicon "arrow-up-right",
+                variant: :outline,
+                options: { class: "h-4 w-4" } %>
+          <% end %>
+
+          <% if can_manage_church? %>
+            <%= link_to admin_users_path,
+                class: "inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-black text-blue-700 transition hover:bg-blue-100" do %>
+              Manage Members
+              <%= heroicon "users",
+                  variant: :outline,
+                  options: { class: "h-4 w-4" } %>
+            <% end %>
+          <% end %>
         </div>
       </div>
-    <% end %>
+    </article>
   </div>
 </div>
