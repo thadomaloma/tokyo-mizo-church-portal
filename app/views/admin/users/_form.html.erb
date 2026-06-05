@@ -116,9 +116,30 @@
               "Password",
               class: "mb-2 block text-sm font-bold text-slate-700" %>
 
-          <%= form.password_field :password,
-              placeholder: user.persisted? ? "Leave blank to keep current password" : "Minimum 6 characters",
-              class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+          <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
+            <%= form.password_field :password,
+                placeholder: user.persisted? ? "Leave blank to keep current password" : "Minimum 6 characters",
+                data: { password_input: true },
+                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
+
+            <button type="button"
+                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sky-600 hover:bg-sky-50"
+                    data-password-toggle
+                    aria-label="Show password"
+                    title="Show password">
+              <span data-password-show-icon>
+                <%= heroicon "eye",
+                    variant: :outline,
+                    options: { class: "h-5 w-5" } %>
+              </span>
+
+              <span class="hidden" data-password-hide-icon>
+                <%= heroicon "eye-slash",
+                    variant: :outline,
+                    options: { class: "h-5 w-5" } %>
+              </span>
+            </button>
+          </div>
         </div>
 
         <div>
@@ -126,9 +147,30 @@
               "Confirm Password",
               class: "mb-2 block text-sm font-bold text-slate-700" %>
 
-          <%= form.password_field :password_confirmation,
-              placeholder: "Confirm password",
-              class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+          <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
+            <%= form.password_field :password_confirmation,
+                placeholder: "Confirm password",
+                data: { password_input: true },
+                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
+
+            <button type="button"
+                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sky-600 hover:bg-sky-50"
+                    data-password-toggle
+                    aria-label="Show password"
+                    title="Show password">
+              <span data-password-show-icon>
+                <%= heroicon "eye",
+                    variant: :outline,
+                    options: { class: "h-5 w-5" } %>
+              </span>
+
+              <span class="hidden" data-password-hide-icon>
+                <%= heroicon "eye-slash",
+                    variant: :outline,
+                    options: { class: "h-5 w-5" } %>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
