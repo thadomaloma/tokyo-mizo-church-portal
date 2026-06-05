@@ -11,7 +11,11 @@ admin.active = true
 admin.save!
 
 User.find_or_create_by!(email: "demo@tokyomizochurch.org") do |user|
-  user.password = "Demo@2026"
-  user.role = :member
+  user.name = "Demo User"
+  user.phone = "0000000000"
+  user.role = :executive_member
   user.active = true
+
+  user.password = "Demo@2026"
+  user.password_confirmation = "Demo@2026"
 end

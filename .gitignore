@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+/.env.local
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -36,3 +37,8 @@
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# Dah belh
+/config/master.key
+/storage/*
+/node_modules

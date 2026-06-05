@@ -42,4 +42,6 @@ The portal is designed to improve church administration, record keeping, communi
 Email: demo@tokyomizochurch.org
 Password: Demo@2026
 
+This account is provided for demonstration purposes only and has limited permissions.
+
 Developed for Tokyo Mizo Church, Japan.
