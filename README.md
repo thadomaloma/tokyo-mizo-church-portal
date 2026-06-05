@@ -39,6 +39,8 @@ The portal is designed to improve church administration, record keeping, communi
 
 # Demo Login
 
+https://tokyo-mizo-church-portal.onrender.com
+
 Email: demo@tokyomizochurch.org
 Password: Demo@2026
 

@@ -1,5 +1,12 @@
-admin_email = ENV.fetch("SEED_ADMIN_EMAIL", "admin@tokyomizochurch.org")
-admin_password = ENV.fetch("SEED_ADMIN_PASSWORD", "TokyoMizo@2026")
+def required_seed_env(name)
+  value = ENV[name].to_s.strip
+  return value if value.present?
+
+  raise "#{name} must be set before seeding the admin account."
+end
+
+admin_email = required_seed_env("SEED_ADMIN_EMAIL")
+admin_password = required_seed_env("SEED_ADMIN_PASSWORD")
 
 admin = User.find_or_initialize_by(email: admin_email)
 admin.name = ENV.fetch("SEED_ADMIN_NAME", "Super Admin")
