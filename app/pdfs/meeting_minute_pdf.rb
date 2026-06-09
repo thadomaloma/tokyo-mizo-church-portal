@@ -1,4 +1,6 @@
 class MeetingMinutePdf
+  SECRETARY_SIGNATURE_FIT = [ 145, 48 ].freeze
+
   def initialize(meeting_minute)
     @meeting_minute = meeting_minute
   end
@@ -266,7 +268,7 @@ class MeetingMinutePdf
 
     if meeting_minute.secretary_signature.attached?
       meeting_minute.secretary_signature.open do |file|
-        pdf.image file.path, fit: [ 170, 70 ]
+        pdf.image file.path, fit: SECRETARY_SIGNATURE_FIT
       end
 
       pdf.move_down 4
