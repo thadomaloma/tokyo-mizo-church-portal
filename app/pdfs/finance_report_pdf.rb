@@ -114,7 +114,7 @@ class FinanceReportPdf
       [ "Date", "Type", "Category", "Location", "Description", "Amount" ]
     ]
 
-    transactions.each do |transaction|
+    pdf_transactions.each do |transaction|
       rows << [
         transaction.transaction_date.strftime("%Y-%m-%d"),
         type_cell(transaction),
@@ -126,6 +126,16 @@ class FinanceReportPdf
     end
 
     rows
+  end
+
+  def pdf_transactions
+    transactions.sort_by do |transaction|
+      [
+        transaction.transaction_date,
+        transaction.created_at || Time.zone.at(0),
+        transaction.id || 0
+      ]
+    end.reverse
   end
 
   def type_cell(transaction)
