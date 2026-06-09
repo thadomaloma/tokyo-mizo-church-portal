@@ -1,0 +1,157 @@
+<%
+  voucher_number = "EXP-#{@finance_transaction.transaction_date.year}-#{@finance_transaction.id.to_s.rjust(4, "0")}"
+  paid_from = @finance_transaction.payment_location_bank? ? "Bank" : "Cash"
+%>
+
+<style>
+  @media print {
+    body {
+      background: #ffffff !important;
+    }
+
+    aside,
+    header,
+    nav,
+    .no-print {
+      display: none !important;
+    }
+
+    main {
+      max-width: none !important;
+      padding: 0 !important;
+    }
+
+    .receipt-page {
+      margin: 0 !important;
+    }
+
+    .receipt-card {
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+</style>
+
+<div class="receipt-page mx-auto max-w-4xl space-y-5">
+  <div class="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <%= link_to admin_finance_transactions_path,
+        class: "inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50" do %>
+      <%= heroicon "arrow-left", variant: :outline, options: { class: "h-5 w-5" } %>
+      Back to Finance
+    <% end %>
+
+    <button type="button"
+            onclick="window.print()"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700">
+      <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %>
+      Print Voucher
+    </button>
+  </div>
+
+  <section class="receipt-card overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-200 px-6 py-6 text-center sm:px-10">
+      <p class="text-xl font-black uppercase tracking-[0.14em] text-sky-600 sm:text-2xl">
+        TOKYO MIZO CHURCH
+      </p>
+
+      <h1 class="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
+        Finance Expense Voucher
+      </h1>
+
+      <div class="mx-auto mt-4 h-1 w-20 rounded-full bg-sky-500"></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2">
+      <div class="bg-white px-6 py-5 sm:px-10">
+        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+          Voucher No
+        </p>
+        <p class="mt-1 text-lg font-black text-slate-950"><%= voucher_number %></p>
+      </div>
+
+      <div class="bg-white px-6 py-5 sm:px-10">
+        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+          Date
+        </p>
+        <p class="mt-1 text-lg font-black text-slate-950">
+          <%= @finance_transaction.transaction_date.strftime("%B %d, %Y") %>
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-6 px-6 py-7 sm:px-10">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Paid To
+          </p>
+          <div class="mt-8 border-b border-slate-300"></div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Amount
+          </p>
+          <p class="mt-2 text-3xl font-black text-rose-600">
+            ¥<%= number_with_delimiter(@finance_transaction.amount) %>
+          </p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 p-4">
+        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+          Purpose / Description
+        </p>
+        <p class="mt-2 min-h-12 text-sm font-semibold leading-6 text-slate-700">
+          <%= @finance_transaction.description.presence || "-" %>
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Category
+          </p>
+          <p class="mt-2 text-sm font-black text-slate-800">
+            <%= @finance_transaction.finance_category&.name || "-" %>
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Payment Location
+          </p>
+          <p class="mt-2 text-sm font-black text-slate-800"><%= paid_from %></p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Prepared By
+          </p>
+          <p class="mt-2 text-sm font-black text-slate-800">
+            <%= @finance_transaction.recorded_by&.name || "-" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-3">
+        <div>
+          <div class="h-12 border-b border-slate-400"></div>
+          <p class="mt-2 text-center text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+            Finance Secretary
+          </p>
+        </div>
+
+        <div></div>
+
+        <div>
+          <div class="h-12 border-b border-slate-400"></div>
+          <p class="mt-2 text-center text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+            Treasurer
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

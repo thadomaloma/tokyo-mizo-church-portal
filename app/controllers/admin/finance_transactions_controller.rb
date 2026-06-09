@@ -1,7 +1,7 @@
 module Admin
   class FinanceTransactionsController < BaseController
     before_action :require_finance_admin!, except: %i[index show]
-    before_action :set_finance_transaction, only: %i[show edit update destroy]
+    before_action :set_finance_transaction, only: %i[show edit update destroy receipt]
 
     def index
       @transactions = FinanceTransaction
@@ -21,6 +21,13 @@ module Admin
     end
 
     def show; end
+
+    def receipt
+      return if @finance_transaction.expense?
+
+      redirect_to admin_finance_transactions_path,
+                  alert: "Receipt is only available for expense records."
+    end
 
     def new
       @finance_transaction = FinanceTransaction.new(

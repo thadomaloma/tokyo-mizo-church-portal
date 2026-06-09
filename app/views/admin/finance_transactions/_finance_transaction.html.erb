@@ -36,6 +36,14 @@
 
     <% if can_manage_finance? %>
       <div class="grid grid-cols-1 gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center">
+        <% if finance_transaction.expense? %>
+          <%= link_to receipt_admin_finance_transaction_path(finance_transaction),
+              class: "inline-flex items-center justify-center gap-1.5 rounded-xl bg-sky-50 px-3 py-3 text-[11px] font-black text-sky-700 hover:bg-sky-100 sm:py-2" do %>
+            <%= heroicon "printer", variant: :outline, options: { class: "h-4 w-4" } %>
+            Receipt
+          <% end %>
+        <% end %>
+
         <%= link_to edit_admin_finance_transaction_path(finance_transaction),
             class: "inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 py-3 text-[11px] font-black text-slate-700 hover:bg-slate-200 sm:py-2" do %>
           <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
