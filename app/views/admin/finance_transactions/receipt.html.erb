@@ -1,12 +1,20 @@
 <%
-  voucher_number = "EXP-#{@finance_transaction.transaction_date.year}-#{@finance_transaction.id.to_s.rjust(4, "0")}"
+  voucher_number = @finance_transaction.expense_voucher_number
   paid_from = @finance_transaction.payment_location_bank? ? "Bank" : "Cash"
 %>
 
 <style>
+  @page {
+    size: A5 portrait;
+    margin: 8mm;
+  }
+
   @media print {
+    html,
     body {
       background: #ffffff !important;
+      width: 148mm;
+      min-height: 210mm;
     }
 
     aside,
@@ -23,6 +31,8 @@
 
     .receipt-page {
       margin: 0 !important;
+      max-width: none !important;
+      width: 100% !important;
     }
 
     .receipt-card {
@@ -33,7 +43,7 @@
   }
 </style>
 
-<div class="receipt-page mx-auto max-w-4xl space-y-5">
+<div class="receipt-page mx-auto max-w-3xl space-y-4">
   <div class="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <%= link_to admin_finance_transactions_path,
         class: "inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50" do %>
@@ -49,96 +59,103 @@
     </button>
   </div>
 
-  <section class="receipt-card overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-    <div class="border-b border-slate-200 px-6 py-6 text-center sm:px-10">
-      <p class="text-xl font-black uppercase tracking-[0.14em] text-sky-600 sm:text-2xl">
-        TOKYO MIZO CHURCH
-      </p>
+  <section class="receipt-card overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm">
+    <div class="border-b-2 border-slate-800 px-5 py-4 sm:px-6">
+      <div class="flex items-center justify-center gap-3 text-center">
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white p-1.5">
+          <%= image_tag "tokyo_mizo_church_logo.png",
+              alt: "Tokyo Mizo Church logo",
+              class: "h-full w-full object-contain" %>
+        </div>
 
-      <h1 class="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
-        Finance Expense Voucher
-      </h1>
+        <div>
+          <p class="text-lg font-black uppercase tracking-[0.12em] text-slate-950 sm:text-xl">
+            TOKYO MIZO CHURCH
+          </p>
 
-      <div class="mx-auto mt-4 h-1 w-20 rounded-full bg-sky-500"></div>
+          <h1 class="mt-1 text-base font-black uppercase tracking-[0.14em] text-sky-700 sm:text-lg">
+            Finance Expense Voucher
+          </h1>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2">
-      <div class="bg-white px-6 py-5 sm:px-10">
-        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <div class="bg-white px-5 py-4 sm:px-6">
+        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
           Voucher No
         </p>
-        <p class="mt-1 text-lg font-black text-slate-950"><%= voucher_number %></p>
+        <p class="mt-1.5 text-sm font-black leading-5 text-slate-950"><%= voucher_number %></p>
       </div>
 
-      <div class="bg-white px-6 py-5 sm:px-10">
-        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <div class="bg-white px-5 py-4 sm:px-6">
+        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
           Date
         </p>
-        <p class="mt-1 text-lg font-black text-slate-950">
+        <p class="mt-1.5 text-sm font-black leading-5 text-slate-950">
           <%= @finance_transaction.transaction_date.strftime("%B %d, %Y") %>
         </p>
       </div>
     </div>
 
-    <div class="space-y-6 px-6 py-7 sm:px-10">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+    <div class="space-y-5 px-5 py-6 sm:px-6">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="min-h-28 rounded-lg border border-slate-300 p-4">
+          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
             Paid To
           </p>
-          <div class="mt-8 border-b border-slate-300"></div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+        <div class="min-h-28 rounded-lg border border-slate-300 p-4">
+          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
             Amount
           </p>
-          <p class="mt-2 text-3xl font-black text-rose-600">
+          <p class="mt-3 text-2xl font-black leading-8 text-rose-600">
             ¥<%= number_with_delimiter(@finance_transaction.amount) %>
           </p>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 p-4">
-        <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <div class="rounded-lg border border-slate-300 p-4">
+        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
           Purpose / Description
         </p>
-        <p class="mt-2 min-h-12 text-sm font-semibold leading-6 text-slate-700">
+        <p class="mt-3 min-h-14 text-sm font-semibold leading-6 text-slate-700">
           <%= @finance_transaction.description.presence || "-" %>
         </p>
       </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="min-h-24 rounded-lg border border-slate-300 p-4">
+          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
             Category
           </p>
-          <p class="mt-2 text-sm font-black text-slate-800">
+          <p class="mt-3 break-words text-sm font-black leading-5 text-slate-800">
             <%= @finance_transaction.finance_category&.name || "-" %>
           </p>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+        <div class="min-h-24 rounded-lg border border-slate-300 p-4">
+          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
             Payment Location
           </p>
-          <p class="mt-2 text-sm font-black text-slate-800"><%= paid_from %></p>
+          <p class="mt-3 text-sm font-black leading-5 text-slate-800"><%= paid_from %></p>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+        <div class="min-h-24 rounded-lg border border-slate-300 p-4">
+          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
             Prepared By
           </p>
-          <p class="mt-2 text-sm font-black text-slate-800">
+          <p class="mt-3 break-words text-sm font-black leading-5 text-slate-800">
             <%= @finance_transaction.recorded_by&.name || "-" %>
           </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-3">
+      <div class="grid grid-cols-1 gap-5 pt-5 sm:grid-cols-3">
         <div>
-          <div class="h-12 border-b border-slate-400"></div>
-          <p class="mt-2 text-center text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+          <div class="h-11 border-b border-slate-400"></div>
+          <p class="mt-1.5 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
             Finance Secretary
           </p>
         </div>
@@ -146,8 +163,8 @@
         <div></div>
 
         <div>
-          <div class="h-12 border-b border-slate-400"></div>
-          <p class="mt-2 text-center text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+          <div class="h-11 border-b border-slate-400"></div>
+          <p class="mt-1.5 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
             Treasurer
           </p>
         </div>

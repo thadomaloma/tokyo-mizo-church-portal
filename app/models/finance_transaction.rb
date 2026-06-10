@@ -2,6 +2,8 @@ class FinanceTransaction < ApplicationRecord
   belongs_to :finance_category
   belongs_to :recorded_by, class_name: "User"
 
+  before_validation :assign_voucher_number, if: :expense?
+
   enum :payment_location, {
     cash: "cash",
     bank: "bank"
@@ -11,6 +13,11 @@ class FinanceTransaction < ApplicationRecord
   validates :amount, numericality: { greater_than: 0 }
   validates :transaction_date, presence: true
   validates :payment_location, presence: true
+  validates :voucher_number,
+            uniqueness: {
+              conditions: -> { where(transaction_type: "expense") },
+              allow_nil: true
+            }
 
   scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
   scope :income, -> { where(transaction_type: "income") }
@@ -47,5 +54,21 @@ class FinanceTransaction < ApplicationRecord
 
   def expense?
     transaction_type == "expense"
+  end
+
+  def expense_voucher_number
+    return unless expense?
+
+    number = voucher_number.presence || 1
+
+    "EXP-#{number.to_i.to_s.rjust(4, "0")}"
+  end
+
+  private
+
+  def assign_voucher_number
+    return if voucher_number.present?
+
+    self.voucher_number = self.class.expense.maximum(:voucher_number).to_i + 1
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_003000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_182106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,9 +111,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_003000) do
     t.date "transaction_date"
     t.string "transaction_type"
     t.datetime "updated_at", null: false
+    t.integer "voucher_number"
     t.index ["finance_category_id"], name: "index_finance_transactions_on_finance_category_id"
     t.index ["payment_location"], name: "index_finance_transactions_on_payment_location"
     t.index ["recorded_by_id"], name: "index_finance_transactions_on_recorded_by_id"
+    t.index ["voucher_number"], name: "index_finance_transactions_on_expense_voucher_number", unique: true, where: "(((transaction_type)::text = 'expense'::text) AND (voucher_number IS NOT NULL))"
   end
 
   create_table "meeting_minutes", force: :cascade do |t|
@@ -175,6 +177,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_003000) do
     t.index ["actor_id"], name: "index_notifications_on_actor_id"
   end
 
+  create_table "official_letter_templates", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "letter_type", null: false
+    t.string "name", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_official_letter_templates_on_active"
+    t.index ["created_by_id"], name: "index_official_letter_templates_on_created_by_id"
+    t.index ["letter_type"], name: "index_official_letter_templates_on_letter_type"
+    t.index ["name"], name: "index_official_letter_templates_on_name", unique: true
+  end
+
+  create_table "official_letters", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.date "letter_date", null: false
+    t.string "letter_number", null: false
+    t.integer "letter_sequence", null: false
+    t.string "letter_type", null: false
+    t.integer "letter_year", null: false
+    t.text "recipient_address"
+    t.string "recipient_name", null: false
+    t.string "status", default: "draft", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_official_letters_on_created_by_id"
+    t.index ["letter_date"], name: "index_official_letters_on_letter_date"
+    t.index ["letter_number"], name: "index_official_letters_on_letter_number", unique: true
+    t.index ["letter_type"], name: "index_official_letters_on_letter_type"
+    t.index ["letter_year", "letter_sequence"], name: "index_official_letters_on_year_and_sequence", unique: true
+    t.index ["status"], name: "index_official_letters_on_status"
+  end
+
   create_table "resolutions", force: :cascade do |t|
     t.bigint "assigned_to_id"
     t.datetime "completed_at"
@@ -217,6 +256,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_003000) do
   add_foreign_key "notification_reads", "notifications"
   add_foreign_key "notification_reads", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "official_letter_templates", "users", column: "created_by_id"
+  add_foreign_key "official_letters", "users", column: "created_by_id"
   add_foreign_key "resolutions", "meeting_minutes"
   add_foreign_key "resolutions", "users", column: "assigned_to_id"
 end
