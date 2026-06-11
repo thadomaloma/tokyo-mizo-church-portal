@@ -266,17 +266,38 @@ class MeetingMinutePdf
 
     pdf.move_down 8
 
-    if meeting_minute.secretary_signature.attached?
-      meeting_minute.secretary_signature.open do |file|
-        pdf.image file.path, fit: SECRETARY_SIGNATURE_FIT
-      end
-
+    signature_rendered = render_secretary_signature_image(pdf)
+    if signature_rendered
       pdf.move_down 4
     end
+
+    return if !signature_rendered && meeting_minute.approved_by.blank?
 
     pdf.formatted_text [
       { text: "Secretary Signature: ", styles: [ :bold ] },
       { text: meeting_minute.approved_by.to_s }
     ], size: 10
+  end
+
+  def render_secretary_signature_image(pdf)
+    return false unless meeting_minute.secretary_signature.attached?
+
+    meeting_minute.secretary_signature.open do |file|
+      pdf.image file.path, fit: SECRETARY_SIGNATURE_FIT
+    end
+
+    true
+  rescue ActiveStorage::FileNotFoundError, Errno::ENOENT => error
+    Rails.logger.warn(
+      "Skipping missing secretary signature for meeting minute " \
+      "#{meeting_minute_identifier}: #{error.class} - #{error.message}"
+    )
+    false
+  end
+
+  def meeting_minute_identifier
+    return meeting_minute.id if meeting_minute.respond_to?(:id) && meeting_minute.id.present?
+
+    meeting_minute.title
   end
 end
