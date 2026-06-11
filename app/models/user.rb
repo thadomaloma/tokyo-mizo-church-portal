@@ -49,10 +49,6 @@ class User < ApplicationRecord
     role_treasurer? || role_finance_secretary?
   end
 
-  def letter_admin?
-    role_president? || role_secretary? || role_assistant_secretary?
-  end
-
   def office_bearer?
     role_president? ||
       role_vice_president? ||

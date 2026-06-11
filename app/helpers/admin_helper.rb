@@ -21,13 +21,6 @@ module AdminHelper
         icon: "document-text"
       },
       {
-        name: "Letters",
-        path: admin_official_letters_path,
-        active: request.path.start_with?("/admin/official_letters") ||
-                request.path.start_with?("/admin/official_letter_templates"),
-        icon: "envelope"
-      },
-      {
         name: "Calendar",
         path: admin_church_events_path,
         active: request.path.start_with?("/admin/church_events"),
@@ -48,9 +41,5 @@ module AdminHelper
 
   def can_manage_church?
     current_user.super_admin?
-  end
-
-  def can_manage_letters?
-    current_user.letter_admin?
   end
 end

@@ -29,8 +29,6 @@ Rails.application.routes.draw do
     resources :finance_transactions do
       get :receipt, on: :member
     end
-    resources :official_letters
-    resources :official_letter_templates
     resources :meeting_minutes do
       get :new_archive, on: :collection
     end
