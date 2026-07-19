@@ -1,4 +1,7 @@
 require "net/smtp"
+require "pagy"
+require "pagy/classes/request"
+require "pagy/toolbox/paginators/offset"
 
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
@@ -20,6 +23,14 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def pagy(collection, limit: 10, **options)
+    pagy_request = Pagy::Request.new(
+      { request: request, limit: limit }.merge(options)
+    )
+
+    Pagy::OffsetPaginator.paginate(collection, request: pagy_request)
+  end
 
   def handle_mail_delivery_error(error)
     Rails.logger.error("Mail delivery failed: #{error.class} - #{error.message}")

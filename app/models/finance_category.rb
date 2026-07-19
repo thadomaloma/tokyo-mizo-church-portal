@@ -8,4 +8,9 @@ class FinanceCategory < ApplicationRecord
 
   scope :income, -> { where(category_type: "income") }
   scope :expense, -> { where(category_type: "expense") }
+  scope :for_transaction_type, ->(transaction_type) {
+    normalized_type = transaction_type.to_s
+
+    normalized_type.in?(%w[income expense]) ? where(category_type: normalized_type) : none
+  }
 end

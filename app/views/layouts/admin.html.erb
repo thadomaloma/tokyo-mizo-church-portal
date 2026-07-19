@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Tokyo Mizo Church Portal</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -12,9 +12,9 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-sky-50 text-slate-900">
-    <div class="min-h-screen lg:flex">
-      <aside class="hidden w-[304px] border-r border-sky-100 bg-white/95 shadow-[18px_0_60px_rgba(14,165,233,0.08)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+  <body class="admin-body bg-sky-50 text-slate-900 antialiased">
+    <div class="admin-shell">
+      <aside class="admin-sidebar border-r border-sky-100 bg-white/95 shadow-[18px_0_60px_rgba(14,165,233,0.08)] backdrop-blur">
         <div class="p-6 pb-4">
           <div class="flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
@@ -106,7 +106,7 @@
         </div>
       </aside>
 
-      <div class="flex-1">
+      <div class="admin-content">
         <header class="sticky top-0 z-40 border-b border-sky-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
           <div class="flex items-center justify-between gap-3">
             <%= link_to admin_root_path, class: "flex min-w-0 items-center gap-3" do %>

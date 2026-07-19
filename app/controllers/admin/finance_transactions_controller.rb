@@ -4,9 +4,12 @@ module Admin
     before_action :set_finance_transaction, only: %i[show edit update destroy receipt]
 
     def index
-      @transactions = FinanceTransaction
-                        .includes(:finance_category)
-                        .latest
+      transactions = FinanceTransaction
+                       .includes(:finance_category)
+                       .latest
+
+      @pagy, @transactions = pagy(transactions, limit: 10)
+      @transactions_count = @pagy.count
 
       @monthly_income = FinanceTransaction.income.this_month.sum(:amount)
       @monthly_expense = FinanceTransaction.expense.this_month.sum(:amount)
@@ -77,7 +80,10 @@ module Admin
     end
 
     def load_categories
-      @finance_categories = FinanceCategory.order(:category_type, :name)
+      @finance_categories =
+        FinanceCategory
+          .for_transaction_type(selected_transaction_type)
+          .order(:name)
     end
 
     def finance_transaction_params
@@ -89,6 +95,12 @@ module Admin
         :payment_location,
         :description
       )
+    end
+
+    def selected_transaction_type
+      @finance_transaction.transaction_type.presence ||
+        params.dig(:finance_transaction, :transaction_type).presence ||
+        params[:transaction_type].presence
     end
 
     def create_notification(title, message)
