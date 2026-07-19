@@ -64,33 +64,43 @@ class FinanceReportPdf
   def build_summary_and_chart(pdf)
     pdf.move_down 20
     top = pdf.cursor
-    section_height = 216
     summary_width = 230
     chart_gap = 24
     chart_width = pdf.bounds.width - summary_width - chart_gap
+    summary_table = build_summary_table(pdf, summary_width)
+    monthly_table = build_monthly_tithe_offering_table(pdf, chart_width)
+    section_height = [
+      summary_section_height(pdf, summary_width, summary_table),
+      chart_section_height(pdf, chart_width, monthly_table)
+    ].max.ceil
 
     pdf.bounding_box([ 0, top ], width: summary_width, height: section_height) do
       pdf.text "Summary", size: 13, style: :bold
       pdf.move_down 6
 
-      pdf.table(summary_rows, width: summary_width) do
-        cells.padding = 5
-        cells.size = 8
-        cells.border_color = "CBD5E1"
-
-        row(2).font_style = :bold
-        row(2).background_color = "DCFCE7"
-        row(2).text_color = "166534"
-        columns(1).align = :right
-      end
+      summary_table.draw
     end
 
     pdf.bounding_box([ summary_width + chart_gap, top ], width: chart_width, height: section_height) do
       build_income_expense_chart(pdf, chart_width)
-      build_compact_monthly_tithe_offering(pdf, chart_width)
+      build_compact_monthly_tithe_offering(pdf, monthly_table)
     end
 
     pdf.move_cursor_to(top - section_height)
+  end
+
+  def summary_section_height(pdf, width, table)
+    pdf.height_of("Summary", size: 13, style: :bold, width: width) + 6 + table.height
+  end
+
+  def chart_section_height(pdf, width, monthly_table)
+    pdf.height_of("Income vs Expense", size: 13, style: :bold, width: width) +
+      10 +
+      (report_data.chart_rows.size * 24) +
+      2 +
+      pdf.height_of("Monthly Tithe and Offering", size: 9, style: :bold, width: width) +
+      4 +
+      monthly_table.height
   end
 
   def build_income_expense_chart(pdf, width)
@@ -132,24 +142,16 @@ class FinanceReportPdf
     pdf.fill_color "000000"
   end
 
-  def build_compact_monthly_tithe_offering(pdf, width)
+  def build_compact_monthly_tithe_offering(pdf, monthly_table)
     pdf.move_down 2
     pdf.text "Monthly Tithe and Offering", size: 9, style: :bold
     pdf.move_down 4
 
-    pdf.table(monthly_tithe_offering_rows, header: true, width: width) do
-      row(0).font_style = :bold
-      row(0).background_color = "E2E8F0"
-
-      cells.size = 6.5
-      cells.padding = 3
-      cells.border_color = "CBD5E1"
-      columns(1..2).align = :right
-    end
+    monthly_table.draw
   end
 
   def build_transactions(pdf)
-    pdf.move_down 20
+    pdf.move_down 14
     pdf.text "Transactions", size: 14, style: :bold
     pdf.move_down 8
 
@@ -185,12 +187,37 @@ class FinanceReportPdf
     report_data.summary_rows.map { |label, amount| [ label, yen(amount) ] }
   end
 
+  def build_summary_table(pdf, width)
+    pdf.make_table(summary_rows, width: width) do
+      cells.padding = 5
+      cells.size = 8
+      cells.border_color = "CBD5E1"
+
+      row(2).font_style = :bold
+      row(2).background_color = "DCFCE7"
+      row(2).text_color = "166534"
+      columns(1).align = :right
+    end
+  end
+
   def monthly_tithe_offering_rows
     rows = [ [ "Month", "Tithe", "Offering" ] ]
     report_data.monthly_tithe_offering_rows.each do |month, tithe, offering|
       rows << [ month, yen(tithe), yen(offering) ]
     end
     rows
+  end
+
+  def build_monthly_tithe_offering_table(pdf, width)
+    pdf.make_table(monthly_tithe_offering_rows, header: true, width: width) do
+      row(0).font_style = :bold
+      row(0).background_color = "E2E8F0"
+
+      cells.size = 6.5
+      cells.padding = 3
+      cells.border_color = "CBD5E1"
+      columns(1..2).align = :right
+    end
   end
 
   def transaction_rows
