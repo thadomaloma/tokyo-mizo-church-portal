@@ -16,7 +16,9 @@
     <div class="admin-shell">
       <aside class="admin-sidebar border-r border-sky-100 bg-white/95 shadow-[18px_0_60px_rgba(14,165,233,0.08)] backdrop-blur">
         <div class="p-6 pb-4">
-          <div class="flex items-center gap-3">
+          <%= link_to admin_root_path,
+              class: "group flex items-center gap-3 rounded-2xl p-1 transition hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-200",
+              aria: { label: "Go to dashboard" } do %>
             <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
               <%= image_tag "tokyo_mizo_church_logo.png",
                   alt: "Tokyo Mizo Church logo",
@@ -27,7 +29,7 @@
               <h1 class="text-base font-black leading-5 tracking-tight">TOKYO MIZO</h1>
               <p class="text-xs font-black uppercase tracking-[0.18em] text-sky-500">Church Portal</p>
             </div>
-          </div>
+          <% end %>
         </div>
 
         <nav class="flex-1 space-y-1.5 px-4 py-2">

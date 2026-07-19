@@ -4,14 +4,6 @@ Tokyo Mizo Church Portal is a modern church management system built with Ruby on
 
 ![Tokyo Mizo Church Portal dashboard preview](docs/dashboard-preview.png)
 
-## Live Demo
-
-Demo site: https://tokyo-mizo-church-portal.onrender.com
-
-| Email | Password | Access |
-| --- | --- | --- |
-| demo@tokyomizochurch.org | Demo@2026 | Limited demo account |
-
 ## Features
 
 * Member Management
@@ -42,6 +34,54 @@ Demo site: https://tokyo-mizo-church-portal.onrender.com
 * Devise Authentication
 * Prawn PDF
 * Axlsx Excel Export
+
+## Local Setup
+
+Clone the repository:
+
+```bash
+git clone git@github.com:thadomaloma/tokyo-mizo-church-portal.git
+cd tokyo-mizo-church-portal
+```
+
+Install dependencies:
+
+```bash
+bundle install
+```
+
+Create and prepare the database:
+
+```bash
+bin/rails db:prepare
+```
+
+Create the first admin account:
+
+```bash
+SEED_ADMIN_EMAIL=admin@tokyomizochurch.org \
+SEED_ADMIN_PASSWORD=Admin@2026 \
+SEED_ADMIN_NAME="Super Admin" \
+bin/rails db:seed
+```
+
+Start the app:
+
+```bash
+bin/dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+Local admin login:
+
+| Email | Password |
+| --- | --- |
+| admin@tokyomizochurch.org | Admin@2026 |
 
 ## Purpose
 

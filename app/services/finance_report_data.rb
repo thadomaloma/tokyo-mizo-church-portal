@@ -1,6 +1,18 @@
 class FinanceReportData
-  TITHE_KEYWORDS = [ "sawmapakhat", "tithe" ].freeze
-  OFFERING_KEYWORDS = [ "thawhlawm", "offering" ].freeze
+  TITHE_KEYWORDS = [
+    "sawmapakhat",
+    "sawm pakhat",
+    "sawma pakhat",
+    "tithe",
+    "10%"
+  ].freeze
+
+  OFFERING_KEYWORDS = [
+    "thawhlawm",
+    "thawh hlawm",
+    "offering",
+    "weekly offering"
+  ].freeze
 
   attr_reader :transactions, :income, :expense, :balance, :period_year, :start_month, :end_month
 
@@ -70,8 +82,16 @@ class FinanceReportData
 
   def category_total(month_transactions, keywords)
     month_transactions.sum do |transaction|
-      category_name = transaction.finance_category&.name.to_s.downcase
-      keywords.any? { |keyword| category_name.include?(keyword) } ? transaction.amount : 0
+      category_name = normalized_category_name(transaction)
+      keywords.any? { |keyword| category_name.include?(normalize_keyword(keyword)) } ? transaction.amount : 0
     end
+  end
+
+  def normalized_category_name(transaction)
+    normalize_keyword(transaction.finance_category&.name)
+  end
+
+  def normalize_keyword(value)
+    value.to_s.downcase.squish
   end
 end
