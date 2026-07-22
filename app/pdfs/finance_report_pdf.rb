@@ -1,10 +1,31 @@
 class FinanceReportPdf
-  def initialize(transactions:, income:, expense:, balance:, period_label: "This Year", period_year: Date.current.year, start_month: 1, end_month: Date.current.month)
+  def initialize(
+    transactions:,
+    income:,
+    expense:,
+    balance:,
+    period_label: "This Year",
+    period_year: Date.current.year,
+    start_month: 1,
+    end_month: Date.current.month,
+    summary_month: end_month,
+    selected_month_label: nil,
+    selected_month_income: nil,
+    selected_month_expense: nil,
+    selected_month_total: nil
+  )
     @transactions = transactions
     @income = income
     @expense = expense
     @balance = balance
     @period_label = period_label
+    @summary_month = summary_month
+    month_transactions = selected_month_transactions(period_year, summary_month)
+
+    @selected_month_label = selected_month_label || "#{Date::MONTHNAMES[summary_month]} #{period_year}"
+    @selected_month_income = selected_month_income || month_transactions.select(&:income?).sum(&:amount)
+    @selected_month_expense = selected_month_expense || month_transactions.select(&:expense?).sum(&:amount)
+    @selected_month_total = selected_month_total || @selected_month_income - @selected_month_expense
     @report_data = FinanceReportData.new(
       transactions: transactions,
       income: income,
@@ -38,7 +59,16 @@ class FinanceReportPdf
 
   private
 
-  attr_reader :transactions, :income, :expense, :balance, :period_label, :report_data
+  attr_reader :transactions,
+              :income,
+              :expense,
+              :balance,
+              :period_label,
+              :report_data,
+              :selected_month_label,
+              :selected_month_income,
+              :selected_month_expense,
+              :selected_month_total
 
   def register_fonts(pdf)
     font_path = unicode_font_path
@@ -116,17 +146,24 @@ class FinanceReportPdf
     chart_gap = 24
     chart_width = pdf.bounds.width - summary_width - chart_gap
     summary_table = build_summary_table(pdf, summary_width)
+    selected_month_table = build_selected_month_summary_table(pdf, summary_width)
     monthly_table = build_monthly_tithe_offering_table(pdf, chart_width)
     section_height = [
-      summary_section_height(pdf, summary_width, summary_table),
+      summary_section_height(pdf, summary_width, summary_table, selected_month_table),
       chart_section_height(pdf, chart_width, monthly_table)
     ].max.ceil
 
     pdf.bounding_box([ 0, top ], width: summary_width, height: section_height) do
-      pdf.text "Summary", size: 13, style: :bold
+      pdf.text "Period Summary", size: 13, style: :bold
       pdf.move_down 6
 
       summary_table.draw
+      pdf.move_down 10
+
+      pdf.text "For This Month - #{selected_month_label}", size: 10, style: :bold
+      pdf.move_down 5
+
+      selected_month_table.draw
     end
 
     pdf.bounding_box([ summary_width + chart_gap, top ], width: chart_width, height: section_height) do
@@ -137,8 +174,14 @@ class FinanceReportPdf
     pdf.move_cursor_to(top - section_height)
   end
 
-  def summary_section_height(pdf, width, table)
-    pdf.height_of("Summary", size: 13, style: :bold, width: width) + 6 + table.height
+  def summary_section_height(pdf, width, summary_table, selected_month_table)
+    pdf.height_of("Period Summary", size: 13, style: :bold, width: width) +
+      6 +
+      summary_table.height +
+      10 +
+      pdf.height_of("For This Month - #{selected_month_label}", size: 10, style: :bold, width: width) +
+      5 +
+      selected_month_table.height
   end
 
   def chart_section_height(pdf, width, monthly_table)
@@ -248,6 +291,27 @@ class FinanceReportPdf
     end
   end
 
+  def selected_month_summary_rows
+    [
+      [ "Income", yen(selected_month_income) ],
+      [ "Expense", yen(selected_month_expense) ],
+      [ "Total", yen(selected_month_total) ]
+    ]
+  end
+
+  def build_selected_month_summary_table(pdf, width)
+    pdf.make_table(selected_month_summary_rows, width: width) do
+      cells.padding = 5
+      cells.size = 8
+      cells.border_color = "CBD5E1"
+
+      row(2).font_style = :bold
+      row(2).background_color = "DBEAFE"
+      row(2).text_color = "1D4ED8"
+      columns(1).align = :right
+    end
+  end
+
   def monthly_tithe_offering_rows
     rows = [ [ "Month", "Tithe", "Offering" ] ]
     report_data.monthly_tithe_offering_rows.each do |month, tithe, offering|
@@ -302,6 +366,13 @@ class FinanceReportPdf
         transaction.id || 0
       ]
     end.reverse
+  end
+
+  def selected_month_transactions(year, month)
+    transactions.select do |transaction|
+      transaction.transaction_date&.year == year &&
+        transaction.transaction_date&.month == month
+    end
   end
 
   def type_cell(transaction)

@@ -22,8 +22,11 @@ module Admin
       @end_month = selected_finance_month(:end_month, Date.current.month)
       @start_month, @end_month = [ @start_month, @end_month ].minmax
       @period_label = finance_period_label(@period_year, @start_month, @end_month)
+      @period_caption = finance_period_caption(@period_year, @start_month, @end_month)
       @month_options = finance_month_options
       @year_options = finance_year_options
+      @summary_month = selected_finance_month(:summary_month, @end_month)
+      load_selected_month_totals
 
       transactions = finance_transactions_for_period(@period_year, @start_month, @end_month)
       @report_transactions = transactions.to_a
@@ -54,7 +57,12 @@ module Admin
             period_label: @period_label,
             period_year: @period_year,
             start_month: @start_month,
-            end_month: @end_month
+            end_month: @end_month,
+            summary_month: @summary_month,
+            selected_month_label: @selected_month_label,
+            selected_month_income: @selected_month_income,
+            selected_month_expense: @selected_month_expense,
+            selected_month_total: @selected_month_total
           )
 
           send_data pdf.render,
@@ -128,6 +136,22 @@ module Admin
       return "#{start_name} #{year}" if start_month == end_month
 
       "#{start_name} - #{end_name} #{year}"
+    end
+
+    def finance_period_caption(year, start_month, end_month)
+      label = finance_period_label(year, start_month, end_month)
+      return label if start_month == end_month
+
+      "#{label}, up to #{Date::MONTHNAMES[end_month]}"
+    end
+
+    def load_selected_month_totals
+      transactions = finance_transactions_for_period(@period_year, @summary_month, @summary_month)
+
+      @selected_month_label = "#{Date::MONTHNAMES[@summary_month]} #{@period_year}"
+      @selected_month_income = transactions.income.sum(:amount)
+      @selected_month_expense = transactions.expense.sum(:amount)
+      @selected_month_total = @selected_month_income - @selected_month_expense
     end
 
     def finance_period_filename
