@@ -1,72 +1,88 @@
-<div class="p-4 sm:p-5">
-  <div class="space-y-3">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-center gap-2">
-          <%= render ::RubyUI::Badge.new(
-              variant: finance_transaction.income? ? :emerald : :rose,
-              size: :sm,
-              class: "rounded-full px-2.5 py-1 text-[11px] font-black"
-            ) do %>
-            <%= finance_transaction.transaction_type.humanize %>
-          <% end %>
+<%
+  income_record = finance_transaction.income?
+  amount_color = income_record ? "text-emerald-700 bg-emerald-50 ring-emerald-100" : "text-rose-700 bg-rose-50 ring-rose-100"
+  accent_color = income_record ? "bg-emerald-500" : "bg-rose-500"
+  icon_color = income_record ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : "bg-rose-50 text-rose-600 ring-rose-100"
+%>
 
-          <%= render ::RubyUI::Badge.new(
-              variant: finance_transaction.payment_location_bank? ? :blue : :amber,
-              size: :sm,
-              class: "rounded-full px-2.5 py-1 text-[11px] font-black"
-            ) do %>
-            <%= finance_transaction.payment_location_bank? ? "Bank" : "Cash" %>
-          <% end %>
+<div class="relative overflow-hidden p-4 transition hover:bg-slate-50/70 sm:p-5">
+  <div class="absolute inset-y-4 left-0 w-1 rounded-r-full <%= accent_color %>"></div>
+
+  <div class="grid gap-4 pl-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <div class="min-w-0">
+      <div class="flex items-start gap-3">
+        <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= icon_color %>">
+          <%= heroicon income_record ? "arrow-trending-up" : "arrow-trending-down",
+              variant: :outline,
+              options: { class: "h-5 w-5" } %>
         </div>
 
-        <p class="mt-2 text-[11px] font-semibold text-slate-400">
-          <%= finance_transaction.transaction_date.strftime("%b %d, %Y") %>
-        </p>
-      </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <%= render ::RubyUI::Badge.new(
+                variant: income_record ? :emerald : :rose,
+                size: :sm,
+                class: "rounded-full px-2.5 py-1 text-[11px] font-black"
+              ) do %>
+              <%= finance_transaction.transaction_type.humanize %>
+            <% end %>
 
-      <p class="shrink-0 whitespace-nowrap text-right text-base font-black sm:text-lg <%= finance_transaction.income? ? 'text-emerald-600' : 'text-rose-600' %>">
-        <%= finance_transaction.income? ? "+" : "-" %>¥<%= number_with_delimiter(finance_transaction.amount) %>
-      </p>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+              <%= heroicon "calendar-days", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
+              <%= finance_transaction.transaction_date.strftime("%b %d, %Y") %>
+            </span>
+
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+              <%= heroicon finance_transaction.payment_location_bank? ? "building-library" : "wallet",
+                  variant: :outline,
+                  options: { class: "h-3.5 w-3.5" } %>
+              <%= finance_transaction.payment_location_bank? ? "Bank" : "Cash" %>
+            </span>
+          </div>
+
+          <h3 class="mt-2 break-words text-base font-black text-slate-950">
+            <%= finance_transaction.finance_category&.name || "No Category" %>
+          </h3>
+
+          <p class="mt-1 break-words text-sm leading-5 text-slate-500">
+            <%= finance_transaction.description.presence || "No description added." %>
+          </p>
+        </div>
+      </div>
     </div>
 
-    <div>
-      <h3 class="break-words text-sm font-black text-slate-900 sm:text-base">
-        <%= finance_transaction.finance_category&.name || "No Category" %>
-      </h3>
+    <div class="flex flex-col gap-3 lg:min-w-60 lg:items-end">
+      <p class="inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-base font-black ring-1 lg:w-auto lg:min-w-44 <%= amount_color %>">
+        <span class="text-[10px] uppercase tracking-[0.16em] opacity-70">Amount</span>
+        <span><%= income_record ? "+" : "-" %>¥<%= number_with_delimiter(finance_transaction.amount) %></span>
+      </p>
 
-      <% if finance_transaction.description.present? %>
-        <p class="mt-1 break-words text-xs leading-5 text-slate-500 sm:text-sm">
-          <%= finance_transaction.description %>
-        </p>
+      <% if can_manage_finance? %>
+        <div class="flex w-full flex-nowrap gap-2 lg:w-auto lg:justify-end">
+          <% if finance_transaction.expense? %>
+            <%= link_to receipt_admin_finance_transaction_path(finance_transaction),
+                class: "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-sky-50 px-3 text-[11px] font-black text-sky-700 hover:bg-sky-100 lg:flex-none" do %>
+              <%= heroicon "printer", variant: :outline, options: { class: "h-4 w-4" } %>
+              <span class="max-sm:sr-only">Receipt</span>
+            <% end %>
+          <% end %>
+
+          <%= link_to edit_admin_finance_transaction_path(finance_transaction),
+              class: "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-[11px] font-black text-slate-700 hover:bg-slate-200 lg:flex-none" do %>
+            <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
+            <span class="max-sm:sr-only">Edit</span>
+          <% end %>
+
+          <%= button_to admin_finance_transaction_path(finance_transaction),
+              method: :delete,
+              form: { data: { turbo_confirm: "Are you sure you want to delete this transaction?" } },
+              form_class: "flex-1 lg:flex-none",
+              class: "inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-3 text-[11px] font-black text-rose-600 hover:bg-rose-100" do %>
+            <%= heroicon "trash", variant: :outline, options: { class: "h-4 w-4" } %>
+            <span class="max-sm:sr-only">Delete</span>
+          <% end %>
+        </div>
       <% end %>
     </div>
-
-    <% if can_manage_finance? %>
-      <div class="flex flex-nowrap gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center">
-        <% if finance_transaction.expense? %>
-          <%= link_to receipt_admin_finance_transaction_path(finance_transaction),
-              class: "inline-flex items-center justify-center gap-1.5 rounded-xl bg-sky-50 px-3 py-3 text-[11px] font-black text-sky-700 hover:bg-sky-100 sm:py-2 max-sm:min-w-0 max-sm:flex-1 max-sm:gap-1 max-sm:px-2" do %>
-            <%= heroicon "printer", variant: :outline, options: { class: "h-4 w-4" } %>
-            <span class="max-sm:truncate">Receipt</span>
-          <% end %>
-        <% end %>
-
-        <%= link_to edit_admin_finance_transaction_path(finance_transaction),
-            class: "inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 py-3 text-[11px] font-black text-slate-700 hover:bg-slate-200 sm:py-2 max-sm:min-w-0 max-sm:flex-1 max-sm:gap-1 max-sm:px-2" do %>
-          <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
-          <span class="max-sm:truncate">Edit</span>
-        <% end %>
-
-        <%= button_to admin_finance_transaction_path(finance_transaction),
-            method: :delete,
-            form: { data: { turbo_confirm: "Are you sure you want to delete this transaction?" } },
-            form_class: "max-sm:min-w-0 max-sm:flex-1",
-            class: "inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-3 py-3 text-[11px] font-black text-rose-600 hover:bg-rose-100 sm:w-auto sm:py-2 max-sm:gap-1 max-sm:px-2" do %>
-          <%= heroicon "trash", variant: :outline, options: { class: "h-4 w-4" } %>
-          <span class="max-sm:truncate">Delete</span>
-        <% end %>
-      </div>
-    <% end %>
   </div>
 </div>

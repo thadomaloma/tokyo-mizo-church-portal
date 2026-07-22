@@ -152,7 +152,7 @@
   </section>
 
   <%= render ::RubyUI::Card.new(class: "overflow-hidden rounded-[1.75rem] border-slate-200 bg-white p-0 shadow-sm") do %>
-    <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:justify-between lg:p-6">
+    <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-5 sm:flex-row sm:items-end sm:justify-between lg:p-6">
       <div>
         <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
           Ledger
@@ -166,10 +166,24 @@
           <%= @ledger_description %>
         </p>
       </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <% if @ledger_filter.present? %>
+          <%= link_to admin_finance_transactions_path,
+              class: "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-white px-3 text-xs font-black text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100" do %>
+            <%= heroicon "x-mark", variant: :outline, options: { class: "h-4 w-4" } %>
+            Clear Filter
+          <% end %>
+        <% end %>
+
+        <span class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-3 text-xs font-black text-slate-500 ring-1 ring-slate-200">
+          <%= pluralize(@transactions_count, "record") %>
+        </span>
+      </div>
     </div>
 
     <% if @transactions.any? %>
-      <div class="divide-y divide-slate-100">
+      <div class="divide-y divide-slate-100 bg-white md:max-h-[420px] md:overflow-y-auto md:overscroll-contain md:[scrollbar-gutter:stable]">
         <%= render @transactions %>
       </div>
 

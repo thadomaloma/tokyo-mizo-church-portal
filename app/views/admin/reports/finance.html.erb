@@ -155,31 +155,90 @@
   </div>
 
   <section class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-    <div class="border-b border-slate-100 p-5 lg:p-6">
-      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
-        Ledger
-      </p>
+    <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-5 sm:flex-row sm:items-end sm:justify-between lg:p-6">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+          Ledger
+        </p>
 
-      <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @period_label %> Transactions</h2>
+        <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @period_label %> Transactions</h2>
+
+        <p class="mt-1 text-sm text-slate-500">
+          Income and expense records for <%= @period_label.downcase %>.
+        </p>
+      </div>
+
+      <span class="inline-flex min-h-10 w-fit items-center justify-center rounded-xl bg-white px-3 text-xs font-black text-slate-500 ring-1 ring-slate-200">
+        <%= pluralize(@pagy.count, "record") %>
+      </span>
     </div>
 
     <% if @ledger_transactions.any? %>
-      <div class="divide-y divide-slate-100">
+      <div class="divide-y divide-slate-100 bg-white md:max-h-[420px] md:overflow-y-auto md:overscroll-contain md:[scrollbar-gutter:stable]">
         <% @ledger_transactions.each do |transaction| %>
-          <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div class="min-w-0">
-              <p class="break-words font-black text-slate-950"><%= transaction.description.presence || transaction.finance_category.name %></p>
-              <p class="mt-1 text-sm text-slate-500">
-                <%= transaction.transaction_date.strftime("%d %b %Y") %>
-                · <%= transaction.finance_category.name %>
-                · <%= transaction.recorded_by&.name || "Not recorded" %>
+          <%
+            income_record = transaction.income?
+            amount_color = income_record ? "text-emerald-700 bg-emerald-50 ring-emerald-100" : "text-rose-700 bg-rose-50 ring-rose-100"
+            accent_color = income_record ? "bg-emerald-500" : "bg-rose-500"
+            icon_color = income_record ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : "bg-rose-50 text-rose-600 ring-rose-100"
+          %>
+
+          <div class="relative overflow-hidden p-4 transition hover:bg-slate-50/70 sm:p-5">
+            <div class="absolute inset-y-4 left-0 w-1 rounded-r-full <%= accent_color %>"></div>
+
+            <div class="grid gap-4 pl-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+              <div class="min-w-0">
+                <div class="flex items-start gap-3">
+                  <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= icon_color %>">
+                    <%= heroicon income_record ? "arrow-trending-up" : "arrow-trending-down",
+                        variant: :outline,
+                        options: { class: "h-5 w-5" } %>
+                  </div>
+
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <%= render ::RubyUI::Badge.new(
+                          variant: income_record ? :emerald : :rose,
+                          size: :sm,
+                          class: "rounded-full px-2.5 py-1 text-[11px] font-black"
+                        ) do %>
+                        <%= transaction.transaction_type.humanize %>
+                      <% end %>
+
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+                        <%= heroicon "calendar-days", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
+                        <%= transaction.transaction_date.strftime("%b %d, %Y") %>
+                      </span>
+
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+                        <%= heroicon transaction.payment_location_bank? ? "building-library" : "wallet",
+                            variant: :outline,
+                            options: { class: "h-3.5 w-3.5" } %>
+                        <%= transaction.payment_location_bank? ? "Bank" : "Cash" %>
+                      </span>
+
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+                        <%= heroicon "user-circle", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
+                        <%= transaction.recorded_by&.name || "Not recorded" %>
+                      </span>
+                    </div>
+
+                    <h3 class="mt-2 break-words text-base font-black text-slate-950">
+                      <%= transaction.finance_category&.name || "No Category" %>
+                    </h3>
+
+                    <p class="mt-1 break-words text-sm leading-5 text-slate-500">
+                      <%= transaction.description.presence || "No description added." %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p class="inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-base font-black ring-1 lg:w-auto lg:min-w-44 <%= amount_color %>">
+                <span class="text-[10px] uppercase tracking-[0.16em] opacity-70">Amount</span>
+                <span><%= income_record ? "+" : "-" %>¥<%= number_with_delimiter(transaction.amount) %></span>
               </p>
             </div>
-
-            <p class="shrink-0 rounded-2xl bg-slate-50 px-4 py-3 text-right font-black <%= transaction.income? ? "text-emerald-600" : "text-rose-600" %>">
-              <%= transaction.income? ? "+" : "-" %>
-              ¥<%= number_with_delimiter(transaction.amount) %>
-            </p>
           </div>
         <% end %>
       </div>
