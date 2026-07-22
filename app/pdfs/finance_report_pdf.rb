@@ -62,13 +62,14 @@ class FinanceReportPdf
 
   def unicode_font_path
     [
-      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
       "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
       "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+      "/System/Library/Fonts/Supplemental/Arial.ttf",
       "/System/Library/Fonts/Hiragino Sans GB.ttc",
-      "/System/Library/Fonts/Supplemental/Arial.ttf"
+      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf"
     ].find { |path| File.exist?(path) }
   end
 
@@ -76,6 +77,8 @@ class FinanceReportPdf
     font_path
       .sub("Regular", "Bold")
       .sub("Sans.ttf", "Sans-Bold.ttf")
+      .sub("Sans-Regular.ttf", "Sans-Bold.ttf")
+      .sub("LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf")
       .sub("Arial Unicode.ttf", "Arial Bold.ttf")
       .sub("Arial.ttf", "Arial Bold.ttf")
   end
@@ -196,7 +199,7 @@ class FinanceReportPdf
   end
 
   def build_transactions(pdf)
-    pdf.move_down 14
+    pdf.move_down 8
     pdf.text "Transactions", size: 14, style: :bold
     pdf.move_down 8
 
