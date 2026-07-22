@@ -3,8 +3,7 @@ module Admin
     def index
       @current_balance = FinanceTransaction.income.sum(:amount) - FinanceTransaction.expense.sum(:amount)
 
-      @sawmapakhat_total = monthly_income_for("Sawmapakhat", "Sawm Pakhat", "Tithe")
-      @weekly_offering_total = monthly_income_for("Thawhlawm", "Offering", "Weekly Offering")
+      load_monthly_giving_totals
       @monthly_finance_overview = monthly_finance_overview
       @monthly_income_total = @monthly_finance_overview.sum { |month| month[:income] }
       @monthly_expense_total = @monthly_finance_overview.sum { |month| month[:expense] }
@@ -35,12 +34,24 @@ module Admin
 
     private
 
-    def monthly_income_for(*category_keywords)
-      FinanceTransaction
-        .income
-        .this_month
-        .for_category_keywords(category_keywords)
-        .sum(:amount)
+    def load_monthly_giving_totals
+      transactions = FinanceTransaction
+                       .includes(:finance_category)
+                       .this_month
+                       .to_a
+
+      month_row = FinanceReportData.new(
+        transactions: transactions,
+        income: 0,
+        expense: 0,
+        balance: 0,
+        period_year: Date.current.year,
+        start_month: Date.current.month,
+        end_month: Date.current.month
+      ).monthly_tithe_offering_rows.first
+
+      @sawmapakhat_total = month_row[1]
+      @weekly_offering_total = month_row[2]
     end
 
     def monthly_finance_overview

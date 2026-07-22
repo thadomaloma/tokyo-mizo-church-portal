@@ -2,6 +2,7 @@ class FinanceReportData
   TITHE_KEYWORDS = [
     "sawmapakhat",
     "sawm pakhat",
+    "sawm a pakhat",
     "sawma pakhat",
     "tithe",
     "10%"
@@ -83,8 +84,15 @@ class FinanceReportData
   def category_total(month_transactions, keywords)
     month_transactions.sum do |transaction|
       category_name = normalized_category_name(transaction)
-      keywords.any? { |keyword| category_name.include?(normalize_keyword(keyword)) } ? transaction.amount : 0
+      keywords.any? { |keyword| category_matches_keyword?(category_name, keyword) } ? transaction.amount : 0
     end
+  end
+
+  def category_matches_keyword?(category_name, keyword)
+    normalized_keyword = normalize_keyword(keyword)
+
+    category_name.include?(normalized_keyword) ||
+      category_name.delete(" ").include?(normalized_keyword.delete(" "))
   end
 
   def normalized_category_name(transaction)
