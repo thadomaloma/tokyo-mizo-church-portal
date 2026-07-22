@@ -23,6 +23,32 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert response.body.start_with?("%PDF")
   end
 
+  test "finance pdf export supports January to July period with unicode transaction text" do
+    sign_in_user
+    category = FinanceCategory.create!(name: "献金 Sawm a Pakhat", category_type: "income")
+
+    FinanceTransaction.create!(
+      transaction_type: "income",
+      finance_category: category,
+      recorded_by: users(:one),
+      amount: 12_000,
+      transaction_date: Date.new(2026, 7, 5),
+      payment_location: "cash",
+      description: "東京ミゾ教会 tithe â"
+    )
+
+    get finance_admin_reports_path(
+      year: 2026,
+      start_month: 1,
+      end_month: 7,
+      format: :pdf
+    )
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+    assert response.body.start_with?("%PDF")
+  end
+
   test "finance excel export uses worksheet bars instead of a native chart object" do
     sign_in_user
 

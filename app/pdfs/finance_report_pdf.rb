@@ -18,6 +18,7 @@ class FinanceReportPdf
 
   def render
     pdf = Prawn::Document.new(page_size: "A4", margin: 36)
+    register_fonts(pdf)
 
     build_header(pdf)
     build_summary_and_chart(pdf)
@@ -38,6 +39,50 @@ class FinanceReportPdf
   private
 
   attr_reader :transactions, :income, :expense, :balance, :period_label, :report_data
+
+  def register_fonts(pdf)
+    font_path = unicode_font_path
+    return unless font_path
+
+    pdf.font_families.update(
+      "FinanceReportFont" => {
+        normal: font_path,
+        bold: existing_font_path(bold_font_path(font_path)) || font_path,
+        italic: font_path,
+        bold_italic: existing_font_path(bold_font_path(font_path)) || font_path
+      }
+    )
+
+    pdf.font "FinanceReportFont"
+    @unicode_font_registered = true
+  rescue StandardError => error
+    @unicode_font_registered = false
+    Rails.logger.warn("Finance PDF font registration failed: #{error.class} - #{error.message}")
+  end
+
+  def unicode_font_path
+    [
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
+      "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      "/System/Library/Fonts/Hiragino Sans GB.ttc",
+      "/System/Library/Fonts/Supplemental/Arial.ttf"
+    ].find { |path| File.exist?(path) }
+  end
+
+  def bold_font_path(font_path)
+    font_path
+      .sub("Regular", "Bold")
+      .sub("Sans.ttf", "Sans-Bold.ttf")
+      .sub("Arial Unicode.ttf", "Arial Bold.ttf")
+      .sub("Arial.ttf", "Arial Bold.ttf")
+  end
+
+  def existing_font_path(path)
+    path if path && File.exist?(path)
+  end
 
   def build_header(pdf)
     pdf.text "Tokyo Mizo Church",
@@ -229,14 +274,21 @@ class FinanceReportPdf
       rows << [
         transaction.transaction_date.strftime("%Y-%m-%d"),
         type_cell(transaction),
-        transaction.finance_category&.name || "-",
+        safe_pdf_text(transaction.finance_category&.name || "-"),
         transaction.payment_location_bank? ? "Bank" : "Cash",
-        transaction.description.presence || "-",
+        safe_pdf_text(transaction.description.presence || "-"),
         yen(transaction.amount)
       ]
     end
 
     rows
+  end
+
+  def safe_pdf_text(value)
+    text = value.to_s
+    return text if @unicode_font_registered
+
+    text.encode("Windows-1252", invalid: :replace, undef: :replace, replace: "?")
   end
 
   def pdf_transactions
