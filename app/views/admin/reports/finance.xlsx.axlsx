@@ -111,6 +111,38 @@ wb.add_worksheet(name: "Finance Report") do |sheet|
     alignment: { horizontal: :right, vertical: :center }
   )
 
+  chart_label_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { vertical: :center }
+  )
+
+  chart_amount_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { horizontal: :right, vertical: :center }
+  )
+
+  income_bar_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: "047857",
+    bg_color: "D1FAE5",
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { vertical: :center }
+  )
+
+  expense_bar_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: "BE123C",
+    bg_color: "FFE4E6",
+    border: { style: :thin, color: "CBD5E1" },
+    alignment: { vertical: :center }
+  )
+
   report_data = @finance_report_data || FinanceReportData.new(
     transactions: @transactions,
     income: @income,
@@ -141,64 +173,46 @@ wb.add_worksheet(name: "Finance Report") do |sheet|
     nil,
     "Income vs Expense",
     nil,
-    nil,
-    nil,
-    "Chart Label",
-    "Chart Amount"
+    nil
   ], style: [
     section_style,
     section_style,
     nil,
     section_style,
     section_style,
-    section_style,
-    nil,
-    table_header_style,
-    table_header_style
+    section_style
   ]
   sheet.merge_cells "A#{summary_row}:B#{summary_row}"
   sheet.merge_cells "D#{summary_row}:F#{summary_row}"
 
   summary_data = report_data.summary_rows
   chart_data = report_data.chart_rows
+  max_chart_amount = chart_data.map(&:last).map(&:to_f).max.to_f
+  max_chart_amount = 1 if max_chart_amount.zero?
 
   summary_data.each_with_index do |row, index|
-    chart_row = chart_data[index] || [ nil, nil ]
+    chart_row = chart_data[index]
     is_balance = row.first == "Balance"
+    chart_label, chart_amount = chart_row
+    chart_bar = chart_row ? "=" * [ ((chart_amount.to_f / max_chart_amount) * 28).round, 1 ].max : nil
+    chart_style = chart_label == "Expense" ? expense_bar_style : income_bar_style
 
     sheet.add_row [
       row.first,
       yen.call(row.last),
       nil,
-      nil,
-      nil,
-      nil,
-      nil,
-      chart_row.first,
-      chart_row.last
+      chart_label,
+      chart_bar,
+      chart_amount ? yen.call(chart_amount) : nil
     ],
                   style: [
                     is_balance ? balance_label_style : summary_label_style,
                     is_balance ? balance_value_style : summary_value_style,
                     nil,
-                    nil,
-                    nil,
-                    nil,
-                    nil,
-                    body_style,
-                    amount_style
+                    chart_row ? chart_label_style : nil,
+                    chart_row ? chart_style : nil,
+                    chart_row ? chart_amount_style : nil
                   ]
-  end
-
-  sheet.add_chart(Axlsx::BarChart,
-                  start_at: [ 3, 4 ],
-                  end_at: [ 6, 10 ],
-                  title: "Income vs Expense",
-                  bar_dir: :col,
-                  show_legend: false) do |chart|
-    chart.add_series data: sheet["I#{summary_row + 1}:I#{summary_row + 2}"],
-                     labels: sheet["H#{summary_row + 1}:H#{summary_row + 2}"],
-                     colors: [ "047857", "BE123C" ]
   end
 
   sheet.add_row []
@@ -291,7 +305,5 @@ wb.add_worksheet(name: "Finance Report") do |sheet|
     ]
   end
 
-  sheet.column_widths 14, 12, 18, 16, 34, 16, 4, 14, 14
-  sheet.column_info[7].hidden = true
-  sheet.column_info[8].hidden = true
+  sheet.column_widths 14, 12, 18, 16, 34, 16
 end
