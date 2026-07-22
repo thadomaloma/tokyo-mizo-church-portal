@@ -4,15 +4,24 @@ module Admin
     before_action :set_finance_transaction, only: %i[show edit update destroy receipt]
 
     def index
-      transactions = FinanceTransaction
-                       .includes(:finance_category)
-                       .latest
+      @summary_month_options = finance_month_options
+      @summary_year_options = finance_year_options
 
-      @pagy, @transactions = pagy(transactions, limit: 10)
-      @transactions_count = @pagy.count
+      @income_summary_year = selected_summary_year(:income_summary_year)
+      @income_summary_month = selected_summary_month(:income_summary_month)
+      @income_summary_month_label = finance_month_label(@income_summary_year, @income_summary_month)
+      income_summary_period = finance_month_period(@income_summary_year, @income_summary_month)
 
-      @monthly_income = FinanceTransaction.income.this_month.sum(:amount)
-      @monthly_expense = FinanceTransaction.expense.this_month.sum(:amount)
+      @expense_summary_year = selected_summary_year(:expense_summary_year)
+      @expense_summary_month = selected_summary_month(:expense_summary_month)
+      @expense_summary_month_label = finance_month_label(@expense_summary_year, @expense_summary_month)
+      expense_summary_period = finance_month_period(@expense_summary_year, @expense_summary_month)
+
+      @monthly_income = FinanceTransaction.income.where(transaction_date: income_summary_period).sum(:amount)
+      @monthly_expense = FinanceTransaction.expense.where(transaction_date: expense_summary_period).sum(:amount)
+      @ledger_filter = selected_ledger_filter
+      @ledger_title = ledger_title
+      @ledger_description = ledger_description
 
       @cash_balance =
         FinanceTransaction.income.cash_records.sum(:amount) -
@@ -21,6 +30,11 @@ module Admin
       @bank_balance =
         FinanceTransaction.income.bank_records.sum(:amount) -
         FinanceTransaction.expense.bank_records.sum(:amount)
+
+      transactions = finance_ledger_transactions
+
+      @pagy, @transactions = pagy(transactions, limit: 10)
+      @transactions_count = @pagy.count
     end
 
     def show; end
@@ -95,6 +109,91 @@ module Admin
         :payment_location,
         :description
       )
+    end
+
+    def selected_summary_year(param_name)
+      legacy_year = params[:summary_year].to_i
+      year = params[param_name].presence&.to_i || legacy_year
+
+      return year if year.positive?
+
+      Date.current.year
+    end
+
+    def selected_summary_month(param_name)
+      legacy_month = params[:summary_month].to_i
+      month = params[param_name].presence&.to_i || legacy_month
+
+      return month if month.between?(1, 12)
+
+      Date.current.month
+    end
+
+    def finance_month_label(year, month)
+      Date.new(year, month, 1).strftime("%B %Y")
+    end
+
+    def finance_month_period(year, month)
+      Date.new(year, month, 1).all_month
+    end
+
+    def finance_month_options
+      Date::MONTHNAMES.each_with_index.filter_map do |month_name, index|
+        [ month_name, index ] if index.positive?
+      end
+    end
+
+    def finance_year_options
+      transaction_years = FinanceTransaction
+                            .where.not(transaction_date: nil)
+                            .distinct
+                            .pluck(:transaction_date)
+                            .map(&:year)
+
+      (transaction_years + [ Date.current.year ]).uniq.sort.reverse
+    end
+
+    def selected_ledger_filter
+      filter = params[:ledger_filter].to_s
+
+      filter.in?(%w[income expense]) ? filter : nil
+    end
+
+    def finance_ledger_transactions
+      transactions = FinanceTransaction
+                       .includes(:finance_category)
+                       .latest
+
+      case @ledger_filter
+      when "income"
+        transactions.income.where(transaction_date: finance_month_period(@income_summary_year, @income_summary_month))
+      when "expense"
+        transactions.expense.where(transaction_date: finance_month_period(@expense_summary_year, @expense_summary_month))
+      else
+        transactions
+      end
+    end
+
+    def ledger_title
+      case @ledger_filter
+      when "income"
+        "Income Transactions"
+      when "expense"
+        "Expense Transactions"
+      else
+        "Recent Transactions"
+      end
+    end
+
+    def ledger_description
+      case @ledger_filter
+      when "income"
+        "Income records for #{@income_summary_month_label}."
+      when "expense"
+        "Expense records for #{@expense_summary_month_label}."
+      else
+        "Latest income and expense records."
+      end
     end
 
     def selected_transaction_type
