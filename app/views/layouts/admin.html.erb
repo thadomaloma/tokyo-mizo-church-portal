@@ -12,27 +12,27 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="admin-body bg-sky-50 text-slate-900 antialiased">
+  <body class="admin-body bg-slate-50 text-slate-900 antialiased">
     <div class="admin-shell">
-      <aside class="admin-sidebar border-r border-sky-100 bg-white/95 shadow-[18px_0_60px_rgba(14,165,233,0.08)] backdrop-blur">
+      <aside class="admin-sidebar border-r border-slate-200 bg-white/95 shadow-[18px_0_70px_rgba(15,23,42,0.08)] backdrop-blur">
         <div class="p-6 pb-4">
           <%= link_to admin_root_path,
-              class: "group flex items-center gap-3 rounded-2xl p-1 transition hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-200",
+              class: "group flex items-center gap-3 rounded-2xl p-1.5 transition hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-200",
               aria: { label: "Go to dashboard" } do %>
-            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
+            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
               <%= image_tag "tokyo_mizo_church_logo.png",
                   alt: "Tokyo Mizo Church logo",
                   class: "h-10 w-10 object-contain" %>
             </div>
 
             <div>
-              <h1 class="text-base font-black leading-5 tracking-tight">TOKYO MIZO</h1>
-              <p class="text-xs font-black uppercase tracking-[0.18em] text-sky-500">Church Portal</p>
+              <h1 class="text-base font-black leading-5 tracking-tight text-slate-950">TOKYO MIZO</h1>
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-sky-600">Church Portal</p>
             </div>
           <% end %>
         </div>
 
-        <nav class="flex-1 space-y-1.5 px-4 py-2">
+        <nav class="flex-1 space-y-1 px-4 py-2">
           <%= render "admin/shared/sidebar_link",
               name: "Dashboard",
               path: admin_root_path,
@@ -77,8 +77,8 @@
               icon: "document-chart-bar" %>
         </nav>
 
-        <div class="border-t border-sky-100 p-5">
-          <div class="rounded-2xl border border-sky-100 bg-sky-50 p-3">
+        <div class="border-t border-slate-200 p-5">
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
               <%= render "admin/shared/user_avatar",
                   user: current_user,
@@ -99,7 +99,7 @@
 
           <%= button_to destroy_user_session_path,
               method: :delete,
-              class: "mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-100" do %>
+              class: "mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-rose-600 ring-1 ring-rose-100 hover:bg-rose-50" do %>
             <%= heroicon "arrow-left-on-rectangle",
                 variant: :outline,
                 options: { class: "h-5 w-5" } %>
@@ -109,10 +109,10 @@
       </aside>
 
       <div class="admin-content">
-        <header class="sticky top-0 z-40 border-b border-sky-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+        <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
           <div class="flex items-center justify-between gap-3">
             <%= link_to admin_root_path, class: "flex min-w-0 items-center gap-3" do %>
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                 <%= image_tag "tokyo_mizo_church_logo.png",
                     alt: "Tokyo Mizo Church logo",
                     class: "h-8 w-8 object-contain" %>
@@ -135,7 +135,7 @@
           </div>
         </header>
 
-        <main class="mx-auto w-full max-w-[1600px] p-4 pb-[7.5rem] sm:p-5 lg:p-10 lg:pb-10">
+        <main class="mx-auto w-full max-w-[1600px] p-4 pb-[7.5rem] sm:p-5 lg:p-8 lg:pb-10 xl:p-10">
           <% flash.each do |type, message| %>
             <% next if message.blank? %>
 
@@ -154,7 +154,7 @@
       </div>
     </div>
 
-    <nav class="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[1.5rem] border border-sky-100 bg-white/95 p-1 text-center text-[11px] font-bold text-slate-500 shadow-[0_18px_50px_rgba(14,165,233,0.2)] backdrop-blur lg:hidden">
+    <nav class="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[1.5rem] border border-slate-200 bg-white/95 p-1 text-center text-[11px] font-bold text-slate-500 shadow-[0_18px_50px_rgba(15,23,42,0.16)] backdrop-blur lg:hidden">
       <% mobile_nav_items.each do |item| %>
         <%= render "admin/shared/mobile_nav_link", **item %>
       <% end %>

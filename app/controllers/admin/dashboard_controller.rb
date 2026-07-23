@@ -55,7 +55,7 @@ module Admin
     end
 
     def monthly_finance_overview
-      months = (0..5).map { |index| index.months.ago.to_date.beginning_of_month }.reverse
+      months = (1..Date.current.month).map { |month| Date.new(Date.current.year, month, 1) }
       range = months.first..months.last.end_of_month
       rows = FinanceTransaction
                .where(transaction_date: range)

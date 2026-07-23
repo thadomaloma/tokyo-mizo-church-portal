@@ -21,6 +21,8 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
+    assert_match "Year-to-date finance trend.", response.body
+    assert_match "Jan", response.body
     assert_match "¥12,000", response.body
     assert_match "¥8,000", response.body
   end

@@ -10,7 +10,7 @@ module Admin
       end
 
       def view_template
-        section(class: "rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm lg:p-6") do
+        section(class: "rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-white lg:p-6") do
           header
           chart_panel
         end
@@ -23,7 +23,7 @@ module Admin
           div do
             p(class: "text-xs font-black uppercase tracking-[0.22em] text-slate-400") { "Monthly Overview" }
             h2(class: "mt-2 text-xl font-black text-slate-950 lg:text-2xl") { "Income vs Expense" }
-            p(class: "mt-1 text-sm text-slate-500") { "Last 6 months finance trend." }
+            p(class: "mt-1 text-sm text-slate-500") { "Year-to-date finance trend." }
           end
 
           div(class: "grid grid-cols-2 gap-2 sm:min-w-64") do
@@ -41,7 +41,7 @@ module Admin
       end
 
       def chart_panel
-        div(class: "mt-5 rounded-[1.5rem] border border-slate-100 bg-slate-50/80 p-4") do
+        div(class: "mt-5 rounded-[1.5rem] border border-slate-100 bg-slate-50 p-4") do
           legend
           chart
         end
@@ -82,8 +82,8 @@ module Admin
 
       def total_card_classes(tone)
         case tone
-        when :income then "rounded-2xl border border-emerald-100 bg-emerald-50 p-3"
-        else "rounded-2xl border border-rose-100 bg-rose-50 p-3"
+        when :income then "rounded-2xl border border-emerald-100 bg-emerald-50 p-3 shadow-sm"
+        else "rounded-2xl border border-rose-100 bg-rose-50 p-3 shadow-sm"
         end
       end
 

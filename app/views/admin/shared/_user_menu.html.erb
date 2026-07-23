@@ -3,7 +3,7 @@
 <div data-controller="dropdown" class="relative">
   <button type="button"
           data-action="click->dropdown#toggle"
-          class="block rounded-full transition <%= on_dark ? 'bg-white/15 p-1 ring-1 ring-white/20 hover:bg-white/20' : 'hover:opacity-90' %>">
+          class="block rounded-2xl transition <%= on_dark ? 'bg-white/15 p-1 ring-1 ring-white/20 hover:bg-white/20' : 'p-1 hover:bg-slate-50' %>">
     <%= render "admin/shared/user_avatar",
         user: user,
         size_class: "h-10 w-10 sm:h-11 sm:w-11",
@@ -11,8 +11,8 @@
   </button>
 
   <div data-dropdown-target="menu"
-       class="hidden fixed left-4 right-4 top-20 z-50 overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-[0_24px_70px_rgba(14,165,233,0.18)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-72">
-    <div class="bg-sky-50 p-4">
+       class="hidden fixed left-4 right-4 top-20 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-72">
+    <div class="bg-slate-50 p-4">
       <p class="font-black text-slate-900">
         <%= user.name %>
       </p>
@@ -21,12 +21,12 @@
         <%= user.email %>
       </p>
 
-      <p class="mt-2 inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">
+      <p class="mt-2 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-sky-700 ring-1 ring-slate-200">
         <%= user.role.humanize %>
       </p>
     </div>
 
-    <div class="border-t border-sky-100 p-3">
+    <div class="border-t border-slate-100 p-3">
       <%= button_to destroy_user_session_path,
           method: :delete,
           class: "flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-600 hover:bg-rose-100" do %>

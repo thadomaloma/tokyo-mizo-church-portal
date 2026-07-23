@@ -1,7 +1,8 @@
 <div class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-  <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h2 class="text-lg font-black text-slate-950">Upcoming Events</h2>
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Calendar</p>
+      <h2 class="mt-1 text-lg font-black text-slate-950">Upcoming Events</h2>
       <p class="text-sm text-slate-500">
         <%= today_events_count %> today · <%= events_this_month %> this month
       </p>
@@ -9,7 +10,7 @@
 
     <% if can_manage_church? %>
       <%= link_to new_admin_church_event_path,
-          class: "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-700 px-4 py-2 text-sm font-black text-white hover:bg-sky-700 sm:w-auto" do %>
+          class: "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-700 sm:w-auto" do %>
         <%= heroicon "plus", variant: :outline, options: { class: "h-4 w-4" } %>
         Add Event
       <% end %>

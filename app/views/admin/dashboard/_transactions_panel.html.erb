@@ -1,13 +1,14 @@
 <div class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-  <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+  <div class="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 p-5">
     <div>
-      <h2 class="text-lg font-black text-slate-950">Recent Transactions</h2>
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Ledger</p>
+      <h2 class="mt-1 text-lg font-black text-slate-950">Recent Transactions</h2>
       <p class="text-sm text-slate-500">Latest finance records</p>
     </div>
 
     <%= link_to "View All",
         admin_finance_transactions_path,
-        class: "shrink-0 rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-200" %>
+        class: "shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100" %>
   </div>
 
   <% if transactions.any? %>
