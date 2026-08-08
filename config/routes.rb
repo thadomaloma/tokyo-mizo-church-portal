@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
+  get "up" => "rails/health#show", as: :rails_health_check
+
   get "manifest.json", to: "pwa#manifest", as: :pwa_manifest
+  get "service-worker", to: "pwa#service_worker", as: :pwa_service_worker
 
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 

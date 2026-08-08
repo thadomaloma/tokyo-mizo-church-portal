@@ -1,6 +1,7 @@
-<div class="mb-6 flex flex-col justify-between gap-4 md:mb-8 md:flex-row md:items-end">
+<div class="mb-6 flex flex-col justify-between gap-5 border-b border-slate-200/80 pb-6 md:mb-8 md:flex-row md:items-end md:pb-7">
   <div class="min-w-0">
-    <h1 class="break-words text-2xl font-black tracking-tight text-slate-950 sm:text-3xl md:text-4xl"><%= title %></h1>
+    <p class="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Church Administration</p>
+    <h1 class="break-words text-2xl font-black tracking-[-0.025em] text-[#0b1f33] sm:text-3xl md:text-[2.5rem]"><%= title %></h1>
     <% if local_assigns[:subtitle].present? %>
       <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base"><%= subtitle %></p>
     <% end %>
@@ -9,6 +10,6 @@
   <% if local_assigns[:button_text].present? && local_assigns[:button_path].present? %>
     <%= link_to button_text,
         button_path,
-        class: "inline-flex w-full items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700 sm:w-auto" %>
+        class: "inline-flex w-full items-center justify-center rounded-xl bg-[#0b1f33] px-5 py-3 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] transition hover:bg-sky-900 sm:w-auto" %>
   <% end %>
 </div>

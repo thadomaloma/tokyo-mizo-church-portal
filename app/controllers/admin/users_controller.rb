@@ -15,6 +15,7 @@ module Admin
 
     def create
       @user = User.new(user_params)
+      assign_requested_role(@user)
 
       if @user.save
         notify("New Member Added", "#{current_user.name} added #{@user.name} as #{@user.role.humanize}.")
@@ -27,7 +28,10 @@ module Admin
     def edit; end
 
     def update
-      if @user.update(user_params)
+      @user.assign_attributes(user_params)
+      assign_requested_role(@user)
+
+      if @user.save
         notify("Member Updated", "#{current_user.name} updated #{@user.name}.")
         redirect_to admin_users_path, notice: "Member was updated."
       else
@@ -36,8 +40,14 @@ module Admin
     end
 
     def destroy
-      @user.destroy
-      redirect_to admin_users_path, notice: "Member was deleted."
+      if @user == current_user
+        redirect_to admin_users_path, alert: "You cannot delete your own account."
+      elsif @user.destroy
+        redirect_to admin_users_path, notice: "Member was deleted."
+      else
+        redirect_to admin_users_path,
+                    alert: @user.errors.full_messages.to_sentence.presence || "Member could not be deleted."
+      end
     end
 
     private
@@ -51,11 +61,17 @@ module Admin
         :name,
         :email,
         :phone,
-        :role,
         :active,
         :password,
         :password_confirmation
       )
+    end
+
+    def assign_requested_role(user)
+      role = params.dig(:user, :role).to_s
+      raise ActionController::BadRequest, "Invalid member role" unless User.roles.key?(role)
+
+      user.role = role
     end
 
     def notify(title, message)

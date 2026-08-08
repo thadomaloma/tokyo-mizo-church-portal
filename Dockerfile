@@ -25,6 +25,8 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
+    THRUSTER_MAX_REQUEST_BODY="26214400" \
+    THRUSTER_GZIP_COMPRESSION_DISABLE_ON_AUTH="true" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
 # Throw-away build stage to reduce size of final image

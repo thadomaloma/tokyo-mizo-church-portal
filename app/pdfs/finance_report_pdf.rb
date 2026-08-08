@@ -1,4 +1,15 @@
 class FinanceReportPdf
+  NAVY = "0F2942".freeze
+  BLUE = "0369A1".freeze
+  SLATE = "334155".freeze
+  MUTED = "64748B".freeze
+  BORDER = "CBD5E1".freeze
+  PANEL = "F8FAFC".freeze
+  INCOME = "047857".freeze
+  INCOME_LIGHT = "ECFDF5".freeze
+  EXPENSE = "BE123C".freeze
+  EXPENSE_LIGHT = "FFF1F2".freeze
+
   def initialize(
     transactions:,
     income:,
@@ -8,24 +19,14 @@ class FinanceReportPdf
     period_year: Date.current.year,
     start_month: 1,
     end_month: Date.current.month,
-    summary_month: end_month,
-    selected_month_label: nil,
-    selected_month_income: nil,
-    selected_month_expense: nil,
-    selected_month_total: nil
+    ledger_type_label: "All Transactions"
   )
     @transactions = transactions
     @income = income
     @expense = expense
     @balance = balance
     @period_label = period_label
-    @summary_month = summary_month
-    month_transactions = selected_month_transactions(period_year, summary_month)
-
-    @selected_month_label = selected_month_label || "#{Date::MONTHNAMES[summary_month]} #{period_year}"
-    @selected_month_income = selected_month_income || month_transactions.select(&:income?).sum(&:amount)
-    @selected_month_expense = selected_month_expense || month_transactions.select(&:expense?).sum(&:amount)
-    @selected_month_total = selected_month_total || @selected_month_income - @selected_month_expense
+    @ledger_type_label = ledger_type_label
     @report_data = FinanceReportData.new(
       transactions: transactions,
       income: income,
@@ -65,10 +66,7 @@ class FinanceReportPdf
               :balance,
               :period_label,
               :report_data,
-              :selected_month_label,
-              :selected_month_income,
-              :selected_month_expense,
-              :selected_month_total
+              :ledger_type_label
 
   def register_fonts(pdf)
     font_path = unicode_font_path
@@ -118,113 +116,114 @@ class FinanceReportPdf
   end
 
   def build_header(pdf)
-    pdf.text "Tokyo Mizo Church",
-             size: 20,
-             style: :bold,
-             align: :center
+    header_height = 96
 
-    pdf.move_down 4
+    pdf.bounding_box([ 0, pdf.cursor ], width: pdf.bounds.width, height: header_height) do
+      pdf.fill_color NAVY
+      pdf.fill_rectangle [ 0, header_height ], pdf.bounds.width, header_height
 
-    pdf.text "Finance Report - #{period_label}",
-             size: 14,
-             align: :center
+      pdf.fill_color "FFFFFF"
+      pdf.move_down 16
+      pdf.text "TOKYO MIZO CHURCH", size: 9, style: :bold, character_spacing: 1.4
+      pdf.move_down 8
+      pdf.text "Finance Report", size: 23, style: :bold
+      pdf.move_down 5
+      pdf.fill_color "BAE6FD"
+      pdf.text "#{ledger_type_label}  |  #{period_label}", size: 10, style: :bold
 
-    pdf.move_down 4
+      pdf.fill_color "CBD5E1"
+      pdf.text_box "Generated #{Date.current.strftime('%B %d, %Y')}",
+                   at: [ pdf.bounds.width - 180, header_height - 20 ],
+                   width: 180,
+                   size: 8,
+                   align: :right
+    end
 
-    pdf.text "Generated on #{Date.current.strftime('%B %d, %Y')}",
-             size: 10,
-             align: :center
-
-    pdf.move_down 16
-    pdf.stroke_horizontal_rule
+    pdf.fill_color "000000"
+    pdf.move_down 18
   end
 
   def build_summary_and_chart(pdf)
-    pdf.move_down 20
+    pdf.fill_color NAVY
+    pdf.text "PERIOD OVERVIEW", size: 9, style: :bold, character_spacing: 1.1
+    pdf.move_down 8
+
     top = pdf.cursor
-    summary_width = 230
-    chart_gap = 24
+    summary_width = 252
+    chart_gap = 18
     chart_width = pdf.bounds.width - summary_width - chart_gap
     summary_table = build_summary_table(pdf, summary_width)
-    selected_month_table = build_selected_month_summary_table(pdf, summary_width)
-    monthly_table = build_monthly_tithe_offering_table(pdf, chart_width)
-    section_height = [
-      summary_section_height(pdf, summary_width, summary_table, selected_month_table),
-      chart_section_height(pdf, chart_width, monthly_table)
-    ].max.ceil
+    section_height = [ summary_table.height + 38, 164 ].max.ceil
 
     pdf.bounding_box([ 0, top ], width: summary_width, height: section_height) do
-      pdf.text "Period Summary", size: 13, style: :bold
-      pdf.move_down 6
+      draw_panel_background(pdf, summary_width, section_height)
+      pdf.move_down 12
+      pdf.indent(12) do
+        pdf.fill_color SLATE
+        pdf.text "Period Summary", size: 11, style: :bold
+        pdf.move_down 8
 
-      summary_table.draw
-      pdf.move_down 10
-
-      pdf.text "For This Month - #{selected_month_label}", size: 10, style: :bold
-      pdf.move_down 5
-
-      selected_month_table.draw
+        summary_table.draw
+      end
     end
 
     pdf.bounding_box([ summary_width + chart_gap, top ], width: chart_width, height: section_height) do
-      build_income_expense_chart(pdf, chart_width)
-      build_compact_monthly_tithe_offering(pdf, monthly_table)
+      draw_panel_background(pdf, chart_width, section_height)
+      pdf.move_down 12
+      pdf.indent(12) do
+        build_income_expense_chart(pdf, chart_width - 24)
+      end
     end
 
     pdf.move_cursor_to(top - section_height)
-  end
+    pdf.move_down 18
 
-  def summary_section_height(pdf, width, summary_table, selected_month_table)
-    pdf.height_of("Period Summary", size: 13, style: :bold, width: width) +
-      6 +
-      summary_table.height +
-      10 +
-      pdf.height_of("For This Month - #{selected_month_label}", size: 10, style: :bold, width: width) +
-      5 +
-      selected_month_table.height
-  end
+    pdf.fill_color NAVY
+    pdf.text "MONTHLY GIVING", size: 9, style: :bold, character_spacing: 1.1
+    pdf.move_down 6
+    pdf.fill_color SLATE
+    pdf.text "Monthly Tithe and Offering", size: 13, style: :bold
+    pdf.move_down 7
 
-  def chart_section_height(pdf, width, monthly_table)
-    pdf.height_of("Income vs Expense", size: 13, style: :bold, width: width) +
-      10 +
-      (report_data.chart_rows.size * 24) +
-      2 +
-      pdf.height_of("Monthly Tithe and Offering", size: 9, style: :bold, width: width) +
-      4 +
-      monthly_table.height
+    build_monthly_tithe_offering_table(pdf, pdf.bounds.width).draw
+    pdf.fill_color "000000"
   end
 
   def build_income_expense_chart(pdf, width)
-    pdf.text "Income vs Expense", size: 13, style: :bold
-    pdf.move_down 10
+    pdf.fill_color SLATE
+    pdf.text "Income vs Expense", size: 11, style: :bold
+    pdf.move_down 6
+    pdf.fill_color MUTED
+    pdf.text "Movement during the selected period", size: 7.5
+    pdf.move_down 14
 
     max_amount = report_data.chart_rows.map(&:last).max.to_f
     max_amount = 1 if max_amount.zero?
-    label_width = 52
-    amount_width = 76
-    bar_width = width - label_width - amount_width - 12
-    bar_height = 12
+    amount_width = 80
+    bar_width = width - amount_width
+    bar_height = 9
 
     report_data.chart_rows.each do |label, amount|
-      pdf.fill_color "334155"
-      pdf.text_box label,
-                   at: [ 0, pdf.cursor ],
-                   width: label_width,
-                   height: 14,
-                   size: 8,
-                   style: :bold
+      color = label == "Income" ? INCOME : EXPENSE
+      pdf.fill_color SLATE
+      pdf.text label, size: 8, style: :bold
+      pdf.move_down 5
 
-      pdf.fill_color(label == "Income" ? "047857" : "BE123C")
-      pdf.fill_rectangle [ label_width, pdf.cursor - 2 ],
-                         [ (amount.to_f / max_amount) * bar_width, 2 ].max,
-                         bar_height
+      pdf.fill_color "E2E8F0"
+      pdf.fill_rounded_rectangle [ 0, pdf.cursor ], bar_width - 8, bar_height, 3
+      fill_width = amount.zero? ? 0 : [ (amount.to_f / max_amount) * (bar_width - 8), 4 ].max
+      if fill_width.positive?
+        pdf.fill_color color
+        pdf.fill_rounded_rectangle [ 0, pdf.cursor ], fill_width, bar_height, 3
+      end
 
-      pdf.fill_color "334155"
+      pdf.fill_color color
       pdf.text_box yen(amount),
-                   at: [ label_width + bar_width + 10, pdf.cursor ],
+                   at: [ bar_width, pdf.cursor + 1 ],
                    width: amount_width,
-                   height: 14,
-                   size: 8,
+                   height: 12,
+                   size: 8.5,
+                   style: :bold,
                    align: :right
 
       pdf.move_down 24
@@ -233,17 +232,23 @@ class FinanceReportPdf
     pdf.fill_color "000000"
   end
 
-  def build_compact_monthly_tithe_offering(pdf, monthly_table)
-    pdf.move_down 2
-    pdf.text "Monthly Tithe and Offering", size: 9, style: :bold
-    pdf.move_down 4
-
-    monthly_table.draw
-  end
-
   def build_transactions(pdf)
-    pdf.move_down 8
-    pdf.text "Transactions", size: 14, style: :bold
+    if transactions.size > 12
+      pdf.start_new_page
+    else
+      pdf.move_down 18
+    end
+    pdf.fill_color NAVY
+    pdf.text "TRANSACTION DETAIL", size: 9, style: :bold, character_spacing: 1.1
+    pdf.move_down 6
+    pdf.fill_color SLATE
+    pdf.text "Transactions", size: 13, style: :bold
+    pdf.fill_color MUTED
+    pdf.text_box "#{transactions.size} records",
+                 at: [ pdf.bounds.width - 100, pdf.cursor + 14 ],
+                 width: 100,
+                 size: 8,
+                 align: :right
     pdf.move_down 8
 
     pdf.table(
@@ -259,11 +264,18 @@ class FinanceReportPdf
       }
     ) do
       row(0).font_style = :bold
-      row(0).background_color = "E2E8F0"
+      row(0).background_color = NAVY
+      row(0).text_color = "FFFFFF"
 
-      cells.size = 8
-      cells.padding = 4
-      cells.border_color = "CBD5E1"
+      cells.size = 7.5
+      cells.padding = 5
+      cells.border_width = 0
+
+      rows(1..-1).each_with_index do |table_row, index|
+        table_row.background_color = index.even? ? "FFFFFF" : PANEL
+        table_row.border_bottom_width = 0.5
+        table_row.border_bottom_color = "E2E8F0"
+      end
 
       columns(0).nowrap = true
       columns(1).nowrap = true
@@ -272,6 +284,8 @@ class FinanceReportPdf
       columns(3).align = :center
       columns(5).align = :right
     end
+
+    pdf.fill_color "000000"
   end
 
   def summary_rows
@@ -279,35 +293,20 @@ class FinanceReportPdf
   end
 
   def build_summary_table(pdf, width)
-    pdf.make_table(summary_rows, width: width) do
-      cells.padding = 5
-      cells.size = 8
-      cells.border_color = "CBD5E1"
+    pdf.make_table(summary_rows, width: width - 24, column_widths: [ 128, width - 152 ]) do
+      cells.padding = [ 6, 7 ]
+      cells.size = 7.5
+      cells.border_width = 0
+      cells.border_bottom_width = 0.5
+      cells.border_bottom_color = "E2E8F0"
 
-      row(2).font_style = :bold
-      row(2).background_color = "DCFCE7"
-      row(2).text_color = "166534"
-      columns(1).align = :right
-    end
-  end
-
-  def selected_month_summary_rows
-    [
-      [ "Income", yen(selected_month_income) ],
-      [ "Expense", yen(selected_month_expense) ],
-      [ "Total", yen(selected_month_total) ]
-    ]
-  end
-
-  def build_selected_month_summary_table(pdf, width)
-    pdf.make_table(selected_month_summary_rows, width: width) do
-      cells.padding = 5
-      cells.size = 8
-      cells.border_color = "CBD5E1"
-
-      row(2).font_style = :bold
-      row(2).background_color = "DBEAFE"
-      row(2).text_color = "1D4ED8"
+      row(0).background_color = INCOME_LIGHT
+      row(0).text_color = INCOME
+      row(1).background_color = EXPENSE_LIGHT
+      row(1).text_color = EXPENSE
+      row(2).background_color = "E0F2FE"
+      row(2).text_color = BLUE
+      rows(0..2).font_style = :bold
       columns(1).align = :right
     end
   end
@@ -317,19 +316,41 @@ class FinanceReportPdf
     report_data.monthly_tithe_offering_rows.each do |month, tithe, offering|
       rows << [ month, yen(tithe), yen(offering) ]
     end
+    totals = report_data.monthly_tithe_offering_rows.transpose
+    rows << [ "Total", yen(totals[1]&.sum || 0), yen(totals[2]&.sum || 0) ]
     rows
   end
 
   def build_monthly_tithe_offering_table(pdf, width)
-    pdf.make_table(monthly_tithe_offering_rows, header: true, width: width) do
-      row(0).font_style = :bold
-      row(0).background_color = "E2E8F0"
+    rows = monthly_tithe_offering_rows
 
-      cells.size = 6.5
-      cells.padding = 3
-      cells.border_color = "CBD5E1"
+    pdf.make_table(rows, header: true, width: width, column_widths: [ width * 0.40, width * 0.30, width * 0.30 ]) do
+      row(0).font_style = :bold
+      row(0).background_color = NAVY
+      row(0).text_color = "FFFFFF"
+
+      cells.size = 7.5
+      cells.padding = 5
+      cells.border_width = 0
+      rows(1..-2).each_with_index do |table_row, index|
+        table_row.background_color = index.even? ? "FFFFFF" : PANEL
+        table_row.border_bottom_width = 0.5
+        table_row.border_bottom_color = "E2E8F0"
+      end
+
+      row(-1).font_style = :bold
+      row(-1).background_color = "E0F2FE"
+      row(-1).text_color = BLUE
       columns(1..2).align = :right
     end
+  end
+
+  def draw_panel_background(pdf, width, height)
+    pdf.fill_color PANEL
+    pdf.stroke_color "E2E8F0"
+    pdf.fill_and_stroke_rounded_rectangle [ 0, height ], width, height, 8
+    pdf.fill_color "000000"
+    pdf.stroke_color "000000"
   end
 
   def transaction_rows
@@ -366,13 +387,6 @@ class FinanceReportPdf
         transaction.id || 0
       ]
     end.reverse
-  end
-
-  def selected_month_transactions(year, month)
-    transactions.select do |transaction|
-      transaction.transaction_date&.year == year &&
-        transaction.transaction_date&.month == month
-    end
   end
 
   def type_cell(transaction)

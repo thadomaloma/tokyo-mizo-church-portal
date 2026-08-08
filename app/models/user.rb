@@ -1,5 +1,32 @@
 class User < ApplicationRecord
   has_many :notification_reads, dependent: :destroy
+  has_many :authored_notifications,
+           class_name: "Notification",
+           foreign_key: :actor_id,
+           inverse_of: :actor,
+           dependent: :nullify
+  has_many :finance_transactions,
+           foreign_key: :recorded_by_id,
+           inverse_of: :recorded_by,
+           dependent: :restrict_with_error
+  has_many :meeting_minutes,
+           foreign_key: :uploaded_by_id,
+           inverse_of: :uploaded_by,
+           dependent: :restrict_with_error
+  has_many :church_events,
+           foreign_key: :created_by_id,
+           inverse_of: :created_by,
+           dependent: :restrict_with_error
+  has_many :assigned_resolutions,
+           class_name: "Resolution",
+           foreign_key: :assigned_to_id,
+           inverse_of: :assigned_to,
+           dependent: :nullify
+  has_many :assigned_church_resolutions,
+           class_name: "ChurchResolution",
+           foreign_key: :assigned_to_id,
+           inverse_of: :assigned_to,
+           dependent: :nullify
 
   devise :database_authenticatable,
          :recoverable,

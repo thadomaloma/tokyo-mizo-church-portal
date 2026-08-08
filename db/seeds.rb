@@ -14,11 +14,9 @@ admin.phone = ENV.fetch("SEED_ADMIN_PHONE", "")
 admin.role = :president
 admin.active = true
 
-if admin.new_record? || ENV["SEED_ADMIN_PASSWORD"].present?
+if admin.new_record? || ActiveModel::Type::Boolean.new.cast(ENV["RESET_SEED_ADMIN_PASSWORD"])
   admin.password = admin_password
   admin.password_confirmation = admin_password
 end
 
 admin.save!
-
-User.where(email: "demo@tokyomizochurch.org").destroy_all

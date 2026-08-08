@@ -11,6 +11,7 @@ module Admin
       @notifications = Notification
                         .visible_for(current_user)
                         .latest
+                        .includes(:notification_reads)
                         .limit(10)
 
       @notifications_count =

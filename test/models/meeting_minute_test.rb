@@ -1,6 +1,24 @@
 require "test_helper"
 
 class MeetingMinuteTest < ActiveSupport::TestCase
+  test "rejects a non PDF archive upload" do
+    minute = MeetingMinute.new(
+      title: "Archive",
+      meeting_type: "OB Meeting",
+      meeting_date: Date.current,
+      archive_only: true,
+      uploaded_by: users(:one)
+    )
+    minute.pdf_file.attach(
+      io: StringIO.new("not a pdf"),
+      filename: "minute.txt",
+      content_type: "text/plain"
+    )
+
+    assert_not minute.valid?
+    assert_includes minute.errors[:pdf_file], "must be a PDF file"
+  end
+
   test "creates linked resolutions from follow up action lines" do
     minute = nil
 

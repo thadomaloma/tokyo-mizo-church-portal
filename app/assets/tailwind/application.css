@@ -3,15 +3,15 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.985 0.012 236);
-  --foreground: oklch(0.21 0.035 260);
+  --background: oklch(0.975 0.008 240);
+  --foreground: oklch(0.19 0.035 250);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.035 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.21 0.035 260);
-  --primary: oklch(0.62 0.16 240);
+  --primary: oklch(0.47 0.115 237);
   --primary-foreground: oklch(0.99 0.004 240);
-  --secondary: oklch(0.95 0.025 236);
+  --secondary: oklch(0.945 0.018 236);
   --secondary-foreground: oklch(0.29 0.065 250);
   --muted: oklch(0.96 0.018 236);
   --muted-foreground: oklch(0.52 0.045 255);
@@ -19,17 +19,17 @@
   --accent-foreground: oklch(0.29 0.075 250);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0.004 27);
-  --border: oklch(0.9 0.025 238);
-  --input: oklch(0.9 0.025 238);
-  --ring: oklch(0.68 0.145 240);
+  --border: oklch(0.89 0.018 238);
+  --input: oklch(0.89 0.018 238);
+  --ring: oklch(0.58 0.12 235);
   --chart-1: oklch(0.62 0.16 240);
   --chart-2: oklch(0.7 0.13 165);
   --chart-3: oklch(0.67 0.15 70);
   --chart-4: oklch(0.64 0.18 25);
   --chart-5: oklch(0.55 0.14 280);
-  --radius: 0.875rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.21 0.035 260);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.2 0.042 248);
+  --sidebar-foreground: oklch(0.96 0.01 240);
   --sidebar-primary: oklch(0.62 0.16 240);
   --sidebar-primary-foreground: oklch(0.99 0.004 240);
   --sidebar-accent: oklch(0.95 0.035 236);
@@ -133,11 +133,15 @@
 @layer components {
   .admin-body {
     overflow-x: hidden;
+    background:
+      radial-gradient(circle at 82% 0%, rgba(14, 116, 144, 0.07), transparent 28rem),
+      #f4f7fa;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .admin-shell {
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .admin-sidebar {
@@ -148,6 +152,64 @@
     min-width: 0;
   }
 
+  .premium-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background:
+      radial-gradient(circle at 88% 20%, rgb(14 165 233 / 0.28), transparent 18rem),
+      radial-gradient(circle at 8% 100%, rgb(16 185 129 / 0.12), transparent 20rem),
+      linear-gradient(135deg, #0b1f33 0%, #123c57 100%);
+    box-shadow: 0 24px 70px rgb(15 23 42 / 0.14);
+  }
+
+  .premium-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to left, black, transparent 72%);
+  }
+
+  .premium-panel {
+    border: 1px solid rgb(226 232 240 / 0.9);
+    background: rgb(255 255 255 / 0.92);
+    box-shadow: 0 14px 40px rgb(15 23 42 / 0.055);
+    backdrop-filter: blur(16px);
+  }
+
+  .admin-content main :is(section, article, div)[class*="border-slate-200"][class*="bg-white"] {
+    border-color: rgb(218 226 234 / 0.9);
+    box-shadow: 0 14px 40px rgb(15 23 42 / 0.05);
+  }
+
+  .admin-content main [class*="rounded-[2rem]"] {
+    border-radius: 1.5rem;
+  }
+
+  .admin-content main [class*="rounded-[1.75rem]"] {
+    border-radius: 1.25rem;
+  }
+
+  .admin-content main [class*="rounded-[1.5rem]"] {
+    border-radius: 1rem;
+  }
+
+  .admin-content main input:not([type="checkbox"]):not([type="radio"]),
+  .admin-content main select,
+  .admin-content main textarea {
+    border-color: rgb(203 213 225);
+    background-color: rgb(255 255 255 / 0.94);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  }
+
+  .mobile-dock {
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+
   @media (min-width: 64rem) {
     .admin-sidebar {
       position: fixed;
@@ -156,7 +218,7 @@
       left: 0;
       z-index: 40;
       display: flex;
-      width: 304px;
+      width: 280px;
       height: 100vh;
       flex-direction: column;
       overflow: hidden;
@@ -164,8 +226,8 @@
 
     .admin-content {
       min-height: 100vh;
-      margin-left: 304px;
-      overflow-x: hidden;
+      margin-left: 280px;
+      overflow-x: clip;
     }
   }
 }
@@ -179,6 +241,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     touch-action: manipulation;
+  }
+
+  ::selection {
+    background: rgb(186 230 253);
+    color: rgb(8 47 73);
   }
 
   input,

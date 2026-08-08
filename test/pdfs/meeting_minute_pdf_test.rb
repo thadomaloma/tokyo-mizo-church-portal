@@ -42,7 +42,7 @@ class MeetingMinutePdfTest < ActiveSupport::TestCase
   test "renders even when attached secretary signature file is missing" do
     minute = FakeMinute.new(
       id: 123,
-      title: "June Minute",
+      title: "June Inkhawm Thuziak – Pathian malsawmna",
       meeting_type: "OB Meeting",
       meeting_date: Date.current,
       location: "Tokyo",

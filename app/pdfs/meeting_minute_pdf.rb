@@ -30,22 +30,28 @@ class MeetingMinutePdf
   attr_reader :meeting_minute
 
   def register_fonts(pdf)
-    regular = "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
-    bold = "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"
-    italic = "/System/Library/Fonts/Supplemental/Times New Roman Italic.ttf"
-    bold_italic = "/System/Library/Fonts/Supplemental/Times New Roman Bold Italic.ttf"
+    regular = [
+      "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
+    ].find { |path| File.exist?(path) }
+    return unless regular
 
-    return unless [ regular, bold, italic, bold_italic ].all? { |font| File.exist?(font) }
+    bold = regular.sub(/(?:Regular)?\.ttf\z/, "Bold.ttf")
+    bold = regular unless File.exist?(bold)
 
     pdf.font_families.update(
       "MinuteFont" => {
         normal: regular,
         bold: bold,
-        italic: italic,
-        bold_italic: bold_italic
+        italic: regular,
+        bold_italic: bold
       }
     )
     pdf.font "MinuteFont"
+  rescue StandardError => error
+    Rails.logger.warn("Meeting minute PDF font registration failed: #{error.class} - #{error.message}")
   end
 
   def build_header(pdf)

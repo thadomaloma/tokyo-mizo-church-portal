@@ -27,4 +27,31 @@ class NotificationTest < ActiveSupport::TestCase
 
     assert_empty Notification.unread_for(user)
   end
+
+  test "visible_for includes notifications whose actor was removed" do
+    notification = notifications(:two)
+    notification.update_column(:actor_id, nil)
+
+    assert_includes Notification.visible_for(users(:one)), notification
+  end
+
+  test "link must be an internal path" do
+    notification = Notification.new(
+      actor: users(:one),
+      title: "Test",
+      message: "Test notification",
+      notification_type: "test"
+    )
+
+    notification.link = "https://example.com"
+    assert_not notification.valid?
+    assert_includes notification.errors[:link], "must be an internal path"
+
+    notification.link = "/admin/reports"
+    assert notification.valid?
+  end
+
+  test "read_by is safe for a missing user" do
+    assert_not notifications(:one).read_by?(nil)
+  end
 end
