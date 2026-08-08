@@ -1,5 +1,16 @@
 #!/bin/bash -e
 
+# Railway mounts persistent volumes as root. Prepare only the configured mount,
+# then immediately drop privileges before running Rails or any supplied command.
+if [ "$(id -u)" = "0" ]; then
+  if [ -n "$RAILWAY_VOLUME_MOUNT_PATH" ]; then
+    mkdir -p "$RAILWAY_VOLUME_MOUNT_PATH"
+    chown -R rails:rails "$RAILWAY_VOLUME_MOUNT_PATH"
+  fi
+
+  exec gosu rails "$0" "$@"
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
