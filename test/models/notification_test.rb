@@ -51,6 +51,19 @@ class NotificationTest < ActiveSupport::TestCase
     assert notification.valid?
   end
 
+  test "link rejects backslashes that browsers may normalize as an external redirect" do
+    notification = Notification.new(
+      actor: users(:one),
+      title: "Test",
+      message: "Test notification",
+      notification_type: "test",
+      link: "/\\example.com"
+    )
+
+    assert_not notification.valid?
+    assert_includes notification.errors[:link], "must be an internal path"
+  end
+
   test "read_by is safe for a missing user" do
     assert_not notifications(:one).read_by?(nil)
   end

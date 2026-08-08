@@ -5,6 +5,7 @@ class FinanceCategory < ApplicationRecord
 
   validates :name, presence: true
   validates :category_type, presence: true, inclusion: { in: %w[income expense] }
+  validate :category_type_cannot_change_when_used, on: :update
 
   scope :income, -> { where(category_type: "income") }
   scope :expense, -> { where(category_type: "expense") }
@@ -13,4 +14,13 @@ class FinanceCategory < ApplicationRecord
 
     normalized_type.in?(%w[income expense]) ? where(category_type: normalized_type) : none
   }
+
+  private
+
+  def category_type_cannot_change_when_used
+    return unless will_save_change_to_category_type?
+    return unless finance_transactions.exists?
+
+    errors.add(:category_type, "cannot be changed after finance entries use this category")
+  end
 end

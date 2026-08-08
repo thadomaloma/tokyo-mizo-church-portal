@@ -2,6 +2,7 @@ class FinanceTransaction < ApplicationRecord
   belongs_to :finance_category
   belongs_to :recorded_by, class_name: "User", inverse_of: :finance_transactions
 
+  before_validation :clear_voucher_number, if: :income?
   before_validation :assign_voucher_number, if: :expense?
 
   enum :payment_location, {
@@ -18,6 +19,7 @@ class FinanceTransaction < ApplicationRecord
               conditions: -> { where(transaction_type: "expense") },
               allow_nil: true
             }
+  validate :finance_category_type_matches_transaction_type
 
   scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
   scope :income, -> { where(transaction_type: "income") }
@@ -66,9 +68,20 @@ class FinanceTransaction < ApplicationRecord
 
   private
 
+  def clear_voucher_number
+    self.voucher_number = nil
+  end
+
   def assign_voucher_number
     return if voucher_number.present?
 
     self.voucher_number = self.class.expense.maximum(:voucher_number).to_i + 1
+  end
+
+  def finance_category_type_matches_transaction_type
+    return if finance_category.blank? || transaction_type.blank?
+    return if finance_category.category_type == transaction_type
+
+    errors.add(:finance_category, "must match the transaction type")
   end
 end

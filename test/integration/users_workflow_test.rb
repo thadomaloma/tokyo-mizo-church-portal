@@ -26,6 +26,24 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_users_path
   end
 
+  test "an invalid member role returns a form error instead of a bad request" do
+    assert_no_difference -> { User.count } do
+      post admin_users_path, params: {
+        user: {
+          name: "No Role Member",
+          email: "no-role@example.com",
+          role: "",
+          active: true,
+          password: "secure-password",
+          password_confirmation: "secure-password"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "Role is not included in the approved roles"
+  end
+
   test "a member cannot delete their own signed in account" do
     assert_no_difference -> { User.count } do
       delete admin_user_path(@current_user)
@@ -45,5 +63,35 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_users_path
     assert User.exists?(member.id)
     assert_match(/Cannot delete record/, flash[:alert])
+  end
+
+  test "a super admin cannot deactivate their own signed in account" do
+    patch admin_user_path(@current_user), params: {
+      user: {
+        name: @current_user.name,
+        email: @current_user.email,
+        role: @current_user.role,
+        active: false
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert @current_user.reload.active?
+    assert_includes response.body, "You cannot deactivate or remove administrator access"
+  end
+
+  test "a super admin cannot remove their own administrator role" do
+    patch admin_user_path(@current_user), params: {
+      user: {
+        name: @current_user.name,
+        email: @current_user.email,
+        role: "executive_member",
+        active: true
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert @current_user.reload.super_admin?
+    assert_includes response.body, "You cannot deactivate or remove administrator access"
   end
 end

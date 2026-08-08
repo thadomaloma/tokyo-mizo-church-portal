@@ -1,5 +1,5 @@
 class Notification < ApplicationRecord
-  INTERNAL_PATH_PATTERN = /\A\/(?!\/)[^\r\n]*\z/
+  INTERNAL_PATH_PATTERN = %r{\A/(?!/)[^\\\x00-\x1F\x7F]*\z}
 
   belongs_to :actor,
              class_name: "User",

@@ -1,7 +1,7 @@
 module Admin
   class FinanceTransactionsController < BaseController
-    before_action :require_finance_admin!, except: %i[index show]
-    before_action :set_finance_transaction, only: %i[show edit update destroy receipt]
+    before_action :require_finance_admin!, except: :index
+    before_action :set_finance_transaction, only: %i[edit update destroy receipt]
 
     def index
       @summary_month_options = finance_month_options
@@ -36,8 +36,6 @@ module Admin
       @pagy, @transactions = pagy(transactions, limit: 10)
       @transactions_count = @pagy.count
     end
-
-    def show; end
 
     def receipt
       return if @finance_transaction.expense?

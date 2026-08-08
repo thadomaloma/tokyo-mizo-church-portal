@@ -7,9 +7,12 @@ CI.run do
 
   step "Security: Gem audit", "bin/bundler-audit"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
-  step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  step "Security: Brakeman code analysis", "bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   step "Tests: Rails", "bin/rails test"
-  step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
+  step "Tests: Seeds", "env RAILS_ENV=test " \
+                       "SEED_ADMIN_EMAIL=ci-admin@example.invalid " \
+                       "SEED_ADMIN_PASSWORD=ci-test-password " \
+                       "bin/rails db:seed:replant"
 
   # Optional: Run system tests
   # step "Tests: System", "bin/rails test:system"

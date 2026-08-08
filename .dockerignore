@@ -36,6 +36,10 @@
 !/app/assets/builds/.keep
 /public/assets
 
+# Ignore locally generated reports, screenshots, and QA artifacts.
+/output/
+/outputs/
+
 # Ignore CI service files.
 /.github
 

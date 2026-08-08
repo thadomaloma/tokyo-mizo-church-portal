@@ -28,8 +28,8 @@ Rails.application.routes.draw do
     end
 
     resources :users
-    resources :finance_categories
-    resources :finance_transactions do
+    resources :finance_categories, except: :show
+    resources :finance_transactions, except: :show do
       get :receipt, on: :member
     end
     resources :meeting_minutes do

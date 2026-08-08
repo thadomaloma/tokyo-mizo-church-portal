@@ -45,4 +45,39 @@ class FinanceTransactionTest < ActiveSupport::TestCase
     assert_nil transaction.voucher_number
     assert_nil transaction.expense_voucher_number
   end
+
+  test "rejects a category from the opposite transaction type" do
+    expense_category = FinanceCategory.create!(name: "Rent", category_type: "expense")
+
+    transaction = FinanceTransaction.new(
+      transaction_type: "income",
+      finance_category: expense_category,
+      recorded_by: users(:one),
+      amount: 1_000,
+      transaction_date: Date.current,
+      payment_location: "cash"
+    )
+
+    assert_not transaction.valid?
+    assert_includes transaction.errors[:finance_category], "must match the transaction type"
+  end
+
+  test "clears an expense voucher number when changed to income" do
+    expense_category = FinanceCategory.create!(name: "Equipment", category_type: "expense")
+    income_category = FinanceCategory.create!(name: "Donation", category_type: "income")
+    transaction = FinanceTransaction.create!(
+      transaction_type: "expense",
+      finance_category: expense_category,
+      recorded_by: users(:one),
+      amount: 3_000,
+      transaction_date: Date.current,
+      payment_location: "bank"
+    )
+
+    assert transaction.voucher_number.present?
+
+    transaction.update!(transaction_type: "income", finance_category: income_category)
+
+    assert_nil transaction.voucher_number
+  end
 end

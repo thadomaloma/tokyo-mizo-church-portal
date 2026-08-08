@@ -32,6 +32,10 @@
 
 /public/assets
 
+# Ignore locally generated reports, screenshots, and QA artifacts.
+/output/
+/outputs/
+
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
