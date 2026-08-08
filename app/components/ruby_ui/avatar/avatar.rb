@@ -27,7 +27,7 @@ module RubyUI
         data: {
           controller: "ruby-ui--avatar"
         },
-        class: ["relative flex shrink-0 overflow-hidden rounded-full", @size_classes]
+        class: [ "relative flex shrink-0 overflow-hidden rounded-full", @size_classes ]
       }
     end
   end

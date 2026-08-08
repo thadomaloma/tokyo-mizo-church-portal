@@ -82,6 +82,5 @@ module Admin
         amount
       end
     end
-
   end
 end

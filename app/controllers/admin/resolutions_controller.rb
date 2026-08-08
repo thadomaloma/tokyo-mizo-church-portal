@@ -1,7 +1,7 @@
 module Admin
   class ResolutionsController < BaseController
-    before_action :require_super_admin!, except: [:index, :show]
-    before_action :set_resolution, only: [:show, :edit, :update, :destroy, :mark_completed]
+    before_action :require_super_admin!, except: [ :index, :show ]
+    before_action :set_resolution, only: [ :show, :edit, :update, :destroy, :mark_completed ]
 
     def index
       @resolutions = Resolution.includes(:assigned_to, :meeting_minute).latest
