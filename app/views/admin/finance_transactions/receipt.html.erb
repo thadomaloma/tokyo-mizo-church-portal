@@ -1,12 +1,27 @@
+<% content_for :hide_daily_verse, "true" %>
+
 <%
   voucher_number = @finance_transaction.expense_voucher_number
-  paid_from = @finance_transaction.payment_location_bank? ? "Bank" : "Cash"
+  paid_from = @finance_transaction.payment_location_bank? ? "Bank Account" : "Cash"
+  category_name = @finance_transaction.finance_category&.name || "-"
+  prepared_by = @finance_transaction.recorded_by&.name || "-"
+  description = @finance_transaction.description.presence || "Expense"
+  formatted_amount = "¥#{number_with_delimiter(@finance_transaction.amount)}"
+  formatted_date = @finance_transaction.transaction_date.strftime("%d/%m/%Y")
 %>
 
 <style>
   @page {
-    size: 148mm 210mm;
-    margin: 6mm;
+    size: A5 portrait;
+    margin: 8mm;
+  }
+
+  .thermal-receipt {
+    background-color: #fff;
+    background-image:
+      linear-gradient(rgb(15 23 42 / 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(15 23 42 / 0.012) 1px, transparent 1px);
+    background-size: 5px 5px;
   }
 
   @media print {
@@ -15,233 +30,277 @@
       print-color-adjust: exact !important;
     }
 
+    body * {
+      visibility: hidden !important;
+    }
+
+    .receipt-card,
+    .receipt-card * {
+      visibility: visible !important;
+    }
+
     html,
     body {
-      background: #ffffff !important;
-      width: auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
       height: auto !important;
+      min-height: 0 !important;
       margin: 0 !important;
       overflow: visible !important;
+      background: #fff !important;
     }
 
-    aside,
-    header,
-    nav,
-    .no-print {
-      display: none !important;
-    }
-
+    .admin-shell,
+    .admin-content,
+    body > div,
+    body > div > div,
     main {
       display: block !important;
-      max-width: none !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    body > div,
-    body > div > div {
-      display: block !important;
+      width: 100% !important;
       min-height: 0 !important;
       height: auto !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      position: static !important;
     }
 
     .receipt-page {
-      box-sizing: border-box !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: flex-start !important;
-      margin: 0 !important;
-      max-width: none !important;
+      display: block !important;
       width: 100% !important;
-      height: auto !important;
+      max-width: none !important;
+      margin: 0 !important;
       padding: 0 !important;
-      break-after: avoid !important;
-      page-break-after: avoid !important;
+      position: static !important;
+      overflow: visible !important;
     }
 
     .receipt-card {
       box-sizing: border-box !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 132mm !important;
-      margin: 0 auto !important;
+      max-width: 132mm !important;
       min-height: 0 !important;
       height: auto !important;
-      max-height: 184mm !important;
-      overflow: hidden !important;
+      margin: 0 !important;
+      padding: 6mm 7mm !important;
+      overflow: visible !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
       break-inside: avoid !important;
       page-break-inside: avoid !important;
-      page-break-after: avoid !important;
     }
 
-    .voucher-meta,
-    .voucher-primary {
+    .receipt-heading {
       display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      grid-template-columns: 18mm minmax(0, 1fr) !important;
+      grid-template-rows: repeat(3, auto) !important;
+      column-gap: 4mm !important;
+      align-items: center !important;
+      text-align: left !important;
     }
 
-    .voucher-details,
-    .voucher-signatures {
+    .receipt-heading > div {
+      grid-row: 1 / 4 !important;
+      margin: 0 !important;
+    }
+
+    .receipt-heading h1,
+    .receipt-heading p {
+      margin-top: 0 !important;
+    }
+
+    .receipt-meta {
       display: grid !important;
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 4mm !important;
     }
 
-    .voucher-body {
-      padding: 4mm !important;
+    .receipt-meta > div {
+      display: block !important;
     }
 
-    .voucher-field {
-      min-height: 22mm !important;
-      padding: 3mm !important;
+    .receipt-meta span:last-child {
+      display: block !important;
+      max-width: none !important;
+      margin-top: 2mm !important;
+      text-align: left !important;
     }
 
-    .voucher-detail-field {
-      min-height: 18mm !important;
-      padding: 3mm !important;
+    .receipt-finance-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 6mm !important;
+      align-items: start !important;
     }
 
-    .voucher-description {
-      min-height: 20mm !important;
-      padding: 3mm !important;
+    .receipt-totals {
+      width: 100% !important;
+      margin: 0 !important;
     }
 
-    .voucher-signatures {
-      padding-top: 3mm !important;
+    .receipt-payment-section {
+      border-left: 1px dashed #0f172a !important;
+      padding-left: 6mm !important;
     }
 
-    .voucher-signature-line {
-      height: 8mm !important;
+    .receipt-payment-rule {
+      display: none !important;
+    }
+
+    .receipt-approval-grid {
+      display: grid !important;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) !important;
+      gap: 6mm !important;
+      align-items: center !important;
+    }
+
+    .receipt-note {
+      margin: 0 !important;
+    }
+
+    .receipt-signatures {
+      padding-top: 0 !important;
+    }
+
+    .receipt-footer {
+      margin-top: 8mm !important;
     }
   }
 </style>
 
-<div class="receipt-page mx-auto max-w-3xl space-y-4">
-  <div class="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+<div class="receipt-page mx-auto w-full max-w-[430px] space-y-4">
+  <div class="receipt-actions grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
     <%= link_to admin_finance_transactions_path,
-        class: "inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50" do %>
+        class: "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" do %>
       <%= heroicon "arrow-left", variant: :outline, options: { class: "h-5 w-5" } %>
-      Back to Finance
+      Back
     <% end %>
 
     <button type="button"
-            onclick="window.print()"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700">
+            data-controller="print"
+            data-action="click->print#print"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-3 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
       <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %>
-      Print Voucher
+      Print
     </button>
   </div>
 
-  <section class="receipt-card overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm">
-    <div class="border-b-2 border-slate-800 px-5 py-4 sm:px-6">
-      <div class="flex items-center justify-center gap-3 text-center">
-        <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white p-1.5">
-          <%= image_tag "tokyo_mizo_church_logo.png",
-              alt: "Tokyo Mizo Church logo",
-              class: "h-full w-full object-contain" %>
+  <section class="receipt-card thermal-receipt overflow-hidden rounded-[1.5rem] border border-slate-200 px-5 py-8 font-mono text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.14)] sm:px-7 sm:py-9">
+    <div class="receipt-heading text-center">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-slate-900 bg-white p-1.5">
+        <%= image_tag "tokyo_mizo_church_logo.png",
+            alt: "Tokyo Mizo Church logo",
+            class: "h-full w-full object-contain" %>
+      </div>
+
+      <h1 class="mt-4 text-lg font-black uppercase tracking-[0.08em]">Tokyo Mizo Church</h1>
+      <p class="mt-1 text-xs font-bold uppercase tracking-[0.18em]">Tokyo, Japan</p>
+      <p class="mt-3 text-sm font-black uppercase tracking-[0.12em]">Expense Receipt</p>
+    </div>
+
+    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
+
+    <div class="receipt-meta space-y-2 text-xs font-bold sm:text-sm">
+      <div class="flex items-start justify-between gap-4">
+        <span>DATE</span>
+        <span class="text-right"><%= formatted_date %></span>
+      </div>
+      <div class="flex items-start justify-between gap-4">
+        <span>RECEIPT NO.</span>
+        <span class="text-right"><%= voucher_number %></span>
+      </div>
+      <div class="flex items-start justify-between gap-4">
+        <span>PREPARED BY</span>
+        <span class="max-w-[58%] text-right"><%= prepared_by %></span>
+      </div>
+    </div>
+
+    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
+
+    <div>
+      <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-4 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
+        <span>Expense Details</span>
+        <span>Amount</span>
+      </div>
+
+      <div class="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 text-sm font-black leading-6">
+        <div class="min-w-0">
+          <p class="break-words"><%= description %></p>
+          <p class="mt-1 break-words text-xs font-bold text-slate-500"><%= category_name %></p>
         </div>
+        <p class="whitespace-nowrap text-right"><%= formatted_amount %></p>
+      </div>
+    </div>
 
-        <div>
-          <p class="text-lg font-black uppercase tracking-[0.12em] text-slate-950 sm:text-xl">
-            TOKYO MIZO CHURCH
-          </p>
+    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
 
-          <h1 class="mt-1 text-base font-black uppercase tracking-[0.14em] text-sky-700 sm:text-lg">
-            Finance Expense Voucher
-          </h1>
+    <div class="receipt-finance-grid">
+      <div class="receipt-totals ml-auto w-[78%] space-y-2 text-sm font-bold">
+        <div class="flex items-center justify-between gap-4">
+          <span>SUBTOTAL</span>
+          <span><%= formatted_amount %></span>
+        </div>
+        <div class="flex items-center justify-between gap-4">
+          <span>TAX</span>
+          <span>¥0</span>
+        </div>
+        <div class="flex items-center justify-between gap-4 border-t border-slate-900 pt-2 text-base font-black">
+          <span>TOTAL</span>
+          <span><%= formatted_amount %></span>
+        </div>
+      </div>
+
+      <div class="receipt-payment-section">
+        <div class="receipt-payment-rule my-6 border-t-2 border-dashed border-slate-900"></div>
+
+        <div class="space-y-2 text-xs font-bold sm:text-sm">
+          <div class="flex items-start justify-between gap-4">
+            <span>PAID FROM</span>
+            <span class="text-right"><%= paid_from %></span>
+          </div>
+          <div class="flex items-start justify-between gap-4">
+            <span>CATEGORY</span>
+            <span class="max-w-[58%] break-words text-right"><%= category_name %></span>
+          </div>
+          <div class="flex items-start justify-between gap-4">
+            <span>STATUS</span>
+            <span class="text-right">RECORDED</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="voucher-meta grid grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2">
-      <div class="bg-white px-5 py-4 sm:px-6">
-        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-          Voucher No
+    <div class="receipt-approval-grid">
+      <div class="receipt-note my-6 border-y-2 border-dashed border-slate-900 py-5 text-center">
+        <p class="text-sm font-black uppercase tracking-[0.08em]">Official Finance Record</p>
+        <p class="mt-2 text-[11px] font-bold leading-5 text-slate-600">
+          This expense was recorded in the Tokyo Mizo Church finance ledger.
         </p>
-        <p class="mt-1.5 text-sm font-black leading-5 text-slate-950"><%= voucher_number %></p>
       </div>
 
-      <div class="bg-white px-5 py-4 sm:px-6">
-        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-          Date
-        </p>
-        <p class="mt-1.5 text-sm font-black leading-5 text-slate-950">
-          <%= @finance_transaction.transaction_date.strftime("%B %d, %Y") %>
-        </p>
+      <div class="receipt-signatures grid grid-cols-2 gap-6 pt-3">
+        <div>
+          <div class="h-10 border-b border-dashed border-slate-700"></div>
+          <p class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.08em]">Finance Secretary</p>
+        </div>
+        <div>
+          <div class="h-10 border-b border-dashed border-slate-700"></div>
+          <p class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.08em]">Treasurer</p>
+        </div>
       </div>
     </div>
 
-    <div class="voucher-body space-y-5 px-5 py-6 sm:px-6">
-      <div class="voucher-primary grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div class="voucher-field min-h-28 rounded-lg border border-slate-300 p-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-            Paid To
-          </p>
-        </div>
-
-        <div class="voucher-field min-h-28 rounded-lg border border-slate-300 p-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-            Amount
-          </p>
-          <p class="mt-3 text-2xl font-black leading-8 text-rose-600">
-            ¥<%= number_with_delimiter(@finance_transaction.amount) %>
-          </p>
-        </div>
-      </div>
-
-      <div class="voucher-description rounded-lg border border-slate-300 p-4">
-        <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-          Purpose / Description
-        </p>
-        <p class="mt-3 min-h-14 text-sm font-semibold leading-6 text-slate-700">
-          <%= @finance_transaction.description.presence || "-" %>
-        </p>
-      </div>
-
-      <div class="voucher-details grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <div class="voucher-detail-field min-h-24 rounded-lg border border-slate-300 p-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-            Category
-          </p>
-          <p class="mt-3 break-words text-sm font-black leading-5 text-slate-800">
-            <%= @finance_transaction.finance_category&.name || "-" %>
-          </p>
-        </div>
-
-        <div class="voucher-detail-field min-h-24 rounded-lg border border-slate-300 p-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-            Payment Location
-          </p>
-          <p class="mt-3 text-sm font-black leading-5 text-slate-800"><%= paid_from %></p>
-        </div>
-
-        <div class="voucher-detail-field min-h-24 rounded-lg border border-slate-300 p-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">
-            Prepared By
-          </p>
-          <p class="mt-3 break-words text-sm font-black leading-5 text-slate-800">
-            <%= @finance_transaction.recorded_by&.name || "-" %>
-          </p>
-        </div>
-      </div>
-
-      <div class="voucher-signatures grid grid-cols-1 gap-5 pt-5 sm:grid-cols-3">
-        <div>
-          <div class="voucher-signature-line h-11 border-b border-slate-400"></div>
-          <p class="mt-1.5 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-            Finance Secretary
-          </p>
-        </div>
-
-        <div></div>
-
-        <div>
-          <div class="voucher-signature-line h-11 border-b border-slate-400"></div>
-          <p class="mt-1.5 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-            Treasurer
-          </p>
-        </div>
-      </div>
+    <div class="receipt-footer mt-9 text-center">
+      <p class="text-xs font-black uppercase tracking-[0.12em]">Thank you</p>
+      <p class="mt-2 text-[10px] font-bold leading-4 text-slate-500">
+        Digitally generated · <%= voucher_number %>
+      </p>
     </div>
   </section>
 </div>
