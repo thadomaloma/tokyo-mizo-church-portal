@@ -110,7 +110,7 @@
       </aside>
 
       <div class="admin-content">
-        <header class="sticky top-0 z-[100] isolate border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl lg:hidden">
+        <header data-mobile-admin-header class="fixed inset-x-0 top-0 z-[100] isolate border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl lg:hidden">
           <div class="flex items-center justify-between gap-3">
             <%= link_to admin_root_path, class: "flex min-w-0 items-center gap-3" do %>
               <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#0b1f33] shadow-sm ring-1 ring-slate-200">
@@ -136,13 +136,35 @@
           </div>
         </header>
 
-        <header class="sticky top-0 z-[100] isolate hidden h-[72px] items-center justify-between border-b border-slate-200/80 bg-[#f4f7fa]/90 px-8 backdrop-blur-xl lg:flex xl:px-10">
-          <div>
+        <% daily_verse = verse_of_the_day %>
+        <div data-verse-of-the-day class="mt-16 flex items-start gap-2.5 border-b border-slate-200/80 bg-white px-4 py-3 lg:hidden">
+          <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+            <%= heroicon "book-open", variant: :outline, options: { class: "h-4 w-4" } %>
+          </div>
+          <div class="min-w-0">
+            <p class="line-clamp-2 text-xs font-semibold leading-[1.15rem] text-slate-700"><%= daily_verse.text %></p>
+            <p class="mt-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-sky-600"><%= daily_verse.reference %></p>
+          </div>
+        </div>
+
+        <header data-desktop-admin-header class="fixed left-[280px] right-0 top-0 z-[100] isolate hidden h-[72px] items-center justify-between border-b border-slate-200/80 bg-[#f4f7fa]/90 px-8 backdrop-blur-xl lg:flex xl:px-10">
+          <div class="shrink-0">
             <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Church Administration</p>
             <p class="mt-1 text-sm font-bold text-slate-700"><%= Date.current.strftime("%A, %B %d, %Y") %></p>
           </div>
 
-          <div class="flex items-center gap-2">
+          <% daily_verse = verse_of_the_day %>
+          <div data-verse-of-the-day class="mx-6 flex min-w-0 max-w-2xl flex-1 items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 px-4 py-2 shadow-sm xl:mx-10">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
+              <%= heroicon "book-open", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
+            </div>
+            <div class="min-w-0 text-center">
+              <p class="truncate text-xs font-semibold text-slate-700"><%= daily_verse.text %></p>
+              <p class="mt-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-sky-600"><%= daily_verse.reference %> · <%= daily_verse.theme %></p>
+            </div>
+          </div>
+
+          <div class="flex shrink-0 items-center gap-2">
             <%= render "admin/shared/notification_dropdown",
                 notifications: @notifications,
                 notifications_count: @notifications_count %>
@@ -150,7 +172,7 @@
           </div>
         </header>
 
-        <main class="relative z-0 mx-auto w-full max-w-[1520px] p-4 pb-[7.5rem] sm:p-6 lg:p-8 lg:pb-12 xl:px-10 xl:py-9">
+        <main class="relative z-0 mx-auto w-full max-w-[1520px] p-4 pb-[7.5rem] sm:p-6 lg:p-8 lg:pb-12 lg:pt-[104px] xl:px-10 xl:pb-9 xl:pt-[108px]">
           <% flash.each do |type, message| %>
             <% next if message.blank? %>
 

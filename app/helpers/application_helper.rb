@@ -30,4 +30,8 @@ module ApplicationHelper
       series << page
     end
   end
+
+  def verse_of_the_day
+    @verse_of_the_day ||= DailyBibleVerse.for(Date.current)
+  end
 end
