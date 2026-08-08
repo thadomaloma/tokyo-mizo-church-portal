@@ -15,6 +15,9 @@ class ApplicationController < ActionController::Base
               Net::SMTPSyntaxError,
               Net::SMTPServerBusy,
               Net::SMTPUnknownError,
+              Net::OpenTimeout,
+              Net::ReadTimeout,
+              SocketError,
               OpenSSL::SSL::SSLError,
               with: :handle_mail_delivery_error
 

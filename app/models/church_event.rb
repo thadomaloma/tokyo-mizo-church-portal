@@ -1,5 +1,5 @@
 class ChurchEvent < ApplicationRecord
-  belongs_to :created_by, class_name: "User"
+  belongs_to :created_by, class_name: "User", inverse_of: :church_events
 
   validates :title, :start_date, presence: true
 

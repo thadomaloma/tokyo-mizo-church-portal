@@ -1,146 +1,221 @@
 wb = xlsx_package.workbook
 
 wb.add_worksheet(name: "Finance Report") do |sheet|
-  sheet.page_setup.orientation = :portrait
+  navy = "0F2942"
+  blue = "0369A1"
+  slate = "334155"
+  muted = "64748B"
+  border = "D9E2EC"
+  panel = "F8FAFC"
+  income = "047857"
+  income_light = "ECFDF5"
+  expense = "BE123C"
+  expense_light = "FFF1F2"
+  blue_light = "E0F2FE"
+  white = "FFFFFF"
+
+  sheet.sheet_view.show_grid_lines = false
+  sheet.page_setup.orientation = :landscape
   sheet.page_setup.paper_size = 9
   sheet.page_setup.fit_to_width = 1
   sheet.page_setup.fit_to_height = 0
-
-  sheet.page_margins.left = 0.4
-  sheet.page_margins.right = 0.4
-  sheet.page_margins.top = 0.6
-  sheet.page_margins.bottom = 0.6
+  sheet.page_margins.left = 0.35
+  sheet.page_margins.right = 0.35
+  sheet.page_margins.top = 0.45
+  sheet.page_margins.bottom = 0.45
 
   title_style = wb.styles.add_style(
     b: true,
-    sz: 18,
-    alignment: { horizontal: :center, vertical: :center }
+    sz: 22,
+    fg_color: white,
+    bg_color: navy,
+    alignment: { horizontal: :left, vertical: :center }
   )
-
   subtitle_style = wb.styles.add_style(
-    sz: 11,
-    alignment: { horizontal: :center, vertical: :center }
+    b: true,
+    sz: 12,
+    fg_color: "BAE6FD",
+    bg_color: navy,
+    alignment: { horizontal: :left, vertical: :center }
   )
-
+  metadata_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: "CBD5E1",
+    bg_color: navy,
+    alignment: { horizontal: :left, vertical: :center }
+  )
   section_style = wb.styles.add_style(
     b: true,
-    sz: 13
+    sz: 9,
+    fg_color: white,
+    bg_color: navy,
+    alignment: { horizontal: :left, vertical: :center }
+  )
+  subheader_style = wb.styles.add_style(
+    b: true,
+    sz: 10,
+    fg_color: slate,
+    bg_color: "E2E8F0",
+    alignment: { horizontal: :left, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
   )
 
-  summary_label_style = wb.styles.add_style(
-    border: { style: :thin, color: "CBD5E1" }
+  income_label_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: income,
+    bg_color: income_light,
+    alignment: { horizontal: :left, vertical: :center }
   )
-
-  summary_value_style = wb.styles.add_style(
-    alignment: { horizontal: :right },
-    border: { style: :thin, color: "CBD5E1" }
+  income_value_style = wb.styles.add_style(
+    b: true,
+    sz: 17,
+    fg_color: income,
+    bg_color: income_light,
+    format_code: "#,##0;[Red](#,##0);-",
+    alignment: { horizontal: :left, vertical: :center }
   )
-
+  expense_label_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: expense,
+    bg_color: expense_light,
+    alignment: { horizontal: :left, vertical: :center }
+  )
+  expense_value_style = wb.styles.add_style(
+    b: true,
+    sz: 17,
+    fg_color: expense,
+    bg_color: expense_light,
+    format_code: "#,##0;[Red](#,##0);-",
+    alignment: { horizontal: :left, vertical: :center }
+  )
   balance_label_style = wb.styles.add_style(
     b: true,
-    bg_color: "DCFCE7",
-    fg_color: "166534",
-    border: { style: :thin, color: "CBD5E1" }
+    sz: 9,
+    fg_color: blue,
+    bg_color: blue_light,
+    alignment: { horizontal: :left, vertical: :center }
   )
-
   balance_value_style = wb.styles.add_style(
     b: true,
-    bg_color: "DCFCE7",
-    fg_color: "166534",
-    alignment: { horizontal: :right },
-    border: { style: :thin, color: "CBD5E1" }
+    sz: 17,
+    fg_color: blue,
+    bg_color: blue_light,
+    format_code: "#,##0;[Red](#,##0);-",
+    alignment: { horizontal: :left, vertical: :center }
+  )
+
+  body_label_style = wb.styles.add_style(
+    sz: 10,
+    fg_color: slate,
+    bg_color: white,
+    alignment: { horizontal: :left, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  body_amount_style = wb.styles.add_style(
+    sz: 10,
+    fg_color: slate,
+    bg_color: white,
+    format_code: "#,##0;[Red](#,##0);-",
+    alignment: { horizontal: :right, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  income_body_style = wb.styles.add_style(
+    b: true,
+    sz: 10,
+    fg_color: income,
+    bg_color: income_light,
+    alignment: { horizontal: :left, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  expense_body_style = wb.styles.add_style(
+    b: true,
+    sz: 10,
+    fg_color: expense,
+    bg_color: expense_light,
+    alignment: { horizontal: :left, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  percentage_style = wb.styles.add_style(
+    b: true,
+    sz: 10,
+    fg_color: slate,
+    bg_color: panel,
+    format_code: "0.0%",
+    alignment: { horizontal: :right, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
   )
 
   table_header_style = wb.styles.add_style(
     b: true,
-    sz: 10,
-    bg_color: "E2E8F0",
-    alignment: { horizontal: :center, vertical: :center },
-    border: { style: :thin, color: "CBD5E1" }
-  )
-
-  body_style = wb.styles.add_style(
-    sz: 10,
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { vertical: :center }
-  )
-
-  center_style = wb.styles.add_style(
-    sz: 10,
-    border: { style: :thin, color: "CBD5E1" },
+    sz: 9,
+    fg_color: white,
+    bg_color: navy,
     alignment: { horizontal: :center, vertical: :center }
   )
-
-  amount_style = wb.styles.add_style(
-    sz: 10,
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { horizontal: :right, vertical: :center }
+  table_body_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: slate,
+    bg_color: white,
+    alignment: { vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
   )
-
+  table_alt_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: slate,
+    bg_color: panel,
+    alignment: { vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  table_center_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: slate,
+    alignment: { horizontal: :center, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  table_date_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: slate,
+    format_code: "yyyy-mm-dd",
+    alignment: { horizontal: :center, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
+  table_amount_style = wb.styles.add_style(
+    sz: 9,
+    fg_color: slate,
+    format_code: "#,##0;[Red](#,##0);-",
+    alignment: { horizontal: :right, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
+  )
   income_type_style = wb.styles.add_style(
-    sz: 10,
-    fg_color: "047857",
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { horizontal: :center, vertical: :center }
-  )
-
-  expense_type_style = wb.styles.add_style(
-    sz: 10,
-    fg_color: "BE123C",
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { horizontal: :center, vertical: :center }
-  )
-
-  compact_header_style = wb.styles.add_style(
     b: true,
-    sz: 8,
-    bg_color: "E2E8F0",
+    sz: 9,
+    fg_color: income,
     alignment: { horizontal: :center, vertical: :center },
-    border: { style: :thin, color: "CBD5E1" }
+    border: { style: :thin, color: border, edges: [ :bottom ] }
   )
-
-  compact_body_style = wb.styles.add_style(
-    sz: 8,
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { vertical: :center }
+  expense_type_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: expense,
+    alignment: { horizontal: :center, vertical: :center },
+    border: { style: :thin, color: border, edges: [ :bottom ] }
   )
-
-  compact_amount_style = wb.styles.add_style(
-    sz: 8,
-    border: { style: :thin, color: "CBD5E1" },
+  total_label_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: blue,
+    bg_color: blue_light,
+    alignment: { horizontal: :left, vertical: :center }
+  )
+  total_amount_style = wb.styles.add_style(
+    b: true,
+    sz: 9,
+    fg_color: blue,
+    bg_color: blue_light,
+    format_code: "#,##0;[Red](#,##0);-",
     alignment: { horizontal: :right, vertical: :center }
-  )
-
-  chart_label_style = wb.styles.add_style(
-    b: true,
-    sz: 9,
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { vertical: :center }
-  )
-
-  chart_amount_style = wb.styles.add_style(
-    b: true,
-    sz: 9,
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { horizontal: :right, vertical: :center }
-  )
-
-  income_bar_style = wb.styles.add_style(
-    b: true,
-    sz: 9,
-    fg_color: "047857",
-    bg_color: "D1FAE5",
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { vertical: :center }
-  )
-
-  expense_bar_style = wb.styles.add_style(
-    b: true,
-    sz: 9,
-    fg_color: "BE123C",
-    bg_color: "FFE4E6",
-    border: { style: :thin, color: "CBD5E1" },
-    alignment: { vertical: :center }
   )
 
   report_data = @finance_report_data || FinanceReportData.new(
@@ -153,157 +228,101 @@ wb.add_worksheet(name: "Finance Report") do |sheet|
     end_month: @end_month || Date.current.month
   )
 
-  yen = ->(amount) { "JPY #{amount.to_i.to_fs(:delimited)}" }
-
-  sheet.add_row ["Tokyo Mizo Church"], style: title_style
+  sheet.add_row [ "TOKYO MIZO CHURCH", nil, nil, nil, nil, nil ], style: Array.new(6, title_style), height: 34
   sheet.merge_cells "A1:F1"
-
-  sheet.add_row ["Finance Report - #{@period_label}"], style: subtitle_style
+  sheet.add_row [ "Finance Report - #{@ledger_type_label} - #{@period_label}", nil, nil, nil, nil, nil ], style: Array.new(6, subtitle_style), height: 23
   sheet.merge_cells "A2:F2"
-
-  sheet.add_row ["Generated on #{Date.current.strftime('%B %d, %Y')}"], style: subtitle_style
+  sheet.add_row [ "Generated #{Date.current.strftime('%B %d, %Y')}  |  Currency: Japanese Yen (JPY)", nil, nil, nil, nil, nil ], style: Array.new(6, metadata_style), height: 20
   sheet.merge_cells "A3:F3"
+  sheet.add_row [], height: 8
 
-  sheet.add_row []
+  sheet.add_row [ "PERIOD SUMMARY", nil, nil, nil, nil, nil ], style: Array.new(6, section_style), height: 22
+  sheet.merge_cells "A5:F5"
+  sheet.add_row [ "INCOME (JPY)", nil, "EXPENSE (JPY)", nil, "NET BALANCE (JPY)", nil ],
+                style: [ income_label_style, income_label_style, expense_label_style, expense_label_style, balance_label_style, balance_label_style ],
+                height: 20
+  sheet.merge_cells "A6:B6"
+  sheet.merge_cells "C6:D6"
+  sheet.merge_cells "E6:F6"
+  sheet.add_row [ report_data.income, nil, report_data.expense, nil, report_data.balance, nil ],
+                style: [ income_value_style, income_value_style, expense_value_style, expense_value_style, balance_value_style, balance_value_style ],
+                height: 31
+  sheet.merge_cells "A7:B7"
+  sheet.merge_cells "C7:D7"
+  sheet.merge_cells "E7:F7"
+  sheet.add_row [], height: 8
 
-  summary_row = sheet.rows.size + 1
-  sheet.add_row [
-    "Summary",
-    nil,
-    nil,
-    "Income vs Expense",
-    nil,
-    nil
-  ], style: [
-    section_style,
-    section_style,
-    nil,
-    section_style,
-    section_style,
-    section_style
-  ]
-  sheet.merge_cells "A#{summary_row}:B#{summary_row}"
-  sheet.merge_cells "D#{summary_row}:F#{summary_row}"
+  sheet.add_row [ "FUND POSITION", nil, nil, "INCOME VS EXPENSE", nil, nil ],
+                style: Array.new(6, subheader_style),
+                height: 22
+  sheet.merge_cells "A9:C9"
+  sheet.merge_cells "D9:F9"
 
-  summary_data = report_data.summary_rows
-  chart_data = report_data.chart_rows
-  max_chart_amount = chart_data.map(&:last).map(&:to_f).max.to_f
-  max_chart_amount = 1 if max_chart_amount.zero?
+  movement_total = report_data.income.to_f + report_data.expense.to_f
+  income_share = movement_total.zero? ? 0 : report_data.income.to_f / movement_total
+  expense_share = movement_total.zero? ? 0 : report_data.expense.to_f / movement_total
+  summary_rows = report_data.summary_rows.to_h
 
-  summary_data.each_with_index do |row, index|
-    chart_row = chart_data[index]
-    is_balance = row.first == "Balance"
-    chart_label, chart_amount = chart_row
-    chart_bar = chart_row ? "=" * [ ((chart_amount.to_f / max_chart_amount) * 28).round, 1 ].max : nil
-    chart_style = chart_label == "Expense" ? expense_bar_style : income_bar_style
+  sheet.add_row [ "Cash Balance", nil, summary_rows["Cash Balance"], "Income", report_data.income, income_share ],
+                style: [ body_label_style, body_label_style, body_amount_style, income_body_style, body_amount_style, percentage_style ],
+                height: 22
+  sheet.merge_cells "A10:B10"
+  sheet.add_row [ "Bank Account Balance", nil, summary_rows["Bank Account Balance"], "Expense", report_data.expense, expense_share ],
+                style: [ body_label_style, body_label_style, body_amount_style, expense_body_style, body_amount_style, percentage_style ],
+                height: 22
+  sheet.merge_cells "A11:B11"
+  sheet.add_row [], height: 8
 
-    sheet.add_row [
-      row.first,
-      yen.call(row.last),
-      nil,
-      chart_label,
-      chart_bar,
-      chart_amount ? yen.call(chart_amount) : nil
-    ],
-                  style: [
-                    is_balance ? balance_label_style : summary_label_style,
-                    is_balance ? balance_value_style : summary_value_style,
-                    nil,
-                    chart_row ? chart_label_style : nil,
-                    chart_row ? chart_style : nil,
-                    chart_row ? chart_amount_style : nil
-                  ]
+  sheet.add_row [ "MONTHLY TITHE AND OFFERING", nil, nil, nil, nil, nil ], style: Array.new(6, section_style), height: 22
+  sheet.merge_cells "A13:F13"
+  sheet.add_row [ "Month", nil, nil, "Tithe (JPY)", "Offering (JPY)", "Total Giving (JPY)" ], style: Array.new(6, table_header_style), height: 22
+  sheet.merge_cells "A14:C14"
+
+  monthly_rows = report_data.monthly_tithe_offering_rows
+  monthly_rows.each_with_index do |(month, tithe, offering), index|
+    row_style = index.even? ? table_body_style : table_alt_style
+    sheet.add_row [ month, nil, nil, tithe, offering, tithe + offering ],
+                  style: [ row_style, row_style, row_style, table_amount_style, table_amount_style, table_amount_style ],
+                  height: 20
+    current_row = sheet.rows.size
+    sheet.merge_cells "A#{current_row}:C#{current_row}"
   end
 
-  sheet.add_row []
+  monthly_total_row = sheet.rows.size + 1
+  total_tithe = monthly_rows.sum { |row| row[1] }
+  total_offering = monthly_rows.sum { |row| row[2] }
+  sheet.add_row [ "Total", nil, nil, total_tithe, total_offering, total_tithe + total_offering ],
+                style: [ total_label_style, total_label_style, total_label_style, total_amount_style, total_amount_style, total_amount_style ],
+                height: 22
+  sheet.merge_cells "A#{monthly_total_row}:C#{monthly_total_row}"
+  sheet.add_row [], height: 8
 
-  monthly_row = sheet.rows.size + 1
-  sheet.add_row [
-    nil,
-    nil,
-    nil,
-    "Monthly Tithe and Offering",
-    nil,
-    nil
-  ], style: [
-    nil,
-    nil,
-    nil,
-    section_style,
-    section_style,
-    section_style
-  ]
-  sheet.merge_cells "D#{monthly_row}:F#{monthly_row}"
+  transaction_section_row = sheet.rows.size + 1
+  sheet.add_row [ "TRANSACTION DETAIL", nil, nil, nil, nil, "#{@transactions.size} records" ],
+                style: Array.new(6, section_style),
+                height: 22
+  sheet.merge_cells "A#{transaction_section_row}:E#{transaction_section_row}"
 
-  sheet.add_row [
-    nil,
-    nil,
-    nil,
-    "Month",
-    "Tithe",
-    "Offering"
-  ], style: [
-    nil,
-    nil,
-    nil,
-    compact_header_style,
-    compact_header_style,
-    compact_header_style
-  ]
+  transaction_header_row = sheet.rows.size + 1
+  sheet.add_row [ "Date", "Type", "Category", "Location", "Description", "Amount (JPY)" ], style: Array.new(6, table_header_style), height: 23
 
-  report_data.monthly_tithe_offering_rows.each do |month, tithe, offering|
-    sheet.add_row [
-      nil,
-      nil,
-      nil,
-      month,
-      yen.call(tithe),
-      yen.call(offering)
-    ], style: [
-      nil,
-      nil,
-      nil,
-      compact_body_style,
-      compact_amount_style,
-      compact_amount_style
-    ]
-  end
-
-  sheet.add_row []
-
-  transactions_row = sheet.rows.size + 1
-  sheet.add_row ["Transactions"], style: section_style
-  sheet.merge_cells "A#{transactions_row}:F#{transactions_row}"
-
-  sheet.add_row [
-    "Date",
-    "Type",
-    "Category",
-    "Location",
-    "Description",
-    "Amount"
-  ], style: table_header_style
-
-  @transactions.each do |transaction|
-    type_style =
-      transaction.income? ? income_type_style : expense_type_style
+  @transactions.each_with_index do |transaction, index|
+    row_style = index.even? ? table_body_style : table_alt_style
+    type_style = transaction.income? ? income_type_style : expense_type_style
 
     sheet.add_row [
-      transaction.transaction_date&.strftime("%Y-%m-%d"),
+      transaction.transaction_date,
       transaction.transaction_type.humanize,
       transaction.finance_category&.name || "-",
       transaction.payment_location_bank? ? "Bank" : "Cash",
       transaction.description.presence || "-",
-      yen.call(transaction.amount)
-    ], style: [
-      center_style,
-      type_style,
-      body_style,
-      center_style,
-      body_style,
-      amount_style
-    ]
+      transaction.amount
+    ], style: [ table_date_style, type_style, row_style, table_center_style, row_style, table_amount_style ], height: 20
   end
 
-  sheet.column_widths 14, 12, 18, 16, 34, 16
+  if @transactions.any?
+    sheet.auto_filter = "A#{transaction_header_row}:F#{sheet.rows.size}"
+  end
+
+  sheet.column_widths 15, 14, 22, 16, 38, 17
 end

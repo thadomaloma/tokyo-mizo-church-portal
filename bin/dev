@@ -13,4 +13,8 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
+# Precompiled assets can mask the live Tailwind build in development. They are
+# generated files, so clear them before starting the server and CSS watcher.
+bin/rails assets:clobber
+
 exec foreman start -f Procfile.dev "$@"

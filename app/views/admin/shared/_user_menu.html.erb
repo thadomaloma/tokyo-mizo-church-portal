@@ -1,9 +1,11 @@
 <% on_dark = local_assigns.fetch(:on_dark, false) %>
 
-<div data-controller="dropdown" class="relative">
+<div data-controller="dropdown"
+     data-action="dropdown:open@document->dropdown#dismiss"
+     class="relative z-[110]">
   <button type="button"
           data-action="click->dropdown#toggle"
-          class="block rounded-2xl transition <%= on_dark ? 'bg-white/15 p-1 ring-1 ring-white/20 hover:bg-white/20' : 'p-1 hover:bg-slate-50' %>">
+          class="block rounded-xl transition <%= on_dark ? 'bg-white/10 p-1 ring-1 ring-white/15 hover:bg-white/15' : 'p-1 hover:bg-white' %>">
     <%= render "admin/shared/user_avatar",
         user: user,
         size_class: "h-10 w-10 sm:h-11 sm:w-11",
@@ -11,8 +13,8 @@
   </button>
 
   <div data-dropdown-target="menu"
-       class="hidden fixed left-4 right-4 top-20 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-72">
-    <div class="bg-slate-50 p-4">
+       class="hidden fixed left-4 right-4 top-20 z-[120] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-72">
+    <div class="bg-[#f7f9fb] p-4">
       <p class="font-black text-slate-900">
         <%= user.name %>
       </p>
@@ -29,7 +31,7 @@
     <div class="border-t border-slate-100 p-3">
       <%= button_to destroy_user_session_path,
           method: :delete,
-          class: "flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-600 hover:bg-rose-100" do %>
+        class: "flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 hover:bg-rose-100" do %>
         <%= heroicon "arrow-left-on-rectangle",
             variant: :outline,
             options: { class: "h-5 w-5" } %>

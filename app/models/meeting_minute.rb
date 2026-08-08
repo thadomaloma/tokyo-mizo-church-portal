@@ -1,5 +1,5 @@
 class MeetingMinute < ApplicationRecord
-  belongs_to :uploaded_by, class_name: "User"
+  belongs_to :uploaded_by, class_name: "User", inverse_of: :meeting_minutes
   has_many :church_resolutions, dependent: :nullify
 
   has_one_attached :pdf_file
@@ -7,6 +7,7 @@ class MeetingMinute < ApplicationRecord
 
   validates :title, :meeting_type, :meeting_date, presence: true
   validates :pdf_file, presence: true, if: :archive_only?
+  validate :pdf_file_must_be_valid
   validate :secretary_signature_must_be_png
 
   before_validation :sync_attendance_from_present_member_ids,
@@ -107,8 +108,17 @@ class MeetingMinute < ApplicationRecord
 
   def secretary_signature_must_be_png
     return unless secretary_signature.attached?
+
+    errors.add(:secretary_signature, "must be smaller than 5 MB") if secretary_signature.byte_size > 5.megabytes
     return if secretary_signature.content_type == "image/png"
 
     errors.add(:secretary_signature, "must be a PNG file")
+  end
+
+  def pdf_file_must_be_valid
+    return unless pdf_file.attached?
+
+    errors.add(:pdf_file, "must be a PDF file") unless pdf_file.content_type == "application/pdf"
+    errors.add(:pdf_file, "must be smaller than 20 MB") if pdf_file.byte_size > 20.megabytes
   end
 end

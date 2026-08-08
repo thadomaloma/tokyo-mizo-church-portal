@@ -14,7 +14,7 @@ class ChurchResolution < ApplicationRecord
   }
 
   belongs_to :meeting_minute, optional: true
-  belongs_to :assigned_to, class_name: "User", optional: true
+  belongs_to :assigned_to, class_name: "User", inverse_of: :assigned_church_resolutions, optional: true
 
   scope :overdue, -> {
     where.not(status: :completed).where("due_date < ?", Date.current)

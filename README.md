@@ -60,7 +60,7 @@ Create the first admin account:
 
 ```bash
 SEED_ADMIN_EMAIL=admin@tokyomizochurch.org \
-SEED_ADMIN_PASSWORD=Admin@2026 \
+SEED_ADMIN_PASSWORD='<use-a-long-unique-password>' \
 SEED_ADMIN_NAME="Super Admin" \
 bin/rails db:seed
 ```
@@ -77,11 +77,34 @@ Open:
 http://localhost:3000
 ```
 
-Local admin login:
+The seed password is applied only when the account is first created. To rotate it
+intentionally, set `RESET_SEED_ADMIN_PASSWORD=true` for one seed run and then
+remove that variable.
 
-| Email | Password |
-| --- | --- |
-| admin@tokyomizochurch.org | Admin@2026 |
+## Railway Production Setup
+
+The checked-in `railway.json` uses the Dockerfile, runs `db:prepare` before a
+deployment, and checks `/up` before sending traffic to a new instance.
+
+Required Railway variables:
+
+* `DATABASE_URL` (normally supplied by the attached Railway PostgreSQL service)
+* `SECRET_KEY_BASE` or `RAILS_MASTER_KEY`
+* `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`, and optionally `MAILER_FROM`
+* `SOLID_QUEUE_IN_PUMA=true` when jobs should run in the web service
+
+`APP_HOST` is optional; the app uses `RAILWAY_PUBLIC_DOMAIN` automatically.
+
+Meeting PDFs and signature images must not be kept on Railway's ephemeral
+container filesystem. Attach a Railway volume to the web service, mount it at a
+dedicated path such as `/rails/storage`, and let Railway provide
+`RAILWAY_VOLUME_MOUNT_PATH`. If the container cannot write to a new volume,
+configure Railway's documented `RAILWAY_RUN_UID=0` volume permission setting.
+Back up the volume separately; a database backup does not include uploads.
+
+Do not keep `SEED_ADMIN_PASSWORD` in Railway after the first successful seed.
+Leaving it configured is unnecessary, even though normal deploys no longer reset
+the existing password.
 
 ## Purpose
 

@@ -25,10 +25,11 @@ module Admin
       @period_caption = finance_period_caption(@period_year, @start_month, @end_month)
       @month_options = finance_month_options
       @year_options = finance_year_options
-      @summary_month = selected_finance_month(:summary_month, @end_month)
-      load_selected_month_totals
+      @ledger_type = selected_ledger_type
+      @ledger_type_label = @ledger_type == "all" ? "All Transactions" : "#{@ledger_type.humanize} Transactions"
 
-      transactions = finance_transactions_for_period(@period_year, @start_month, @end_month)
+      period_transactions = finance_transactions_for_period(@period_year, @start_month, @end_month)
+      transactions = filter_transactions_by_type(period_transactions)
       @report_transactions = transactions.to_a
       @income = transactions.income.sum(:amount)
       @expense = transactions.expense.sum(:amount)
@@ -58,15 +59,11 @@ module Admin
             period_year: @period_year,
             start_month: @start_month,
             end_month: @end_month,
-            summary_month: @summary_month,
-            selected_month_label: @selected_month_label,
-            selected_month_income: @selected_month_income,
-            selected_month_expense: @selected_month_expense,
-            selected_month_total: @selected_month_total
+            ledger_type_label: @ledger_type_label
           )
 
           send_data pdf.render,
-                    filename: "tokyo_mizo_church_finance_report_#{finance_period_filename}.pdf",
+                    filename: "tokyo_mizo_church_finance_report_#{@ledger_type}_#{finance_period_filename}.pdf",
                     type: "application/pdf",
                     disposition: "attachment"
         end
@@ -76,7 +73,7 @@ module Admin
 
           response.headers[
             "Content-Disposition"
-          ] = "attachment; filename=tokyo_mizo_church_finance_report_#{finance_period_filename}.xlsx"
+          ] = "attachment; filename=tokyo_mizo_church_finance_report_#{@ledger_type}_#{finance_period_filename}.xlsx"
         end
       end
     end
@@ -145,13 +142,18 @@ module Admin
       "#{label}, up to #{Date::MONTHNAMES[end_month]}"
     end
 
-    def load_selected_month_totals
-      transactions = finance_transactions_for_period(@period_year, @summary_month, @summary_month)
+    def selected_ledger_type
+      type = params[:ledger_type].to_s
 
-      @selected_month_label = "#{Date::MONTHNAMES[@summary_month]} #{@period_year}"
-      @selected_month_income = transactions.income.sum(:amount)
-      @selected_month_expense = transactions.expense.sum(:amount)
-      @selected_month_total = @selected_month_income - @selected_month_expense
+      %w[all income expense].include?(type) ? type : "all"
+    end
+
+    def filter_transactions_by_type(transactions)
+      case @ledger_type
+      when "income" then transactions.income
+      when "expense" then transactions.expense
+      else transactions
+      end
     end
 
     def finance_period_filename

@@ -10,7 +10,7 @@ module Admin
       end
 
       def view_template
-        section(class: "rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-white lg:p-6") do
+        section(class: "premium-panel rounded-[1.25rem] p-5 lg:p-6") do
           header
           chart_panel
         end
@@ -41,7 +41,7 @@ module Admin
       end
 
       def chart_panel
-        div(class: "mt-5 rounded-[1.5rem] border border-slate-100 bg-slate-50 p-4") do
+        div(class: "mt-5 rounded-2xl border border-slate-200/70 bg-[#f7f9fb] p-4") do
           legend
           chart
         end
@@ -118,7 +118,7 @@ module Admin
           maintainAspectRatio: false,
           plugins: {
             tooltip: {
-              backgroundColor: "#0f172a",
+              backgroundColor: "#0b1f33",
               titleColor: "#ffffff",
               bodyColor: "#ffffff",
               padding: 12,

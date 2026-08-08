@@ -1,6 +1,6 @@
 class FinanceTransaction < ApplicationRecord
   belongs_to :finance_category
-  belongs_to :recorded_by, class_name: "User"
+  belongs_to :recorded_by, class_name: "User", inverse_of: :finance_transactions
 
   before_validation :assign_voucher_number, if: :expense?
 
