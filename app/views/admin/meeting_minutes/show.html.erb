@@ -1,6 +1,6 @@
 <%= render "admin/shared/page_header",
     title: @meeting_minute.title,
-    subtitle: "Minute record" %>
+    subtitle: "Meeting thuziak kimchang" %>
 
 <% time_text = [
   @meeting_minute.start_time&.strftime("%I:%M %p"),
@@ -110,7 +110,7 @@
     <div class="border-b border-slate-200 pb-5">
       <h3 class="font-black text-slate-900">Minute Record</h3>
       <p class="mt-1 text-sm leading-6 text-slate-500">
-        Agenda items, decisions, and follow-up actions are shown in order.
+        Agenda item, thurel leh follow-up action te indawtin a lang.
       </p>
     </div>
 
@@ -128,37 +128,52 @@
     </div>
   </section>
 
-  <% if @meeting_minute.church_resolutions.any? %>
+  <% if @meeting_minute.church_resolutions.any? || (can_manage_church? && !@meeting_minute.archive_only?) %>
     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
-      <div class="border-b border-slate-200 pb-5">
-        <h3 class="font-black text-slate-900">Linked Follow-up / Resolutions</h3>
-        <p class="mt-1 text-sm leading-6 text-slate-500">
-          Follow-up actions saved from this minute are tracked here.
-        </p>
-      </div>
+      <div class="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h3 class="font-black text-slate-900">Linked Follow-up / Resolutions</h3>
+          <p class="mt-1 text-sm leading-6 text-slate-500">
+            He minute atanga follow-up action save te hetah track a ni.
+          </p>
+        </div>
 
-      <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-        <% @meeting_minute.church_resolutions.order(created_at: :desc).each do |resolution| %>
-          <%= link_to admin_church_resolution_path(resolution),
-              class: "block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100" do %>
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="break-words font-black text-slate-900">
-                  <%= resolution.title %>
-                </p>
-
-                <p class="mt-1 text-sm text-slate-500">
-                  Due: <%= resolution.due_date || "No due date" %>
-                </p>
-              </div>
-
-              <span class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">
-                <%= resolution.status.humanize %>
-              </span>
-            </div>
+        <% if can_manage_church? && !@meeting_minute.archive_only? %>
+          <%= link_to new_admin_church_resolution_path(meeting_minute_id: @meeting_minute.id),
+              class: "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-200" do %>
+            <%= heroicon "plus", variant: :outline, options: { class: "h-4 w-4" } %>
+            Add Resolution
           <% end %>
         <% end %>
       </div>
+
+      <% if @meeting_minute.church_resolutions.any? %>
+        <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <% @meeting_minute.church_resolutions.order(created_at: :desc).each do |resolution| %>
+            <%= link_to admin_church_resolution_path(resolution),
+                class: "block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100" do %>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-xs font-black text-slate-400"><%= resolution.number %></p>
+                  <p class="mt-1 break-words font-black text-slate-900">
+                    <%= resolution.title %>
+                  </p>
+
+                  <p class="mt-1 text-sm text-slate-500">
+                    Due: <%= resolution.due_date || "No due date" %>
+                  </p>
+                </div>
+
+                <span class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">
+                  <%= resolution.status.humanize %>
+                </span>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="mt-5 text-sm text-slate-500">He minute nena link resolution a la awm lo.</p>
+      <% end %>
     </section>
   <% end %>
 

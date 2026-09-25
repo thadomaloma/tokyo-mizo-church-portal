@@ -1,0 +1,73 @@
+<div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6 sm:hover:-translate-y-0.5">
+  <div class="flex flex-col justify-between gap-5 md:flex-row md:items-start">
+    <div class="flex min-w-0 gap-4">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
+        <%= heroicon "envelope",
+            variant: :outline,
+            options: { class: "h-6 w-6" } %>
+      </div>
+
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+            <%= official_letter.reference_number %>
+          </span>
+
+          <span class="rounded-full px-3 py-1 text-xs font-bold <%= official_letter.sent? ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700" %>">
+            <%= official_letter.status.humanize %>
+          </span>
+        </div>
+
+        <h2 class="mt-3 break-words text-lg font-black text-slate-950">
+          <%= official_letter.subject %>
+        </h2>
+
+        <p class="mt-2 text-sm text-slate-500">
+          To:
+          <span class="font-bold text-slate-700"><%= official_letter.recipient_name %></span>
+          <% if official_letter.recipient_organization.present? %>
+            <span class="text-slate-400">(<%= official_letter.recipient_organization %>)</span>
+          <% end %>
+        </p>
+
+        <p class="mt-1 text-sm text-slate-500">
+          Date:
+          <span class="font-bold text-slate-700"><%= official_letter.letter_date&.strftime("%B %d, %Y") %></span>
+        </p>
+
+        <% if official_letter.church_resolution.present? %>
+          <p class="mt-1 text-sm text-slate-500">
+            Related:
+            <%= link_to official_letter.church_resolution.number,
+                admin_church_resolution_path(official_letter.church_resolution),
+                class: "font-bold text-sky-700 hover:text-sky-900" %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid shrink-0 grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3 md:justify-end">
+      <%= link_to admin_official_letter_path(official_letter),
+          class: "inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-200 sm:py-2" do %>
+        <%= heroicon "eye", variant: :outline, options: { class: "h-4 w-4" } %>
+        View
+      <% end %>
+
+      <% if can_manage_church? %>
+        <%= link_to edit_admin_official_letter_path(official_letter),
+            class: "inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-200 sm:py-2" do %>
+          <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
+          Edit
+        <% end %>
+
+        <%= button_to admin_official_letter_path(official_letter),
+            method: :delete,
+            form: { data: { turbo_confirm: "He official letter hi delete i duh tak tak em?" } },
+            class: "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-600 hover:bg-rose-100 sm:w-auto sm:py-2" do %>
+          <%= heroicon "trash", variant: :outline, options: { class: "h-4 w-4" } %>
+          Delete
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

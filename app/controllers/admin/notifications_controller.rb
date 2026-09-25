@@ -1,5 +1,14 @@
 module Admin
   class NotificationsController < BaseController
+    def index
+      notifications = Notification
+                        .visible_for(current_user)
+                        .latest
+                        .includes(:notification_reads)
+
+      @pagy, @notifications = pagy(notifications, limit: 20)
+    end
+
     def show
       notification = Notification.visible_for(current_user).find(params[:id])
       mark_as_read(notification)
@@ -14,7 +23,7 @@ module Admin
 
       redirect_back fallback_location: admin_root_path,
                     status: :see_other,
-                    notice: "Notifications cleared."
+                    notice: "Notification unread te clear fel a ni."
     end
 
     private

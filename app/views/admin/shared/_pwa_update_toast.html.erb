@@ -1,0 +1,27 @@
+<div data-controller="pwa-update" class="hidden fixed inset-x-4 bottom-24 z-[150] mx-auto max-w-sm lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-96" role="status">
+  <div class="premium-panel relative rounded-2xl border border-slate-200/80 p-3.5 shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+    <button type="button"
+            data-action="click->pwa-update#dismiss"
+            aria-label="Dismiss update notice"
+            class="absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300">
+      <%= heroicon "x-mark", variant: :outline, options: { class: "h-4 w-4" } %>
+    </button>
+
+    <div class="flex items-start gap-3 pr-7">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+        <%= heroicon "arrow-path", variant: :outline, options: { class: "h-4 w-4" } %>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-black text-[#0b1f33]">Update Available</p>
+        <p class="mt-0.5 text-xs leading-4 text-slate-500">TMC Portal version thar a hman theih ta.</p>
+      </div>
+    </div>
+
+    <button type="button"
+            data-action="click->pwa-update#refresh"
+            class="mt-2.5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#0b1f33] px-3 text-xs font-black text-white transition hover:bg-sky-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300">
+      Refresh Now
+    </button>
+  </div>
+</div>

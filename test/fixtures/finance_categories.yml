@@ -1,9 +1,19 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: MyString
-  category_type: MyString
+  code: fixture_income
+  name: Fixture Income
+  description: Fixed income category for tests.
+  category_type: income
+  finance_unit: main
+  system_defined: true
+  position: 1
 
 two:
-  name: MyString
-  category_type: MyString
+  code: fixture_expense
+  name: Fixture Expense
+  description: Fixed expense category for tests.
+  category_type: expense
+  finance_unit: main
+  system_defined: true
+  position: 2

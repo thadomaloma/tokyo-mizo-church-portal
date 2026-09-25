@@ -67,3 +67,5 @@ gem "ruby_ui", "~> 1.4", group: :development, require: false
 
 gem "phlex-rails", "~> 2.4"
 gem "tailwind_merge", "~> 1.5"
+
+gem "webpush", "~> 1.1"

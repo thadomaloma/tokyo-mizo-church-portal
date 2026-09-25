@@ -1,0 +1,96 @@
+<div class="space-y-6 lg:space-y-8">
+  <section class="premium-hero rounded-[1.5rem] text-white">
+    <div class="p-6 sm:p-8 lg:p-10">
+      <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+        Official Letters
+      </p>
+
+      <h1 class="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+        Formal correspondence, organized.
+      </h1>
+
+      <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
+        Kohhran official letter draft siam, track leh print-na.
+      </p>
+
+      <% if can_manage_church? %>
+        <div class="mt-8">
+          <%= link_to new_admin_official_letter_path,
+              class: "inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
+            <%= heroicon "plus", variant: :outline, options: { class: "h-5 w-5" } %>
+            New Letter
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <%= form_with url: admin_official_letters_path, method: :get, data: { turbo: false },
+        class: "flex flex-col gap-3 sm:flex-row sm:items-end" do |form| %>
+      <div class="flex-1">
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Search</label>
+        <%= form.text_field :q, value: @query, placeholder: "Dawngtu, subject emaw reference number",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Year</label>
+        <%= form.select :year, options_for_select(@year_options, @year), { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-32" %>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Status</label>
+        <%= form.select :status,
+            OfficialLetter.statuses.keys.map { |status| [status.humanize, status] },
+            { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-40" %>
+      </div>
+
+      <button type="submit"
+          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white hover:bg-slate-800">
+        <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-4 w-4" } %>
+        Filter
+      </button>
+    <% end %>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between gap-3 p-4 sm:p-5 lg:p-6">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Records</p>
+        <h2 class="mt-2 text-2xl font-black text-slate-950">All Letters</h2>
+      </div>
+
+      <span class="text-xs font-black uppercase tracking-wide text-slate-400">
+        <%= pluralize(@pagy.count, "letter") %>
+      </span>
+    </div>
+
+    <% if @official_letters.any? %>
+      <div class="space-y-4 px-4 pb-4 sm:px-5 sm:pb-5 lg:px-6 lg:pb-6">
+        <%= render @official_letters %>
+      </div>
+
+      <%= render "admin/shared/pagination", pagy: @pagy, page_url: ->(page) {
+        admin_official_letters_path(request.query_parameters.merge(page: page))
+      } %>
+    <% else %>
+      <div class="mx-4 mb-4 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center sm:mx-5 sm:mb-5 lg:mx-6 lg:mb-6">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm">
+          <%= heroicon "envelope", variant: :outline, options: { class: "h-7 w-7" } %>
+        </div>
+
+        <p class="mt-4 font-black text-slate-700">No official letters yet.</p>
+
+        <% if can_manage_church? %>
+          <%= link_to "Create Official Letter", new_admin_official_letter_path,
+              class: "mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-black text-white hover:bg-slate-800" %>
+        <% else %>
+          <p class="mt-2 text-sm text-slate-500">En tur letter record a la awm lo.</p>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

@@ -10,4 +10,12 @@ class AdminRouteIntegrityTest < ActionDispatch::IntegrationTest
       Rails.application.routes.recognize_path("/admin/finance_transactions/1", method: :get)
     end
   end
+
+  test "fixed finance categories expose an index only" do
+    %i[post patch delete].each do |method|
+      assert_raises(ActionController::RoutingError) do
+        Rails.application.routes.recognize_path("/admin/finance_categories/1", method: method)
+      end
+    end
+  end
 end

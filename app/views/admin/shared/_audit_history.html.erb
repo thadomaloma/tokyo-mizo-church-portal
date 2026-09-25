@@ -1,0 +1,34 @@
+<%
+  audits = record.audits.includes(:user).order(created_at: :desc).limit(10)
+%>
+
+<% if audits.any? %>
+  <div class="space-y-3">
+    <% audits.each do |audit| %>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <p class="text-sm font-black text-slate-900">
+          <%= audit_action_label(audit) %>
+        </p>
+
+        <% if audit.action == "update" %>
+          <ul class="mt-1.5 space-y-1 text-xs leading-5 text-slate-600">
+            <% audit.audited_changes.each do |attribute, values| %>
+              <% next if FinanceTransactionsHelper::AUDIT_IGNORED_ATTRIBUTES.include?(attribute) %>
+
+              <li>
+                <span class="font-bold text-slate-700"><%= audit_attribute_label(attribute) %></span>:
+                <%= audit_change_value(attribute, values[0]) %> → <%= audit_change_value(attribute, values[1]) %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+
+        <p class="mt-1.5 text-xs font-semibold text-slate-400">
+          <%= audit.user&.name || "System" %> · <%= audit.created_at.strftime("%d %b %Y, %H:%M") %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-sm text-slate-500">History record a la awm lo.</p>
+<% end %>

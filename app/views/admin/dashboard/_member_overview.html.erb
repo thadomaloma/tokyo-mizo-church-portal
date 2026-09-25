@@ -1,0 +1,31 @@
+<section class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm lg:p-6">
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Oversight</p>
+      <h2 class="mt-1 text-xl font-black text-slate-950">Members</h2>
+    </div>
+
+    <%= link_to "View all", admin_users_path, class: "text-xs font-black text-sky-700 hover:text-sky-900" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div class="rounded-2xl bg-slate-50 p-4 text-center">
+      <p class="text-2xl font-black text-slate-950"><%= @member_overview[:total] %></p>
+      <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">Total</p>
+    </div>
+
+    <div class="rounded-2xl bg-slate-50 p-4 text-center">
+      <p class="text-2xl font-black text-slate-950"><%= @member_overview[:active] %></p>
+      <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">Active</p>
+    </div>
+  </div>
+
+  <div class="mt-4 divide-y divide-slate-100 border-t border-slate-100">
+    <% @member_overview[:role_distribution].sort_by { |_role, count| -count }.each do |role, count| %>
+      <div class="flex items-center justify-between py-2 text-sm">
+        <span class="text-slate-600"><%= role.humanize %></span>
+        <span class="font-black text-slate-900"><%= count %></span>
+      </div>
+    <% end %>
+  </div>
+</section>

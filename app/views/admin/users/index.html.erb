@@ -19,7 +19,7 @@
         </h1>
 
         <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          Keep office bearers, executive members and other members organized.
+          Office Bearer, Executive Committee leh member dang te fel fai taka enkawlna.
         </p>
 
         <% if can_manage_church? %>
@@ -59,7 +59,7 @@
 
   <% if inactive_count.positive? %>
     <div class="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
-      <%= pluralize(inactive_count, "inactive member") %> currently cannot access the portal.
+      Member inactive <%= inactive_count %> in portal an lut thei lo.
     </div>
   <% end %>
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_001000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -85,19 +85,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
     t.text "description"
     t.date "due_date"
     t.bigint "meeting_minute_id"
+    t.string "number", null: false
     t.integer "priority", default: 1, null: false
     t.integer "status", default: 0, null: false
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["assigned_to_id"], name: "index_church_resolutions_on_assigned_to_id"
     t.index ["meeting_minute_id"], name: "index_church_resolutions_on_meeting_minute_id"
+    t.index ["number"], name: "index_church_resolutions_on_number", unique: true
   end
 
   create_table "finance_categories", force: :cascade do |t|
     t.string "category_type"
+    t.string "code"
     t.datetime "created_at", null: false
+    t.string "description"
+    t.bigint "finance_unit_id", null: false
     t.string "name"
+    t.integer "position", default: 0, null: false
+    t.boolean "system_defined", default: false, null: false
     t.datetime "updated_at", null: false
+    t.index "finance_unit_id, category_type, lower((name)::text)", name: "index_finance_categories_on_unit_type_lower_name", unique: true
+    t.index ["finance_unit_id", "category_type", "code"], name: "index_finance_categories_on_unit_type_code", unique: true, where: "(code IS NOT NULL)"
+    t.index ["finance_unit_id"], name: "index_finance_categories_on_finance_unit_id"
+  end
+
+  create_table "finance_periods", force: :cascade do |t|
+    t.datetime "closed_at"
+    t.bigint "closed_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "finance_unit_id", null: false
+    t.integer "month", null: false
+    t.datetime "reopened_at"
+    t.bigint "reopened_by_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "year", null: false
+    t.index ["closed_by_id"], name: "index_finance_periods_on_closed_by_id"
+    t.index ["finance_unit_id", "year", "month"], name: "index_finance_periods_on_finance_unit_id_and_year_and_month", unique: true
+    t.index ["finance_unit_id"], name: "index_finance_periods_on_finance_unit_id"
+    t.index ["reopened_by_id"], name: "index_finance_periods_on_reopened_by_id"
   end
 
   create_table "finance_transactions", force: :cascade do |t|
@@ -105,6 +132,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
     t.datetime "created_at", null: false
     t.text "description"
     t.bigint "finance_category_id", null: false
+    t.bigint "finance_unit_id", null: false
     t.string "payer_name"
     t.string "payment_location", default: "cash", null: false
     t.bigint "recorded_by_id", null: false
@@ -112,10 +140,48 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
     t.string "transaction_type"
     t.datetime "updated_at", null: false
     t.integer "voucher_number"
+    t.integer "voucher_year"
     t.index ["finance_category_id"], name: "index_finance_transactions_on_finance_category_id"
+    t.index ["finance_unit_id", "transaction_type", "transaction_date"], name: "index_finance_transactions_on_unit_type_date"
+    t.index ["finance_unit_id", "voucher_year", "voucher_number"], name: "index_finance_transactions_on_unit_year_expense_voucher", unique: true, where: "(((transaction_type)::text = 'expense'::text) AND (voucher_number IS NOT NULL))"
+    t.index ["finance_unit_id"], name: "index_finance_transactions_on_finance_unit_id"
     t.index ["payment_location"], name: "index_finance_transactions_on_payment_location"
     t.index ["recorded_by_id"], name: "index_finance_transactions_on_recorded_by_id"
-    t.index ["voucher_number"], name: "index_finance_transactions_on_expense_voucher_number", unique: true, where: "(((transaction_type)::text = 'expense'::text) AND (voucher_number IS NOT NULL))"
+    t.index ["transaction_date"], name: "index_finance_transactions_on_transaction_date"
+  end
+
+  create_table "finance_unit_memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "finance_unit_id", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["finance_unit_id", "user_id"], name: "index_finance_unit_memberships_on_unit_and_user", unique: true
+    t.index ["finance_unit_id"], name: "index_finance_unit_memberships_on_finance_unit_id"
+    t.index ["user_id"], name: "index_finance_unit_memberships_on_user_id"
+  end
+
+  create_table "finance_units", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "slug", null: false
+    t.string "unit_type", default: "department", null: false
+    t.datetime "updated_at", null: false
+    t.integer "voucher_sequence", default: 0, null: false
+    t.index ["active", "position"], name: "index_finance_units_on_active_and_position"
+    t.index ["slug"], name: "index_finance_units_on_slug", unique: true
+  end
+
+  create_table "finance_voucher_sequences", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "finance_unit_id", null: false
+    t.integer "next_number", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "year", null: false
+    t.index ["finance_unit_id", "year"], name: "index_finance_voucher_sequences_on_finance_unit_id_and_year", unique: true
+    t.index ["finance_unit_id"], name: "index_finance_voucher_sequences_on_finance_unit_id"
   end
 
   create_table "meeting_minutes", force: :cascade do |t|
@@ -170,27 +236,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
   create_table "notifications", force: :cascade do |t|
     t.bigint "actor_id"
     t.datetime "created_at", null: false
+    t.bigint "finance_unit_id"
     t.string "link"
     t.text "message"
     t.string "notification_type"
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["actor_id"], name: "index_notifications_on_actor_id"
+    t.index ["finance_unit_id"], name: "index_notifications_on_finance_unit_id"
   end
 
-  create_table "resolutions", force: :cascade do |t|
-    t.bigint "assigned_to_id"
-    t.datetime "completed_at"
+  create_table "official_letters", force: :cascade do |t|
+    t.text "body"
+    t.bigint "church_resolution_id"
+    t.string "closing_line"
     t.datetime "created_at", null: false
-    t.text "description"
-    t.date "due_date"
-    t.bigint "meeting_minute_id", null: false
-    t.integer "priority"
-    t.integer "status"
-    t.string "title"
+    t.bigint "created_by_id", null: false
+    t.string "header_email"
+    t.string "header_president_name"
+    t.string "header_president_phone"
+    t.string "header_secretary_name"
+    t.string "header_secretary_phone"
+    t.string "header_website"
+    t.date "letter_date", null: false
+    t.text "recipient_address"
+    t.string "recipient_name", null: false
+    t.string "recipient_organization"
+    t.string "reference_number", null: false
+    t.string "salutation"
+    t.string "signatory_name"
+    t.string "signatory_role"
+    t.integer "status", default: 0, null: false
+    t.string "subject", null: false
     t.datetime "updated_at", null: false
-    t.index ["assigned_to_id"], name: "index_resolutions_on_assigned_to_id"
-    t.index ["meeting_minute_id"], name: "index_resolutions_on_meeting_minute_id"
+    t.index ["church_resolution_id"], name: "index_official_letters_on_church_resolution_id"
+    t.index ["created_by_id"], name: "index_official_letters_on_created_by_id"
+    t.index ["reference_number"], name: "index_official_letters_on_reference_number", unique: true
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.text "endpoint", null: false
+    t.datetime "last_used_at"
+    t.string "p256dh", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.bigint "user_id", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -356,14 +450,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_070000) do
   add_foreign_key "church_events", "users", column: "created_by_id"
   add_foreign_key "church_resolutions", "meeting_minutes"
   add_foreign_key "church_resolutions", "users", column: "assigned_to_id"
+  add_foreign_key "finance_categories", "finance_units"
+  add_foreign_key "finance_periods", "finance_units"
+  add_foreign_key "finance_periods", "users", column: "closed_by_id"
+  add_foreign_key "finance_periods", "users", column: "reopened_by_id"
   add_foreign_key "finance_transactions", "finance_categories"
+  add_foreign_key "finance_transactions", "finance_units"
   add_foreign_key "finance_transactions", "users", column: "recorded_by_id"
+  add_foreign_key "finance_unit_memberships", "finance_units"
+  add_foreign_key "finance_unit_memberships", "users"
+  add_foreign_key "finance_voucher_sequences", "finance_units"
   add_foreign_key "meeting_minutes", "users", column: "uploaded_by_id"
   add_foreign_key "notification_reads", "notifications"
   add_foreign_key "notification_reads", "users"
+  add_foreign_key "notifications", "finance_units", on_delete: :nullify
   add_foreign_key "notifications", "users", column: "actor_id"
-  add_foreign_key "resolutions", "meeting_minutes"
-  add_foreign_key "resolutions", "users", column: "assigned_to_id"
+  add_foreign_key "official_letters", "church_resolutions"
+  add_foreign_key "official_letters", "users", column: "created_by_id"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

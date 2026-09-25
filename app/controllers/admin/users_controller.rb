@@ -18,8 +18,8 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && @user.save
-        notify("New Member Added", "#{current_user.name} added #{@user.name} as #{@user.role.humanize}.")
-        redirect_to admin_users_path, notice: "Member was created."
+        notify("New Member Added", "#{current_user.name} in #{@user.name} chu #{@user.role.humanize} anga a dah.")
+        redirect_to admin_users_path, notice: "Member siam fel a ni."
       else
         render :new, status: :unprocessable_entity
       end
@@ -32,14 +32,14 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && self_lockout_attempt?
-        @user.errors.add(:base, "You cannot deactivate or remove administrator access from your own account.")
+        @user.errors.add(:base, "Mahni account deactivate emaw administrator access paih emaw theih a ni lo.")
         render :edit, status: :unprocessable_entity
         return
       end
 
       if role_assigned && @user.save
-        notify("Member Updated", "#{current_user.name} updated #{@user.name}.")
-        redirect_to admin_users_path, notice: "Member was updated."
+        notify("Member Updated", "#{current_user.name} in #{@user.name} chanchin a siam tha.")
+        redirect_to admin_users_path, notice: "Member siamthat fel a ni."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -47,12 +47,12 @@ module Admin
 
     def destroy
       if @user == current_user
-        redirect_to admin_users_path, alert: "You cannot delete your own account."
+        redirect_to admin_users_path, alert: "Mahni account delete theih a ni lo."
       elsif @user.destroy
-        redirect_to admin_users_path, notice: "Member was deleted."
+        redirect_to admin_users_path, notice: "Member delete fel a ni."
       else
         redirect_to admin_users_path,
-                    alert: @user.errors.full_messages.to_sentence.presence || "Member could not be deleted."
+                    alert: @user.errors.full_messages.to_sentence.presence || "Member delete theih a ni lo."
       end
     end
 

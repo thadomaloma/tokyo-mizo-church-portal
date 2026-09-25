@@ -5,6 +5,10 @@
      class="relative z-[110]">
   <button type="button"
           data-action="click->dropdown#toggle"
+          data-dropdown-target="trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-label="Account menu for <%= user.name %>"
           class="block rounded-xl transition <%= on_dark ? 'bg-white/10 p-1 ring-1 ring-white/15 hover:bg-white/15' : 'p-1 hover:bg-white' %>">
     <%= render "admin/shared/user_avatar",
         user: user,
@@ -29,9 +33,17 @@
     </div>
 
     <div class="border-t border-slate-100 p-3">
+      <%= link_to admin_profile_path,
+          class: "flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-100" do %>
+        <%= heroicon "bell",
+            variant: :outline,
+            options: { class: "h-5 w-5" } %>
+        Notification Settings
+      <% end %>
+
       <%= button_to destroy_user_session_path,
           method: :delete,
-        class: "flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 hover:bg-rose-100" do %>
+        class: "mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 hover:bg-rose-100" do %>
         <%= heroicon "arrow-left-on-rectangle",
             variant: :outline,
             options: { class: "h-5 w-5" } %>

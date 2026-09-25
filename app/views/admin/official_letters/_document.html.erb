@@ -1,0 +1,103 @@
+<article class="official-letter-sheet relative mx-auto bg-white text-slate-950">
+  <header class="grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-4 border-b-[3px] border-[#173a5e] pb-4 sm:grid-cols-[9rem_minmax(0,1fr)_9rem]">
+    <div class="flex h-[4.5rem] w-[4.5rem] items-center justify-center">
+      <%= image_tag "tokyo_mizo_church_logo.png",
+          alt: "Tokyo Mizo Church logo",
+          class: "h-full w-full object-contain" %>
+    </div>
+
+    <div class="text-center">
+      <p class="whitespace-nowrap font-serif text-[clamp(0.72rem,4vw,1.65rem)] font-black leading-tight tracking-[0.04em] text-[#102f4d] sm:text-[1.45rem] sm:tracking-[0.06em]">
+        TOKYO MIZO CHURCH
+      </p>
+      <p class="mt-1 font-serif text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-500">
+        Tokyo, Japan
+      </p>
+
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.62rem] font-semibold text-slate-500">
+        <span class="inline-flex min-w-0 items-center gap-1">
+          <%= heroicon "envelope", variant: :outline, options: { class: "shrink-0 text-[#173a5e]", style: "width: 7px; height: 7px;" } %>
+          <span class="break-all"><%= official_letter.effective_header_email %></span>
+        </span>
+        <span class="inline-flex min-w-0 items-center gap-1">
+          <%= heroicon "globe-alt", variant: :outline, options: { class: "shrink-0 text-[#173a5e]", style: "width: 7px; height: 7px;" } %>
+          <span class="break-all"><%= official_letter.effective_header_website %></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="col-span-2 grid grid-cols-2 gap-3 border-t border-slate-200 pt-2 font-serif text-[0.62rem] leading-4 text-slate-600 sm:col-span-1 sm:block sm:border-0 sm:pt-0 sm:text-right">
+      <div>
+        <% if official_letter.header_president_name.present? %>
+          <p><span class="font-bold text-slate-800">President:</span> <%= official_letter.header_president_name %></p>
+        <% end %>
+        <% if official_letter.header_president_phone.present? %>
+          <p class="inline-flex items-center gap-1 sm:mt-1 sm:justify-end">
+            <span class="shrink-0 font-bold text-[#173a5e]">+81</span>
+            <span><%= official_letter.local_president_phone %></span>
+          </p>
+        <% end %>
+      </div>
+
+      <div class="text-right">
+        <% if official_letter.header_secretary_name.present? %>
+          <p><span class="font-bold text-slate-800">Secretary:</span> <%= official_letter.header_secretary_name %></p>
+        <% end %>
+        <% if official_letter.header_secretary_phone.present? %>
+          <p class="inline-flex items-center gap-1 sm:mt-1 sm:justify-end">
+            <span class="shrink-0 font-bold text-[#173a5e]">+81</span>
+            <span><%= official_letter.local_secretary_phone %></span>
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="mt-5 flex items-start justify-between gap-4 font-serif text-[0.78rem]">
+    <p><span class="font-bold">Ref No:</span> <%= official_letter.reference_number %></p>
+    <p class="text-right"><span class="font-bold">Date:</span> <%= official_letter.letter_date&.strftime("%B %d, %Y") %></p>
+  </div>
+
+  <section class="mt-8 font-serif text-[0.88rem] leading-6">
+    <p class="font-bold">To,</p>
+    <div class="mt-1 pl-7">
+      <p class="font-semibold italic"><%= official_letter.recipient_name %></p>
+      <% if official_letter.recipient_organization.present? %>
+        <p class="font-bold"><%= official_letter.recipient_organization %></p>
+      <% end %>
+      <% if official_letter.recipient_address.present? %>
+        <p class="whitespace-pre-line"><%= official_letter.recipient_address %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mt-7 font-serif text-[0.9rem] leading-6">
+    <p><span class="font-bold">Subject :</span> <span class="font-bold"><%= official_letter.subject %></span></p>
+  </section>
+
+  <section class="official-letter-copy mt-7 font-serif text-[0.9rem] leading-[1.85]">
+    <p class="font-semibold"><%= official_letter.effective_salutation %></p>
+
+    <% if official_letter.body.present? %>
+      <div class="mt-4 pl-7 text-justify [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-7 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-7">
+        <%= rich_minute_content(official_letter.body) %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="mt-10 ml-auto w-56 font-serif text-[0.84rem] leading-6">
+    <p><%= official_letter.effective_closing_line %></p>
+    <div class="h-12"></div>
+    <% if official_letter.signatory_name.present? %>
+      <p class="border-t border-slate-400 pt-1 font-bold"><%= official_letter.signatory_name %></p>
+    <% end %>
+    <% if official_letter.signatory_role.present? %>
+      <p><%= official_letter.signatory_role %></p>
+    <% end %>
+    <p class="font-semibold">Tokyo Mizo Church</p>
+  </section>
+
+  <footer class="absolute inset-x-[18mm] bottom-[12mm] border-t border-slate-300 pt-2 text-center text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+    Tokyo Mizo Church - Official Correspondence
+  </footer>
+</article>

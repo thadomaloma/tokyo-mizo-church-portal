@@ -3,19 +3,19 @@
 en:
   devise:
     confirmations:
-      confirmed: "Your email address has been successfully confirmed."
-      send_instructions: "You will receive an email with instructions for how to confirm your email address in a few minutes."
-      send_paranoid_instructions: "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+      confirmed: "I email address confirm fel a ni."
+      send_instructions: "I email address confirm dan email-in kan thawn ang."
+      send_paranoid_instructions: "I email address a awm chuan confirm dan email-in kan thawn ang."
     failure:
-      already_authenticated: "You are already signed in."
-      inactive: "Your account is not activated yet."
-      invalid: "Invalid %{authentication_keys} or password."
-      locked: "Your account is locked."
-      last_attempt: "You have one more attempt before your account is locked."
-      not_found_in_database: "Invalid %{authentication_keys} or password."
-      timeout: "Your session expired. Please sign in again to continue."
-      unauthenticated: "You need to sign in or sign up before continuing."
-      unconfirmed: "You have to confirm your email address before continuing."
+      already_authenticated: "I lut tawh a ni."
+      inactive: "I account hi activate a la ni lo."
+      invalid: "Email address emaw password a dik lo."
+      locked: "I account khar a ni."
+      last_attempt: "Vawi khat chauh i tum thei tawh ang; a dik loh chuan i account khar a ni ang."
+      not_found_in_database: "Email address emaw password a dik lo."
+      timeout: "I session a tawp ta. Chhunzawm turin lut leh rawh."
+      unauthenticated: "Chhunzawm turin lut hmasa rawh."
+      unconfirmed: "Chhunzawm hmain i email address confirm rawh."
     mailer:
       confirmation_instructions:
         subject: "Confirmation instructions"
@@ -31,11 +31,11 @@ en:
       failure: "Could not authenticate you from %{kind} because \"%{reason}\"."
       success: "Successfully authenticated from %{kind} account."
     passwords:
-      no_token: "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
-      send_instructions: "You will receive an email with instructions on how to reset your password in a few minutes."
-      send_paranoid_instructions: "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
-      updated: "Your password has been changed successfully. You are now signed in."
-      updated_not_active: "Your password has been changed successfully."
+      no_token: "Password siamthatna email-a link atang chauhin he page hi hman theih a ni. Link pum pui hman ngei rawh."
+      send_instructions: "Password siamthat dan email-in kan thawn ang."
+      send_paranoid_instructions: "I email address a awm chuan password siamthatna link kan thawn ang."
+      updated: "I password siamthat fel a ni a, i lut nghal ta."
+      updated_not_active: "I password siamthat fel a ni."
     registrations:
       destroyed: "Bye! Your account has been successfully cancelled. We hope to see you again soon."
       signed_up: "Welcome! You have signed up successfully."
@@ -46,9 +46,9 @@ en:
       updated: "Your account has been updated successfully."
       updated_but_not_signed_in: "Your account has been updated successfully, but since your password was changed, you need to sign in again."
     sessions:
-      signed_in: "Signed in successfully."
-      signed_out: "Signed out successfully."
-      already_signed_out: "Signed out successfully."
+      signed_in: "I lut fel ta e."
+      signed_out: "I chhuak fel ta e."
+      already_signed_out: "I chhuak fel ta e."
     unlocks:
       send_instructions: "You will receive an email with instructions for how to unlock your account in a few minutes."
       send_paranoid_instructions: "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."

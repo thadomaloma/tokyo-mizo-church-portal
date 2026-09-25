@@ -1,2 +1,7 @@
-<%= render "admin/shared/page_header", title: "Edit Finance Entry", subtitle: "Update finance record." %>
+<%= render "admin/shared/page_header", title: "Edit Finance Entry", subtitle: "Finance record siam tha rawh." %>
 <%= render "form", finance_transaction: @finance_transaction %>
+
+<div class="mx-auto mt-8 max-w-3xl">
+  <h2 class="mb-3 text-sm font-black uppercase tracking-[0.16em] text-slate-400">Transaction History</h2>
+  <%= render "admin/shared/audit_history", record: @finance_transaction %>
+</div>

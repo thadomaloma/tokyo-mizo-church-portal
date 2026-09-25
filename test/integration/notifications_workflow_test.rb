@@ -58,4 +58,28 @@ class NotificationsWorkflowTest < ActionDispatch::IntegrationTest
     assert NotificationRead.exists?(notification: @visible_notification, user: @user)
     assert_redirected_to admin_root_path
   end
+
+  test "the full notification history page shows more than the dropdown's cap and paginates" do
+    25.times do |i|
+      Notification.create!(
+        actor: users(:two),
+        title: "History item #{i}",
+        message: "Message #{i}",
+        notification_type: "member"
+      )
+    end
+
+    get admin_notifications_path
+
+    assert_response :success
+    assert_includes response.body, "History item 24"
+    assert_select "a", text: /Next/
+  end
+
+  test "the notification dropdown links to the full history page" do
+    get admin_root_path
+
+    assert_response :success
+    assert_select "a[href=?]", admin_notifications_path, text: "View all notifications"
+  end
 end

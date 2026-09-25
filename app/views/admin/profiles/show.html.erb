@@ -1,0 +1,24 @@
+<%= render "admin/shared/page_header",
+    title: "My Profile",
+    subtitle: "I account chanchin leh notification duh dan." %>
+
+<div class="grid gap-5 lg:grid-cols-2">
+  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="flex items-center gap-4">
+      <%= render "admin/shared/user_avatar",
+          user: current_user,
+          size_class: "h-14 w-14",
+          text_class: "text-lg" %>
+
+      <div class="min-w-0">
+        <p class="font-black text-slate-900"><%= current_user.name %></p>
+        <p class="break-words text-sm text-slate-500"><%= current_user.email %></p>
+        <p class="mt-2 inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
+          <%= current_user.role.humanize %>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%= render "admin/shared/push_notification_settings" %>
+</div>

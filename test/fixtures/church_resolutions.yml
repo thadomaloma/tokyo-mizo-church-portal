@@ -9,6 +9,7 @@ one:
   completed_at: 2026-05-30 21:58:28
   meeting_minute: one
   assigned_to: one
+  number: RES-2026-001
 
 two:
   title: MyString
@@ -19,3 +20,4 @@ two:
   completed_at: 2026-05-30 21:58:28
   meeting_minute: two
   assigned_to: two
+  number: RES-2026-002

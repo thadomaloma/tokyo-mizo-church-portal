@@ -19,7 +19,8 @@ class FinanceReportPdf
     period_year: Date.current.year,
     start_month: 1,
     end_month: Date.current.month,
-    ledger_type_label: "All Transactions"
+    ledger_type_label: "All Transactions",
+    finance_unit_label: "Main Church Finance"
   )
     @transactions = transactions
     @income = income
@@ -27,6 +28,7 @@ class FinanceReportPdf
     @balance = balance
     @period_label = period_label
     @ledger_type_label = ledger_type_label
+    @finance_unit_label = finance_unit_label
     @report_data = FinanceReportData.new(
       transactions: transactions,
       income: income,
@@ -66,7 +68,8 @@ class FinanceReportPdf
               :balance,
               :period_label,
               :report_data,
-              :ledger_type_label
+              :ledger_type_label,
+              :finance_unit_label
 
   def register_fonts(pdf)
     font_path = unicode_font_path
@@ -129,7 +132,7 @@ class FinanceReportPdf
       pdf.text "Finance Report", size: 23, style: :bold
       pdf.move_down 5
       pdf.fill_color "BAE6FD"
-      pdf.text "#{ledger_type_label}  |  #{period_label}", size: 10, style: :bold
+      pdf.text "#{finance_unit_label}  |  #{ledger_type_label}  |  #{period_label}", size: 9, style: :bold
 
       pdf.fill_color "CBD5E1"
       pdf.text_box "Generated #{Date.current.strftime('%B %d, %Y')}",
@@ -355,14 +358,14 @@ class FinanceReportPdf
 
   def transaction_rows
     rows = [
-      [ "Date", "Type", "Category", "Location", "Description", "Amount" ]
+      [ "Date", "Type", "Unit / Category", "Location", "Description", "Amount" ]
     ]
 
     pdf_transactions.each do |transaction|
       rows << [
         transaction.transaction_date.strftime("%Y-%m-%d"),
         type_cell(transaction),
-        safe_pdf_text(transaction.finance_category&.name || "-"),
+        safe_pdf_text("#{transaction.finance_unit&.name || '-'} / #{transaction.finance_category&.name || '-'}"),
         transaction.payment_location_bank? ? "Bank" : "Cash",
         safe_pdf_text(transaction.description.presence || "-"),
         yen(transaction.amount)

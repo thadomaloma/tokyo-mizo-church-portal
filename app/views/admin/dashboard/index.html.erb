@@ -3,65 +3,79 @@
       notifications: @notifications,
       notifications_count: @notifications_count %>
 
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:gap-6">
-    <%= render Admin::Dashboard::MonthlyFinanceChart.new(
-        months: @monthly_finance_overview,
-        income_total: @monthly_income_total,
-        expense_total: @monthly_expense_total
-      ) %>
+  <%= render "admin/shared/pwa_install_card" %>
 
-    <section class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
-      <div class="rounded-[1.5rem] border border-sky-100 bg-sky-50 p-4 shadow-sm">
-        <p class="text-[11px] font-black uppercase tracking-wide text-sky-700">
-          This Month Giving
-        </p>
+  <% if @finance_unit %>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:gap-6">
+      <%= render Admin::Dashboard::MonthlyFinanceChart.new(
+          months: @monthly_finance_overview,
+          income_total: @monthly_income_total,
+          expense_total: @monthly_expense_total
+        ) %>
 
-        <div class="mt-4 space-y-3">
-          <div>
-            <p class="text-xs font-bold text-slate-500">Tithe</p>
-            <p class="mt-1 text-xl font-black text-slate-950">
-              ¥<%= number_with_delimiter(@sawmapakhat_total) %>
-            </p>
-          </div>
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <div class="rounded-[1.5rem] border border-sky-100 bg-sky-50 p-4 shadow-sm">
+          <p class="text-[11px] font-black uppercase tracking-wide text-sky-700">
+            This Month Giving
+          </p>
 
-          <div class="border-t border-sky-100 pt-3">
-            <p class="text-xs font-bold text-slate-500">Offering</p>
-            <p class="mt-1 text-xl font-black text-slate-950">
-              ¥<%= number_with_delimiter(@weekly_offering_total) %>
-            </p>
+          <div class="mt-4 space-y-3">
+            <div>
+              <p class="text-xs font-bold text-slate-500">Tithe</p>
+              <p class="mt-1 text-xl font-black text-slate-950">
+                ¥<%= number_with_delimiter(@sawmapakhat_total) %>
+              </p>
+            </div>
+
+            <div class="border-t border-sky-100 pt-3">
+              <p class="text-xs font-bold text-slate-500">Offering</p>
+              <p class="mt-1 text-xl font-black text-slate-950">
+                ¥<%= number_with_delimiter(@weekly_offering_total) %>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
-        <p class="text-2xl font-black text-slate-950">
-          <%= @recent_minutes.count %>
-        </p>
+        <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
+          <p class="text-2xl font-black text-slate-950">
+            <%= @recent_minutes.count %>
+          </p>
 
-        <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
-          Minutes
-        </p>
-      </div>
+          <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
+            Minutes
+          </p>
+        </div>
 
-      <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
-        <p class="text-2xl font-black text-slate-950">
-          <%= @pending_resolutions %>
-        </p>
+        <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
+          <p class="text-2xl font-black text-slate-950">
+            <%= @pending_resolutions %>
+          </p>
 
-        <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
-          Pending
-        </p>
-      </div>
+          <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
+            Pending
+          </p>
+        </div>
+      </section>
+    </div>
+  <% end %>
+
+  <%
+    activity_block = capture do
+  %>
+    <section class="grid grid-cols-1 gap-4 <%= @finance_unit ? 'xl:grid-cols-2' : 'xl:grid-cols-1' %> xl:gap-6">
+      <% if @finance_unit %>
+        <%= render "transactions_panel",
+            transactions: @recent_transactions %>
+      <% end %>
+
+      <%= render "events_panel",
+          events: @upcoming_events,
+          today_events_count: @today_events_count,
+          events_this_month: @events_this_month %>
     </section>
-  </div>
+  <% end %>
 
-  <section class="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-6">
-    <%= render "transactions_panel",
-        transactions: @recent_transactions %>
+  <%= activity_block %>
 
-    <%= render "events_panel",
-        events: @upcoming_events,
-        today_events_count: @today_events_count,
-        events_this_month: @events_this_month %>
-  </section>
+  <%= render "member_overview" %>
 </div>

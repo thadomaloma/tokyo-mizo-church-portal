@@ -1,19 +1,23 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  transaction_type: MyString
+  transaction_type: income
   amount: 1
   transaction_date: 2026-05-30
   payer_name: MyString
   description: MyText
   finance_category: one
+  finance_unit: main
   recorded_by: one
+  payment_location: cash
 
 two:
-  transaction_type: MyString
+  transaction_type: expense
   amount: 1
   transaction_date: 2026-05-30
   payer_name: MyString
   description: MyText
   finance_category: two
+  finance_unit: main
   recorded_by: two
+  payment_location: cash

@@ -1,0 +1,15 @@
+<div data-controller="pwa-connectivity">
+  <div data-pwa-connectivity-target="offlineBanner"
+       class="hidden fixed inset-x-0 top-0 z-[200] flex items-center justify-center gap-1.5 bg-amber-500 px-4 py-2 text-center text-xs font-black text-white"
+       role="status">
+    <%= heroicon "signal-slash", variant: :outline, options: { class: "h-3.5 w-3.5 shrink-0" } %>
+    Internet a awm lo — thlakna te a lang nghal lo mai thei
+  </div>
+
+  <div data-pwa-connectivity-target="onlineBanner"
+       class="hidden fixed inset-x-0 top-0 z-[200] flex items-center justify-center gap-1.5 bg-emerald-600 px-4 py-2 text-center text-xs font-black text-white"
+       role="status">
+    <%= heroicon "wifi", variant: :outline, options: { class: "h-3.5 w-3.5 shrink-0" } %>
+    Internet a awm leh ta
+  </div>
+</div>

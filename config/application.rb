@@ -23,5 +23,10 @@ module TokyoMizoChurchPortal
     #
     config.time_zone = "Tokyo"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # The `audited` gem YAML-serializes changed attribute values into
+    # audited_changes; Psych's safe dump/load rejects any class not on this
+    # list, and FinanceTransaction has a `Date` column (transaction_date).
+    config.active_record.yaml_column_permitted_classes = [ Symbol, Date ]
   end
 end

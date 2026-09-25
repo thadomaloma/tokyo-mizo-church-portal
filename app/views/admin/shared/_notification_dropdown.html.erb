@@ -5,13 +5,17 @@
      class="relative z-[110]">
   <button type="button"
           data-action="click->dropdown#toggle"
-          class="relative rounded-xl border p-2.5 transition <%= on_dark ? 'border-white/15 bg-white/10 hover:bg-white/15' : 'border-slate-200 bg-white/90 text-slate-600 shadow-sm hover:border-slate-300 hover:bg-white' %>">
+          data-dropdown-target="trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-label="Notifications<%= notifications_count.to_i.positive? ? ", #{pluralize(notifications_count.to_i, 'unread')}" : "" %>"
+          class="relative flex h-11 w-11 items-center justify-center rounded-xl border transition <%= on_dark ? 'border-white/15 bg-white/10 hover:bg-white/15' : 'border-slate-200 bg-white/90 text-slate-600 shadow-sm hover:border-slate-300 hover:bg-white' %>">
     <%= heroicon "bell",
         variant: :outline,
         options: { class: "h-5 w-5 #{on_dark ? 'text-white' : 'text-slate-600'}" } %>
 
     <% if notifications_count.to_i.positive? %>
-      <span data-dropdown-target="badge"
+      <span aria-hidden="true"
             class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white">
         <%= notifications_count %>
       </span>
@@ -45,13 +49,11 @@
               class: "block p-4 transition #{unread ? 'bg-sky-50 hover:bg-sky-100' : 'bg-white hover:bg-slate-50'}" do %>
 
             <div class="flex items-start gap-3">
-              <% if unread %>
-                <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-sky-600"></span>
-              <% else %>
-                <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-slate-300"></span>
-              <% end %>
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 <%= unread ? 'bg-sky-100 text-sky-700 ring-sky-200' : 'bg-slate-100 text-slate-400 ring-slate-200' %>">
+                <%= heroicon notification.icon, variant: :outline, options: { class: "h-4 w-4" } %>
+              </div>
 
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <p class="text-sm font-black <%= unread ? 'text-sky-900' : 'text-slate-700' %>">
                   <%= notification.title %>
                 </p>
@@ -64,14 +66,24 @@
                   <%= time_ago_in_words(notification.created_at) %> ago
                 </p>
               </div>
+
+              <% if unread %>
+                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-sky-600" aria-label="Unread"></span>
+              <% end %>
             </div>
           <% end %>
         <% end %>
       <% else %>
         <div class="p-6 text-center text-sm font-semibold text-slate-400">
-          No notifications yet.
+          Notification a la awm lo.
         </div>
       <% end %>
+    </div>
+
+    <div class="border-t border-slate-100 p-3">
+      <%= link_to "View all notifications",
+          admin_notifications_path,
+          class: "block rounded-xl px-4 py-2.5 text-center text-sm font-black text-sky-700 hover:bg-sky-50" %>
     </div>
   </div>
 </div>

@@ -5,8 +5,19 @@ module Admin
     before_action :set_attendance_members, only: %i[new edit create update]
 
     def index
-      @meeting_minutes = MeetingMinute.regular_records.latest.with_attached_pdf_file
-      @archived_minutes = MeetingMinute.pdf_archives.latest.with_attached_pdf_file
+      @year = params[:year].presence&.to_i
+      @meeting_type = params[:meeting_type].presence
+
+      regular = MeetingMinute.regular_records.latest.with_attached_pdf_file
+      regular = regular.where("EXTRACT(YEAR FROM meeting_date) = ?", @year) if @year
+      regular = regular.where(meeting_type: @meeting_type) if @meeting_type
+      @pagy, @meeting_minutes = pagy(regular, limit: 10)
+
+      archives = MeetingMinute.pdf_archives.latest.with_attached_pdf_file
+      @archive_pagy, @archived_minutes = pagy(archives, limit: 10, page_key: "archive_page")
+
+      @meeting_type_options = MeetingMinute.regular_records.distinct.pluck(:meeting_type).compact.sort
+      @year_options = MeetingMinute.where.not(meeting_date: nil).pluck(:meeting_date).map(&:year).uniq.sort.reverse
     end
 
     def show
@@ -37,11 +48,11 @@ module Admin
 
       if @meeting_minute.save
         if @meeting_minute.archive_only?
-          notify("Minute PDF Archived", "#{current_user.name} archived #{@meeting_minute.title}.")
-          redirect_to admin_meeting_minutes_path, notice: "Minute PDF archived."
+          notify("Minute PDF Archived", "#{current_user.name} in #{@meeting_minute.title} a archive.")
+          redirect_to admin_meeting_minutes_path, notice: "Minute PDF archive fel a ni."
         else
-          notify("New Meeting Minutes", "#{current_user.name} recorded #{@meeting_minute.meeting_type} minutes.")
-          redirect_to admin_meeting_minutes_path, notice: "Meeting minutes recorded."
+          notify("New Meeting Minutes", "#{current_user.name} in #{@meeting_minute.meeting_type} minute a record.")
+          redirect_to admin_meeting_minutes_path, notice: "Meeting minute record fel a ni."
         end
       else
         render @meeting_minute.archive_only? ? :new_archive : :new,
@@ -53,8 +64,8 @@ module Admin
 
     def update
       if @meeting_minute.update(meeting_minute_params)
-        notify("Meeting Minutes Updated", "#{current_user.name} updated #{@meeting_minute.title}.")
-        redirect_to admin_meeting_minutes_path, notice: "Meeting minutes updated."
+        notify("Meeting Minutes Updated", "#{current_user.name} in #{@meeting_minute.title} a siam tha.")
+        redirect_to admin_meeting_minutes_path, notice: "Meeting minute siamthat fel a ni."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -62,7 +73,7 @@ module Admin
 
     def destroy
       @meeting_minute.destroy
-      redirect_to admin_meeting_minutes_path, notice: "Meeting minutes deleted."
+      redirect_to admin_meeting_minutes_path, notice: "Meeting minute delete fel a ni."
     end
 
     private

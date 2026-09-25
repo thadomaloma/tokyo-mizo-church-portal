@@ -1,0 +1,41 @@
+main:
+  name: Main Church Finance
+  slug: main-church-finance
+  unit_type: church
+  active: true
+  position: 0
+
+naupang:
+  name: Naupang Department
+  slug: naupang-department
+  unit_type: department
+  active: true
+  position: 10
+
+thalai:
+  name: Thalai Department
+  slug: thalai-department
+  unit_type: department
+  active: true
+  position: 20
+
+hmeichhe:
+  name: Hmeichhe Department
+  slug: hmeichhe-department
+  unit_type: department
+  active: true
+  position: 30
+
+building:
+  name: Building Sum
+  slug: building-sum
+  unit_type: fund
+  active: true
+  position: 40
+
+mission:
+  name: Mission Sum
+  slug: mission-sum
+  unit_type: fund
+  active: true
+  position: 50

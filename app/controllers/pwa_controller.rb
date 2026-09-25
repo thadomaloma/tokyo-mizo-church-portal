@@ -11,4 +11,8 @@ class PwaController < ApplicationController
   def service_worker
     render "pwa/service-worker", formats: :js
   end
+
+  def offline
+    render "pwa/offline", formats: :html
+  end
 end

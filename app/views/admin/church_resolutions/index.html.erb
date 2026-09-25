@@ -1,10 +1,3 @@
-<%
-  pending_count = @church_resolutions.count(&:pending?)
-  in_progress_count = @church_resolutions.count(&:in_progress?)
-  completed_count = @church_resolutions.count(&:completed?)
-  overdue_count = @church_resolutions.count { |resolution| resolution.due_date.present? && !resolution.completed? && resolution.due_date < Date.current }
-%>
-
 <div class="space-y-6 lg:space-y-8">
   <section class="premium-hero rounded-[1.5rem] text-white">
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -18,7 +11,7 @@
         </h1>
 
         <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          View status, assigned people and due dates clearly.
+          Status, mawhphurtu ruat leh due date te fel fai takin en rawh.
         </p>
 
         <% if can_manage_church? %>
@@ -34,22 +27,22 @@
 
       <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-white/[0.04] p-6 sm:p-8 lg:border-l lg:border-t-0">
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= pending_count %></p>
+          <p class="text-3xl font-black"><%= @pending_count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Pending</p>
         </div>
 
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= in_progress_count %></p>
+          <p class="text-3xl font-black"><%= @in_progress_count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">In Progress</p>
         </div>
 
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= completed_count %></p>
+          <p class="text-3xl font-black"><%= @completed_count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Completed</p>
         </div>
 
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= overdue_count %></p>
+          <p class="text-3xl font-black"><%= @overdue_count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Overdue</p>
         </div>
       </div>
@@ -57,23 +50,58 @@
   </section>
 
   <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
-    <div class="mb-5 flex items-center justify-between gap-3">
+    <%= form_with url: admin_church_resolutions_path, method: :get, data: { turbo: false },
+        class: "flex flex-col gap-3 sm:flex-row sm:items-end" do |form| %>
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Status</label>
+        <%= form.select :status,
+            ChurchResolution.statuses.keys.map { |status| [status.humanize, status] },
+            { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-40" %>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Year</label>
+        <%= form.select :year, options_for_select(@year_options, @year), { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-32" %>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Assigned To</label>
+        <%= form.collection_select :assigned_to_id, @assignable_users, :id, :name, { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-48" %>
+      </div>
+
+      <button type="submit"
+          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white hover:bg-slate-800">
+        <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-4 w-4" } %>
+        Filter
+      </button>
+    <% end %>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between gap-3 p-4 sm:p-5 lg:p-6">
       <div>
         <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Follow-up Board</p>
         <h2 class="mt-2 text-2xl font-black text-slate-950">All Resolutions</h2>
       </div>
 
       <span class="text-xs font-black uppercase tracking-wide text-slate-400">
-        <%= pluralize(@church_resolutions.size, "item") %>
+        <%= pluralize(@pagy.count, "item") %>
       </span>
     </div>
 
     <% if @church_resolutions.any? %>
-      <div class="space-y-4">
+      <div class="space-y-4 px-4 pb-4 sm:px-5 sm:pb-5 lg:px-6 lg:pb-6">
         <%= render @church_resolutions %>
       </div>
+
+      <%= render "admin/shared/pagination", pagy: @pagy, page_url: ->(page) {
+        admin_church_resolutions_path(request.query_parameters.merge(page: page))
+      } %>
     <% else %>
-      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+      <div class="mx-4 mb-4 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center sm:mx-5 sm:mb-5 lg:mx-6 lg:mb-6">
         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm">
           <%= heroicon "clipboard-document-check", variant: :outline, options: { class: "h-7 w-7" } %>
         </div>
@@ -82,11 +110,11 @@
 
         <% if can_manage_church? %>
           <p class="mt-2 text-sm text-slate-500">
-            Add church decision follow-up items.
+            Kohhran thurel zui tur item te dah rawh.
           </p>
         <% else %>
           <p class="mt-2 text-sm text-slate-500">
-            No resolution records are available to view yet.
+            En tur resolution record a la awm lo.
           </p>
         <% end %>
       </div>

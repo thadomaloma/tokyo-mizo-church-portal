@@ -1,12 +1,16 @@
 module Admin
   class ReportsController < BaseController
+    before_action :require_finance_access!, only: :finance
+
     def index
-      @total_income = FinanceTransaction.income.this_year.sum(:amount)
-      @total_expense = FinanceTransaction.expense.this_year.sum(:amount)
+      @finance_unit = current_finance_unit
+      transactions = @finance_unit&.finance_transactions || FinanceTransaction.none
+      @total_income = transactions.income.this_year.sum(:amount)
+      @total_expense = transactions.expense.this_year.sum(:amount)
       @balance = @total_income - @total_expense
 
-      @monthly_income = FinanceTransaction.income.this_month.sum(:amount)
-      @monthly_expense = FinanceTransaction.expense.this_month.sum(:amount)
+      @monthly_income = transactions.income.this_month.sum(:amount)
+      @monthly_expense = transactions.expense.this_month.sum(:amount)
 
       @total_members = User.count
       @active_members = User.where(active: true).count
@@ -17,6 +21,7 @@ module Admin
     end
 
     def finance
+      configure_finance_report_scope
       @period_year = selected_finance_year
       @start_month = selected_finance_month(:start_month, 1)
       @end_month = selected_finance_month(:end_month, Date.current.month)
@@ -30,19 +35,9 @@ module Admin
 
       period_transactions = finance_transactions_for_period(@period_year, @start_month, @end_month)
       transactions = filter_transactions_by_type(period_transactions)
-      @report_transactions = transactions.to_a
       @income = transactions.income.sum(:amount)
       @expense = transactions.expense.sum(:amount)
       @balance = @income - @expense
-      @finance_report_data = FinanceReportData.new(
-        transactions: @report_transactions,
-        income: @income,
-        expense: @expense,
-        balance: @balance,
-        period_year: @period_year,
-        start_month: @start_month,
-        end_month: @end_month
-      )
 
       respond_to do |format|
         format.html do
@@ -50,8 +45,9 @@ module Admin
         end
 
         format.pdf do
+          report_transactions = transactions.to_a
           pdf = FinanceReportPdf.new(
-            transactions: @report_transactions,
+            transactions: report_transactions,
             income: @income,
             expense: @expense,
             balance: @balance,
@@ -59,21 +55,31 @@ module Admin
             period_year: @period_year,
             start_month: @start_month,
             end_month: @end_month,
-            ledger_type_label: @ledger_type_label
+            ledger_type_label: @ledger_type_label,
+            finance_unit_label: @finance_unit_label
           )
 
           send_data pdf.render,
-                    filename: "tokyo_mizo_church_finance_report_#{@ledger_type}_#{finance_period_filename}.pdf",
+                    filename: "tokyo_mizo_church_#{finance_unit_filename}_finance_report_#{@ledger_type}_#{finance_period_filename}.pdf",
                     type: "application/pdf",
                     disposition: "attachment"
         end
 
         format.xlsx do
-          @transactions = @report_transactions
+          @transactions = transactions.to_a
+          @finance_report_data = FinanceReportData.new(
+            transactions: @transactions,
+            income: @income,
+            expense: @expense,
+            balance: @balance,
+            period_year: @period_year,
+            start_month: @start_month,
+            end_month: @end_month
+          )
 
           response.headers[
             "Content-Disposition"
-          ] = "attachment; filename=tokyo_mizo_church_finance_report_#{@ledger_type}_#{finance_period_filename}.xlsx"
+          ] = "attachment; filename=tokyo_mizo_church_#{finance_unit_filename}_finance_report_#{@ledger_type}_#{finance_period_filename}.xlsx"
         end
       end
     end
@@ -117,7 +123,7 @@ module Admin
     end
 
     def finance_year_options
-      transaction_years = FinanceTransaction
+      transaction_years = @finance_scope
                             .where.not(transaction_date: nil)
                             .distinct
                             .pluck(:transaction_date)
@@ -164,11 +170,29 @@ module Admin
       period_start = Date.new(year, start_month, 1)
       period_end = Date.new(year, end_month, -1)
 
-      transactions = FinanceTransaction
-                       .includes(:finance_category, :recorded_by)
+      transactions = @finance_scope
+                       .includes(:finance_category, :finance_unit, :recorded_by)
                        .order(transaction_date: :desc, created_at: :desc)
 
       transactions.where(transaction_date: period_start..period_end)
+    end
+
+    def configure_finance_report_scope
+      if params[:finance_unit_id] == "all" && current_user.super_admin?
+        @finance_unit = nil
+        @finance_unit_selector = "all"
+        @finance_unit_label = "Consolidated Finance"
+        @finance_scope = FinanceTransaction.where(finance_unit: available_finance_units)
+      else
+        @finance_unit = current_finance_unit
+        @finance_unit_selector = @finance_unit.id
+        @finance_unit_label = @finance_unit.name
+        @finance_scope = @finance_unit.finance_transactions
+      end
+    end
+
+    def finance_unit_filename
+      @finance_unit&.slug || "consolidated-finance"
     end
   end
 end

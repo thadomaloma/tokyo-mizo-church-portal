@@ -9,10 +9,10 @@
             <%= image_tag "tokyo_mizo_church_logo.png", alt: "Tokyo Mizo Church Logo", class: "h-12 w-12 object-contain" %>
           </div>
           <p class="mt-8 text-[11px] font-black uppercase tracking-[0.28em] text-sky-200">Tokyo Mizo Church</p>
-          <h1 class="mt-4 max-w-md text-4xl font-black leading-tight tracking-[-0.035em] xl:text-5xl">One place for church administration.</h1>
-          <p class="mt-5 max-w-md text-base leading-7 text-slate-300">Finance, meeting records, calendar, resolutions and members—organized for the church team.</p>
+          <h1 class="mt-4 max-w-md text-4xl font-black leading-tight tracking-[-0.035em] xl:text-5xl">Kohhran enkawlna zawng zawng hmun khatah.</h1>
+          <p class="mt-5 max-w-md text-base leading-7 text-slate-300">Sum leh pai, meeting thuziak, hunbi, thu rel leh member te fel fai taka dah khawmna.</p>
         </div>
-        <p class="text-xs font-semibold text-slate-400">Tokyo, Japan · Established church workspace</p>
+        <p class="text-xs font-semibold text-slate-400">Tokyo, Japan · Kohhran hnathawhna hmun</p>
       </div>
 
       <div class="flex items-center p-6 sm:p-10 lg:p-12">
@@ -27,13 +27,13 @@
               class: "h-20 w-20 rounded-2xl border-4 border-white bg-white object-contain shadow-xl ring-1 ring-slate-200" %>
         </div>
 
-        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Secure portal access</p>
+        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Secure Portal Access</p>
         <h1 class="mt-3 text-3xl font-black tracking-[-0.03em] text-[#0b1f33]">
-          Welcome back
+          Welcome Back
         </h1>
 
         <p class="mt-3 text-sm leading-6 text-slate-500">
-          Sign in to continue to Tokyo Mizo Church Portal.
+          Tokyo Mizo Church Portal chhunzawm turin lut rawh.
         </p>
 
       </div>
@@ -49,23 +49,25 @@
 
             <div>
               <%= f.label :email,
+                  "Email Address",
                   class: "mb-2 block text-sm font-bold text-slate-700" %>
 
               <%= f.email_field :email,
                   autofocus: true,
                   autocomplete: "email",
-                  placeholder: "Enter email",
+                  placeholder: "I email address ziak rawh",
                   class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
             </div>
 
             <div>
               <%= f.label :password,
+                  "Password",
                   class: "mb-2 block text-sm font-bold text-slate-700" %>
 
               <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-600 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
                 <%= f.password_field :password,
                     autocomplete: "current-password",
-                    placeholder: "Enter password",
+                    placeholder: "I password ziak rawh",
                     data: { password_input: true },
                     class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 focus:outline-none focus:ring-0" %>
 
@@ -96,6 +98,7 @@
                     class: "rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
 
                 <%= f.label :remember_me,
+                    "Remember me",
                     class: "text-sm font-medium text-slate-600" %>
               </div>
             <% end %>

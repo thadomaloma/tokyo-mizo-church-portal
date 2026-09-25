@@ -1,5 +1,8 @@
 class User < ApplicationRecord
   has_many :notification_reads, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
+  has_many :finance_unit_memberships, dependent: :destroy
+  has_many :finance_units, through: :finance_unit_memberships
   has_many :authored_notifications,
            class_name: "Notification",
            foreign_key: :actor_id,
@@ -17,11 +20,10 @@ class User < ApplicationRecord
            foreign_key: :created_by_id,
            inverse_of: :created_by,
            dependent: :restrict_with_error
-  has_many :assigned_resolutions,
-           class_name: "Resolution",
-           foreign_key: :assigned_to_id,
-           inverse_of: :assigned_to,
-           dependent: :nullify
+  has_many :official_letters,
+           foreign_key: :created_by_id,
+           inverse_of: :created_by,
+           dependent: :restrict_with_error
   has_many :assigned_church_resolutions,
            class_name: "ChurchResolution",
            foreign_key: :assigned_to_id,
@@ -72,8 +74,40 @@ class User < ApplicationRecord
     role_president? || role_secretary?
   end
 
-  def finance_admin?
-    role_treasurer? || role_finance_secretary?
+  def accessible_finance_units
+    return FinanceUnit.ordered if super_admin?
+
+    FinanceUnit.active
+               .joins(:finance_unit_memberships)
+               .where(finance_unit_memberships: { user_id: id })
+               .ordered
+  end
+
+  def preferred_finance_unit
+    return FinanceUnit.main if super_admin?
+
+    accessible_finance_units.first
+  end
+
+  def can_view_finance_unit?(finance_unit)
+    finance_unit.present? && accessible_finance_units.exists?(finance_unit.id)
+  end
+
+  def can_manage_finance_unit?(finance_unit)
+    return false unless finance_unit
+    return true if super_admin?
+
+    finance_unit_memberships.managers.exists?(finance_unit_id: finance_unit.id)
+  end
+
+  def finance_role_for(finance_unit)
+    return "oversight" if super_admin?
+
+    finance_unit_memberships.find_by(finance_unit: finance_unit)&.role
+  end
+
+  def finance_access?
+    super_admin? || finance_unit_memberships.joins(:finance_unit).merge(FinanceUnit.active).exists?
   end
 
   def office_bearer?

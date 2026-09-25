@@ -13,6 +13,12 @@
   </head>
 
   <body class="overflow-x-hidden bg-[#f4f7fa] text-slate-900 antialiased">
+    <% flash.each do |type, message| %>
+      <div class="fixed inset-x-4 top-4 z-50 mx-auto max-w-md rounded-xl border px-4 py-3 text-sm font-bold shadow-lg <%= type.to_s == 'alert' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700' %>"
+           role="status">
+        <%= message %>
+      </div>
+    <% end %>
     <%= yield %>
     <%= render "layouts/password_toggle_script" %>
   </body>

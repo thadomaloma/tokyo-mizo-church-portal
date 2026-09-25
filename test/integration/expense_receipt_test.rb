@@ -46,7 +46,7 @@ class ExpenseReceiptTest < ActionDispatch::IntegrationTest
 
     get receipt_admin_finance_transaction_path(transaction)
 
-    assert_redirected_to admin_finance_transactions_path
+    assert_redirected_to admin_finance_transactions_path(finance_unit_id: category.finance_unit_id)
   end
 
   private

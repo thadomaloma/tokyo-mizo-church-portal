@@ -1,4 +1,6 @@
 class MeetingMinutePdf
+  include PdfRichText
+
   SECRETARY_SIGNATURE_FIT = [ 145, 48 ].freeze
 
   def initialize(meeting_minute)
@@ -7,7 +9,7 @@ class MeetingMinutePdf
 
   def render
     pdf = Prawn::Document.new(page_size: "A4", margin: 40)
-    register_fonts(pdf)
+    register_fonts(pdf, family: "MinuteFont")
 
     build_header(pdf)
     build_details(pdf)
@@ -28,31 +30,6 @@ class MeetingMinutePdf
   private
 
   attr_reader :meeting_minute
-
-  def register_fonts(pdf)
-    regular = [
-      "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
-      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-      "/System/Library/Fonts/Supplemental/Arial.ttf",
-      "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
-    ].find { |path| File.exist?(path) }
-    return unless regular
-
-    bold = regular.sub(/(?:Regular)?\.ttf\z/, "Bold.ttf")
-    bold = regular unless File.exist?(bold)
-
-    pdf.font_families.update(
-      "MinuteFont" => {
-        normal: regular,
-        bold: bold,
-        italic: regular,
-        bold_italic: bold
-      }
-    )
-    pdf.font "MinuteFont"
-  rescue StandardError => error
-    Rails.logger.warn("Meeting minute PDF font registration failed: #{error.class} - #{error.message}")
-  end
 
   def build_header(pdf)
     pdf.fill_color "0F172A"
@@ -163,108 +140,6 @@ class MeetingMinutePdf
       meeting_minute.start_time&.strftime("%I:%M %p"),
       meeting_minute.end_time&.strftime("%I:%M %p")
     ].compact.join(" - ")
-  end
-
-  def plain_text(value)
-    text = value.to_s
-    text = text.gsub(%r{</(p|div|li|h[1-6])>}i, "\n")
-    text = text.gsub(%r{<br\s*/?>}i, "\n")
-    text = text.gsub(%r{<li[^>]*>}i, "- ")
-    text = ActionView::Base.full_sanitizer.sanitize(text)
-    text.gsub(/\n{3,}/, "\n\n").strip
-  end
-
-  def write_rich_text(pdf, value)
-    if html_content?(value)
-      rich_blocks(value).each do |block|
-        pdf.text block, size: 10, leading: 4, inline_format: true
-      end
-    else
-      pdf.text decoded_text(value), size: 10, leading: 4
-    end
-  end
-
-  def html_content?(value)
-    value.to_s.match?(/<\/?[a-z][\s\S]*>/i)
-  end
-
-  def rich_blocks(value)
-    fragment = Nokogiri::HTML::DocumentFragment.parse(sanitized_html(value))
-    blocks = nodes_to_blocks(fragment.children)
-    blocks.map(&:strip).reject(&:blank?)
-  end
-
-  def sanitized_html(value)
-    ActionController::Base.helpers.sanitize(
-      value.to_s,
-      tags: %w[p br div strong b em i u ul ol li],
-      attributes: []
-    )
-  end
-
-  def nodes_to_blocks(nodes)
-    blocks = []
-
-    nodes.each do |node|
-      case node.name
-      when "p", "div"
-        content = inline_markup(node.children)
-        blocks << content if content.present?
-      when "ul", "ol"
-        blocks.concat(list_blocks(node))
-      when "br"
-        blocks << ""
-      when "text"
-        content = escape_pdf_markup(node.text.strip)
-        blocks << content if content.present?
-      else
-        content = inline_markup([ node ])
-        blocks << content if content.present?
-      end
-    end
-
-    blocks
-  end
-
-  def list_blocks(list_node)
-    list_node.css("> li").each_with_index.map do |item, index|
-      prefix = list_node.name == "ol" ? "#{index + 1}. " : "- "
-      "#{prefix}#{inline_markup(item.children)}"
-    end
-  end
-
-  def inline_markup(nodes)
-    nodes.map do |node|
-      case node.name
-      when "text"
-        escape_pdf_markup(node.text)
-      when "strong", "b"
-        "<b>#{inline_markup(node.children)}</b>"
-      when "em", "i"
-        "<i>#{inline_markup(node.children)}</i>"
-      when "u"
-        "<u>#{inline_markup(node.children)}</u>"
-      when "br"
-        "\n"
-      when "ul", "ol"
-        list_blocks(node).join("\n")
-      when "li"
-        inline_markup(node.children)
-      else
-        inline_markup(node.children)
-      end
-    end.join
-  end
-
-  def escape_pdf_markup(text)
-    decoded_text(text)
-      .gsub("&", "&amp;")
-      .gsub("<", "&lt;")
-      .gsub(">", "&gt;")
-  end
-
-  def decoded_text(value)
-    CGI.unescapeHTML(value.to_s).strip
   end
 
   def render_secretary_signature(pdf)

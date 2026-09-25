@@ -12,8 +12,37 @@
       </h1>
 
       <p class="mt-2 truncate text-sm font-semibold text-slate-300">
-        Welcome back, <%= current_user.name %>
+        Chibai, <%= current_user.name %>. Lo kir leh rawh.
       </p>
+
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <% if @finance_unit %>
+          <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-sky-100 ring-1 ring-white/15">
+            <%= @finance_unit.name %>
+          </span>
+
+          <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white ring-1 ring-white/15">
+            Balance ¥<%= number_with_delimiter(@current_balance) %>
+          </span>
+
+          <% if available_finance_units.many? %>
+            <%= form_with url: admin_root_path, method: :get, data: { turbo: false }, class: "flex gap-2" do |form| %>
+              <%= form.collection_select :finance_unit_id,
+                  available_finance_units,
+                  :id,
+                  :name,
+                  { selected: @finance_unit.id },
+                  class: "min-h-9 max-w-56 rounded-xl border-0 bg-white px-3 text-xs font-black text-slate-900 focus:ring-2 focus:ring-sky-300" %>
+              <%= form.submit "Show",
+                  class: "rounded-xl bg-sky-500 px-3 text-xs font-black text-white hover:bg-sky-400" %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-slate-200 ring-1 ring-white/15">
+            Finance access pek i la ni lo
+          </span>
+        <% end %>
+      </div>
     </div>
 
     <div class="hidden rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-right lg:block">

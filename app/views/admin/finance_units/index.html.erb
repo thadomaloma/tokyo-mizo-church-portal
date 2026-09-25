@@ -1,0 +1,112 @@
+<%= render "admin/shared/page_header",
+    title: "Finance Access",
+    subtitle: "Main Church, department leh fund tin enkawltu tur hmun khatah assign rawh." %>
+
+<section class="rounded-2xl border border-sky-100 bg-sky-50/70 p-5 text-sm leading-6 text-sky-950">
+  <p class="font-black">Permission Workflow</p>
+  <p class="mt-1">President leh Secretary ten finance unit zawng zawng an oversee thei. Treasurer leh Finance Secretary te chu heta an unit atan assign hnuah chauh finance data an en leh an manage thei ang. Viewer chu read-only a ni.</p>
+</section>
+
+<div class="mt-6 space-y-5">
+  <% @finance_units.each do |unit| %>
+    <% treasurer = unit.finance_unit_memberships.find { |membership| membership.role == "treasurer" } %>
+    <% finance_secretary = unit.finance_unit_memberships.find { |membership| membership.role == "finance_secretary" } %>
+    <% viewers = unit.finance_unit_memberships.select { |membership| membership.role == "viewer" } %>
+    <% assigned_by_user_id = unit.finance_unit_memberships.index_by(&:user_id) %>
+    <% treasurer_candidates = (@users.to_a + [treasurer&.user]).compact.uniq.reject { |user| assigned_by_user_id[user.id]&.role.to_s.in?(%w[finance_secretary viewer]) } %>
+    <% finance_secretary_candidates = (@users.to_a + [finance_secretary&.user]).compact.uniq.reject { |user| assigned_by_user_id[user.id]&.role.to_s.in?(%w[treasurer viewer]) } %>
+    <% viewer_candidates = @users.reject { |user| assigned_by_user_id.key?(user.id) } %>
+    <% treasurer_select_id = "finance-unit-#{unit.id}-treasurer" %>
+    <% secretary_select_id = "finance-unit-#{unit.id}-finance-secretary" %>
+    <% viewer_select_id = "finance-unit-#{unit.id}-viewer" %>
+
+    <section data-finance-unit-id="<%= unit.id %>" class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-xl font-black text-slate-950"><%= unit.name %></h2>
+            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500"><%= unit.unit_type.humanize %></span>
+            <% if treasurer.blank? %>
+              <span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-amber-700">Treasurer unassigned</span>
+            <% end %>
+          </div>
+          <p class="mt-1 text-sm text-slate-500"><%= pluralize(unit.finance_transactions.size, "transaction") %> · Officer assignment</p>
+        </div>
+
+        <%= link_to "Open Ledger", admin_finance_transactions_path(finance_unit_id: unit.id), class: "rounded-xl bg-sky-50 px-4 py-2.5 text-center text-sm font-black text-sky-700" %>
+      </div>
+
+      <div class="grid gap-4 p-5 lg:grid-cols-2">
+        <%= form_with model: [:admin, unit, FinanceUnitMembership.new], class: "rounded-2xl border border-slate-200 bg-slate-50/70 p-4" do |form| %>
+          <%= form.hidden_field :role, value: "treasurer", id: nil %>
+          <%= form.label :user_id, "Treasurer", for: treasurer_select_id, class: "block text-sm font-black text-slate-900" %>
+          <p class="mt-1 text-xs text-slate-500">Sum lut/chhuak, category, report leh monthly closing manage thei.</p>
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+            <%= form.select :user_id,
+                finance_access_user_options(treasurer_candidates, treasurer&.user_id),
+                { include_blank: "No Treasurer assigned" },
+                id: treasurer_select_id,
+                class: "min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold" %>
+            <%= form.submit "Save Treasurer", class: "min-h-11 rounded-xl bg-slate-900 px-5 text-sm font-black text-white" %>
+          </div>
+          <p class="mt-2 text-[11px] leading-4 text-slate-400">“No Treasurer assigned” thlangin save hmeh chuan assignment a paih ang.</p>
+        <% end %>
+
+        <% unless unit.unit_type == "fund" %>
+          <%= form_with model: [:admin, unit, FinanceUnitMembership.new], class: "rounded-2xl border border-slate-200 bg-slate-50/70 p-4" do |form| %>
+            <%= form.hidden_field :role, value: "finance_secretary", id: nil %>
+            <%= form.label :user_id, "Finance Secretary", for: secretary_select_id, class: "block text-sm font-black text-slate-900" %>
+            <p class="mt-1 text-xs text-slate-500">Treasurer nen permission inangin assigned ledger manage thei.</p>
+            <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+              <%= form.select :user_id,
+                  finance_access_user_options(finance_secretary_candidates, finance_secretary&.user_id),
+                  { include_blank: "No Finance Secretary assigned" },
+                  id: secretary_select_id,
+                  class: "min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold" %>
+              <%= form.submit "Save Secretary", class: "min-h-11 rounded-xl bg-slate-900 px-5 text-sm font-black text-white" %>
+            </div>
+            <p class="mt-2 text-[11px] leading-4 text-slate-400">Role thlak tur chuan assignment hmasa clear hmasa rawh.</p>
+          <% end %>
+        <% else %>
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <p class="text-sm font-black text-slate-900">Fund workflow</p>
+            <p class="mt-1 text-sm leading-6 text-slate-500">Building Sum leh Mission Sum atan Treasurer pakhat chauh manager role a awm.</p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="border-t border-slate-100 p-5">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Read-only Viewers</h3>
+            <p class="mt-1 text-xs text-slate-500">Ledger leh report en thei; data thlak thei lo.</p>
+          </div>
+
+          <%= form_with model: [:admin, unit, FinanceUnitMembership.new], class: "flex flex-col gap-2 sm:flex-row" do |form| %>
+            <%= form.hidden_field :role, value: "viewer", id: nil %>
+            <%= form.label :user_id, "Viewer tur thlang rawh", for: viewer_select_id, class: "sr-only" %>
+            <%= form.select :user_id,
+                finance_access_user_options(viewer_candidates),
+                { prompt: viewer_candidates.any? ? "Select viewer" : "No available member" },
+                id: viewer_select_id,
+                disabled: viewer_candidates.empty?,
+                class: "min-h-11 min-w-56 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold disabled:bg-slate-100 disabled:text-slate-400" %>
+            <%= form.submit "Add Viewer", disabled: viewer_candidates.empty?, class: "min-h-11 rounded-xl bg-slate-100 px-5 text-sm font-black text-slate-700 disabled:cursor-not-allowed disabled:opacity-50" %>
+          <% end %>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2">
+          <% viewers.each do |membership| %>
+            <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 py-1.5 pl-3 pr-1.5 text-xs font-bold text-slate-700">
+              <span><%= membership.user.name %></span>
+              <%= button_to "Remove", admin_finance_unit_finance_unit_membership_path(unit, membership), method: :delete, form: { data: { turbo_confirm: "He viewer access hi paih i duh em?" } }, class: "rounded-full bg-white px-2 py-1 font-black text-rose-600" %>
+            </div>
+          <% end %>
+          <% if viewers.empty? %>
+            <span class="text-sm text-slate-400">No viewers assigned.</span>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+</div>

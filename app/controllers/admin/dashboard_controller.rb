@@ -1,41 +1,46 @@
 module Admin
   class DashboardController < BaseController
     def index
-      @current_balance = FinanceTransaction.income.sum(:amount) - FinanceTransaction.expense.sum(:amount)
-
-      load_monthly_giving_totals
-      @monthly_finance_overview = monthly_finance_overview
-      @monthly_income_total = @monthly_finance_overview.sum { |month| month[:income] }
-      @monthly_expense_total = @monthly_finance_overview.sum { |month| month[:expense] }
+      @finance_unit = current_finance_unit
+      load_finance_dashboard if @finance_unit
 
       @pending_resolutions = ChurchResolution.where(status: 0).count
-      @overdue_resolutions = ChurchResolution.overdue.count
+      @recent_transactions = if @finance_unit
+        finance_transactions.includes(:finance_category).latest.limit(5)
+      else
+        FinanceTransaction.none
+      end
 
-      @recent_transactions = FinanceTransaction
-                               .includes(:finance_category)
-                               .latest
-                               .limit(5)
-
-      @upcoming_events = ChurchEvent
-                           .where("start_date >= ?", Time.current)
-                           .order(start_date: :asc)
-                           .limit(5)
-
-      @events_this_month = ChurchEvent
-                             .where(start_date: Time.current.beginning_of_month..Time.current.end_of_month)
-                             .count
-
-      @today_events_count = ChurchEvent
-                              .where(start_date: Time.current.beginning_of_day..Time.current.end_of_day)
-                              .count
+      @upcoming_events = ChurchEvent.upcoming.limit(5)
+      @events_this_month = ChurchEvent.this_month.count
+      @today_events_count = ChurchEvent.today.count
 
       @recent_minutes = MeetingMinute.latest.limit(5)
+
+      @member_overview = member_overview
     end
 
     private
 
+    def load_finance_dashboard
+      @finance_summary = FinanceSummary.new(@finance_unit)
+      @current_balance = @finance_summary.current_balance
+      load_monthly_giving_totals
+      @monthly_finance_overview = monthly_finance_overview
+      @monthly_income_total = @monthly_finance_overview.sum { |month| month[:income] }
+      @monthly_expense_total = @monthly_finance_overview.sum { |month| month[:expense] }
+    end
+
+    def member_overview
+      {
+        total: User.count,
+        active: User.where(active: true).count,
+        role_distribution: User.group(:role).count
+      }
+    end
+
     def load_monthly_giving_totals
-      transactions = FinanceTransaction
+      transactions = finance_transactions
                        .includes(:finance_category)
                        .this_month
                        .to_a
@@ -57,7 +62,7 @@ module Admin
     def monthly_finance_overview
       months = (1..Date.current.month).map { |month| Date.new(Date.current.year, month, 1) }
       range = months.first..months.last.end_of_month
-      rows = FinanceTransaction
+      rows = finance_transactions
                .where(transaction_date: range)
                .pluck(:transaction_type, :transaction_date, :amount)
 
@@ -81,6 +86,10 @@ module Admin
 
         amount
       end
+    end
+
+    def finance_transactions
+      @finance_unit.finance_transactions
     end
   end
 end

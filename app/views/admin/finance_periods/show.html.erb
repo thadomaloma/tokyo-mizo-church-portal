@@ -1,0 +1,149 @@
+<%
+  previous_month = @period_start.prev_month
+  next_month = @period_start.next_month
+%>
+
+<div class="space-y-6 lg:space-y-8">
+  <section class="premium-hero rounded-[1.5rem] text-white">
+    <div class="p-6 sm:p-8 lg:p-10">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
+          <%= @finance_unit.name %> · Monthly Review
+        </p>
+
+        <span class="rounded-full px-3 py-1.5 text-xs font-black <%= @finance_period.closed? ? "bg-rose-500/20 text-rose-100" : "bg-emerald-500/20 text-emerald-100" %>">
+          <%= @finance_period.closed? ? "Closed" : "Open" %>
+        </span>
+      </div>
+
+      <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+        <%= @period_label %>
+      </h1>
+
+      <div class="mt-6 flex items-center gap-3">
+        <%= link_to admin_finance_period_path(previous_month.year, previous_month.month, finance_unit_id: @finance_unit.id),
+            class: "inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/20" do %>
+          <%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %>
+          <%= previous_month.strftime("%b %Y") %>
+        <% end %>
+
+        <%= link_to admin_finance_period_path(next_month.year, next_month.month, finance_unit_id: @finance_unit.id),
+            class: "inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/20" do %>
+          <%= next_month.strftime("%b %Y") %>
+          <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <% if @closing_issues.any? %>
+    <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+      <p class="font-black text-amber-800">Before this month can be closed</p>
+      <ul class="mt-2 list-inside list-disc text-sm text-amber-700">
+        <% @closing_issues.each do |issue| %>
+          <li><%= issue %></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <section class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <%= render "admin/finance_transactions/summary_card", title: "Opening Balance", value: "¥#{number_with_delimiter(@opening_balance)}", icon: "banknotes", color: "sky" %>
+    <%= render "admin/finance_transactions/summary_card", title: "Income", value: "¥#{number_with_delimiter(@income)}", icon: "arrow-trending-up", color: "emerald" %>
+    <%= render "admin/finance_transactions/summary_card", title: "Expense", value: "¥#{number_with_delimiter(@expense)}", icon: "arrow-trending-down", color: "rose" %>
+    <%= render "admin/finance_transactions/summary_card",
+        title: "Net Change",
+        value: "#{@net_change.negative? ? "-" : "+"}¥#{number_with_delimiter(@net_change.abs)}",
+        icon: "scale",
+        color: @net_change.negative? ? "rose" : "emerald" %>
+    <%= render "admin/finance_transactions/summary_card", title: "Closing Balance", value: "¥#{number_with_delimiter(@closing_balance)}", icon: "lock-closed", color: "blue" %>
+  </section>
+
+  <% if can_manage_finance? %>
+    <section class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <% if @finance_period.closed? %>
+        <div class="min-w-0 flex-1">
+          <p class="font-black text-slate-900">This month is closed.</p>
+          <p class="mt-1 text-sm text-slate-500">
+            Closed by <%= @finance_period.closed_by&.name || "—" %>
+            on <%= @finance_period.closed_at&.strftime("%b %d, %Y") %>.
+            <%= @period_label %> transaction dah belh emaw edit emaw turin reopen rawh.
+          </p>
+        </div>
+
+        <%= button_to admin_reopen_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
+            method: :patch,
+            form: { data: { turbo_confirm: "#{@period_label} hi edit theih turin reopen i duh em?" } },
+            class: "inline-flex shrink-0 items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white hover:bg-slate-800" do %>
+          <%= heroicon "lock-open", variant: :outline, options: { class: "h-5 w-5" } %>
+          Reopen Month
+        <% end %>
+      <% else %>
+        <div class="min-w-0 flex-1">
+          <p class="font-black text-slate-900">This month is open.</p>
+          <p class="mt-1 text-sm text-slate-500">A chunga figure te en nawn la, a dik vek hnuah month close rawh.</p>
+        </div>
+
+        <%= button_to admin_close_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
+            method: :patch,
+            form: { data: { turbo_confirm: "#{@period_label} close i duh em? Reopen leh hma chu he thla transaction te lock a ni ang." } },
+            class: "inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300",
+            disabled: @closing_issues.any? do %>
+          <%= heroicon "lock-closed", variant: :outline, options: { class: "h-5 w-5" } %>
+          Close Month
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="font-black text-slate-900">Income by Category</h2>
+      <% if @income_by_category.any? %>
+        <ul class="mt-3 divide-y divide-slate-100">
+          <% @income_by_category.sort_by { |_, amount| -amount }.each do |name, amount| %>
+            <li class="flex items-center justify-between py-2 text-sm">
+              <span class="text-slate-600"><%= name %></span>
+              <span class="font-black text-emerald-700">¥<%= number_with_delimiter(amount) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-3 text-sm text-slate-500">Sum lut record a awm lo.</p>
+      <% end %>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="font-black text-slate-900">Expense by Category</h2>
+      <% if @expense_by_category.any? %>
+        <ul class="mt-3 divide-y divide-slate-100">
+          <% @expense_by_category.sort_by { |_, amount| -amount }.each do |name, amount| %>
+            <li class="flex items-center justify-between py-2 text-sm">
+              <span class="text-slate-600"><%= name %></span>
+              <span class="font-black text-rose-700">¥<%= number_with_delimiter(amount) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-3 text-sm text-slate-500">Sum chhuak record a awm lo.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="p-5 lg:p-6">
+      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Transactions</p>
+      <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @period_label %></h2>
+    </div>
+
+    <% if @transactions.any? %>
+      <div class="divide-y divide-slate-100">
+        <%= render @transactions %>
+      </div>
+    <% else %>
+      <div class="p-10 text-center">
+        <p class="font-black text-slate-700">He thla chhung transaction a awm lo.</p>
+      </div>
+    <% end %>
+  </section>
+</div>

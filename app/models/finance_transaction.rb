@@ -1,9 +1,13 @@
 class FinanceTransaction < ApplicationRecord
+  audited
+
   belongs_to :finance_category
+  belongs_to :finance_unit
   belongs_to :recorded_by, class_name: "User", inverse_of: :finance_transactions
 
+  before_validation :assign_finance_unit_from_category
   before_validation :clear_voucher_number, if: :income?
-  before_validation :assign_voucher_number, if: :expense?
+  before_save :assign_voucher_number, if: :expense?
 
   enum :payment_location, {
     cash: "cash",
@@ -16,6 +20,7 @@ class FinanceTransaction < ApplicationRecord
   validates :payment_location, presence: true
   validates :voucher_number,
             uniqueness: {
+              scope: %i[finance_unit_id voucher_year],
               conditions: -> { where(transaction_type: "expense") },
               allow_nil: true
             }
@@ -60,28 +65,58 @@ class FinanceTransaction < ApplicationRecord
 
   def expense_voucher_number
     return unless expense?
+    return unless voucher_number.present? && voucher_year.present?
 
-    number = voucher_number.presence || 1
-
-    "EXP-#{number.to_i.to_s.rjust(4, "0")}"
+    "EXP-#{voucher_year}-#{voucher_number.to_i.to_s.rjust(4, "0")}"
   end
 
   private
 
   def clear_voucher_number
     self.voucher_number = nil
+    self.voucher_year = nil
   end
 
+  # Scoped to (finance_unit, year) via a dedicated FinanceVoucherSequence
+  # row per pair, so numbering restarts at 1 each year without ever
+  # reusing or renumbering a prior year's vouchers — a MAX(voucher_number)
+  # query would let a deleted latest voucher's number be reissued, and a
+  # single running counter column on finance_unit can't handle backdated/
+  # out-of-order transaction_date values without colliding across years.
+  # The sequence row itself is locked (SELECT ... FOR UPDATE) to make the
+  # read-increment-write atomic under concurrent assignment.
   def assign_voucher_number
     return if voucher_number.present?
+    return unless finance_unit
 
-    self.voucher_number = self.class.expense.maximum(:voucher_number).to_i + 1
+    year = transaction_date&.year || Date.current.year
+    sequence = find_or_create_voucher_sequence(year)
+
+    sequence.with_lock do
+      sequence.next_number += 1
+      sequence.save!
+      self.voucher_number = sequence.next_number
+      self.voucher_year = year
+    end
+  end
+
+  def find_or_create_voucher_sequence(year)
+    FinanceVoucherSequence.find_by(finance_unit: finance_unit, year: year) ||
+      FinanceVoucherSequence.create!(finance_unit: finance_unit, year: year, next_number: 0)
+  rescue ActiveRecord::RecordNotUnique
+    FinanceVoucherSequence.find_by!(finance_unit: finance_unit, year: year)
   end
 
   def finance_category_type_matches_transaction_type
     return if finance_category.blank? || transaction_type.blank?
-    return if finance_category.category_type == transaction_type
+    category_matches = finance_category.category_type == transaction_type
+    unit_matches = finance_category.finance_unit == finance_unit
+    return if category_matches && unit_matches
 
-    errors.add(:finance_category, "must match the transaction type")
+    errors.add(:finance_category, "must match the transaction type and finance unit")
+  end
+
+  def assign_finance_unit_from_category
+    self.finance_unit ||= finance_category&.finance_unit || FinanceUnit.main
   end
 end

@@ -18,8 +18,8 @@ module Admin
       @church_event.created_by = current_user
 
       if @church_event.save
-        notify("New Church Event", "#{current_user.name} added event: #{@church_event.title}.")
-        redirect_to admin_church_events_path, notice: "Church event was created."
+        notify("New Church Event", "#{current_user.name} in event a dah: #{@church_event.title}.")
+        redirect_to admin_church_events_path, notice: "Church event siam fel a ni."
       else
         render :new, status: :unprocessable_entity
       end
@@ -29,8 +29,8 @@ module Admin
 
     def update
       if @church_event.update(church_event_params)
-        notify("Church Event Updated", "#{current_user.name} updated event: #{@church_event.title}.")
-        redirect_to admin_church_events_path, notice: "Church event was updated."
+        notify("Church Event Updated", "#{current_user.name} in event a siam tha: #{@church_event.title}.")
+        redirect_to admin_church_events_path, notice: "Church event siamthat fel a ni."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -38,7 +38,7 @@ module Admin
 
     def destroy
       @church_event.destroy
-      redirect_to admin_church_events_path, notice: "Church event was deleted."
+      redirect_to admin_church_events_path, notice: "Church event delete fel a ni."
     end
 
     private

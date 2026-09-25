@@ -1,0 +1,229 @@
+<%= form_with model: [:admin, official_letter],
+    class: "mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" do |form| %>
+
+  <%= render "admin/shared/form_errors", object: official_letter %>
+
+  <div class="mb-5 flex justify-end">
+    <% if official_letter.reference_number.present? %>
+      <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
+        <%= official_letter.reference_number %>
+      </span>
+    <% end %>
+  </div>
+
+  <div class="mb-6 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
+    <div class="flex gap-3">
+      <%= heroicon "information-circle", variant: :outline, options: { class: "mt-0.5 h-5 w-5 shrink-0 text-sky-600" } %>
+      <p class="text-sm leading-6 text-sky-900">
+        Reference number hi letter save hunah system-in letter date kum hmangin auto-in a siam nghal ang.
+      </p>
+    </div>
+  </div>
+
+  <div class="max-w-xs">
+    <div>
+      <%= form.label :letter_date, "Letter Date",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.date_field :letter_date,
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <section class="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+    <div>
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Letterhead</p>
+      <h2 class="mt-1 text-lg font-black text-slate-900">Official Contact Details</h2>
+      <p class="mt-1 text-sm text-slate-500">Heng details-te hi letter header-ah logo lehlamah leh a laiah a lang ang.</p>
+    </div>
+
+    <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div>
+        <%= form.label :header_president_name, "President Name",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.text_field :header_president_name,
+            placeholder: "President hming pum pui",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :header_secretary_name, "Secretary Name",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.text_field :header_secretary_name,
+            placeholder: "Secretary hming pum pui",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :header_president_phone, "President Phone",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.telephone_field :header_president_phone,
+            placeholder: "90 1234 5678",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :header_secretary_phone, "Secretary Phone",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.telephone_field :header_secretary_phone,
+            placeholder: "90 1234 5678",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :header_email, "Email",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.email_field :header_email,
+            placeholder: "church@example.org",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :header_website, "Website",
+            class: "mb-2 block text-sm font-bold text-slate-700" %>
+        <%= form.text_field :header_website,
+            placeholder: "tokyomizochurch.org",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+    <div>
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Recipient</p>
+      <h2 class="mt-1 text-lg font-black text-slate-900">Recipient Details</h2>
+      <p class="mt-1 text-sm leading-6 text-slate-500">Lehkha dawngtu tur mi emaw pawl emaw chanchin dahna.</p>
+    </div>
+
+    <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div>
+        <%= form.label :recipient_name, class: "mb-2 block" do %>
+          <span class="block text-sm font-bold text-slate-700">Recipient Name</span>
+          <span class="mt-0.5 block text-xs font-medium text-slate-500">Lehkha dawngtu hming</span>
+        <% end %>
+
+        <%= form.text_field :recipient_name,
+            placeholder: "Lehkha dawngtu hming ziak rawh",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+
+      <div>
+        <%= form.label :recipient_organization, class: "mb-2 block" do %>
+          <span class="block text-sm font-bold text-slate-700">Recipient Organization</span>
+          <span class="mt-0.5 block text-xs font-medium text-slate-500">A thawhna office emaw pawl hming (a tul chuan)</span>
+        <% end %>
+
+        <%= form.text_field :recipient_organization,
+            placeholder: "Office emaw pawl hming",
+            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <%= form.label :recipient_address, class: "mb-2 block" do %>
+        <span class="block text-sm font-bold text-slate-700">Recipient Address</span>
+        <span class="mt-0.5 block text-xs font-medium text-slate-500">Lehkha thawnna tur address (a tul chuan)</span>
+      <% end %>
+
+      <%= form.text_area :recipient_address,
+          rows: 2,
+          placeholder: "Address kimchang ziak rawh",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </section>
+
+  <div class="mt-5">
+    <div>
+      <%= form.label :subject,
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :subject,
+          placeholder: "Subject ziak rawh",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div>
+      <%= form.label :salutation, "Salutation",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :salutation,
+          placeholder: "Rawngbawlpui duhtak,",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+
+    <div>
+      <%= form.label :closing_line, "Closing",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :closing_line,
+          placeholder: "Lawmthu nen,",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <%= form.label :body, "Letter Body",
+        class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+    <%= render "admin/meeting_minutes/rich_text_area",
+        form: form,
+        attribute: :body,
+        label: "Letter Body",
+        placeholder: "Lehkha chhunga thu ziak rawh" %>
+  </div>
+
+  <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div>
+      <%= form.label :signatory_name, "Signatory Name",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :signatory_name,
+          placeholder: "Entirnan: John Doe",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+
+    <div>
+      <%= form.label :signatory_role, "Signatory Role",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.text_field :signatory_role,
+          placeholder: "Entirnan: Secretary",
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div>
+      <%= form.label :status,
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.select :status,
+          OfficialLetter.statuses.keys.map { |status| [status.humanize, status] },
+          {},
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+
+    <div>
+      <%= form.label :church_resolution_id, "Related Resolution",
+          class: "mb-2 block text-sm font-bold text-slate-700" %>
+
+      <%= form.collection_select :church_resolution_id,
+          @church_resolutions,
+          :id,
+          ->(resolution) { "#{resolution.number} — #{resolution.title}" },
+          { include_blank: "None" },
+          class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+    </div>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
+    <%= form.submit "Save Letter",
+        class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700" %>
+
+    <%= link_to "Cancel",
+        admin_official_letters_path,
+        class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+<% end %>

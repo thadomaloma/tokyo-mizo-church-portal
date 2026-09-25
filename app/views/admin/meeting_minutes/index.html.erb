@@ -11,7 +11,7 @@
         </h1>
 
         <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          Keep current minutes and older PDF files in one place.
+          Minute thar leh PDF hlui te hmun khatah dah khawm rawh.
         </p>
 
         <% if can_manage_church? %>
@@ -33,12 +33,12 @@
 
       <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-white/[0.04] p-6 sm:p-8 lg:grid-cols-1 lg:border-l lg:border-t-0">
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= @meeting_minutes.size %></p>
+          <p class="text-3xl font-black"><%= @pagy.count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">Minute Records</p>
         </div>
 
         <div class="rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-sm">
-          <p class="text-3xl font-black"><%= @archived_minutes.size %></p>
+          <p class="text-3xl font-black"><%= @archive_pagy.count %></p>
           <p class="mt-1 text-xs font-black uppercase tracking-wide text-slate-400">PDF Archives</p>
         </div>
       </div>
@@ -46,32 +46,59 @@
   </section>
 
   <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
-    <div class="mb-5 flex items-center justify-between gap-3">
+    <%= form_with url: admin_meeting_minutes_path, method: :get, data: { turbo: false },
+        class: "flex flex-col gap-3 sm:flex-row sm:items-end" do |form| %>
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Year</label>
+        <%= form.select :year, options_for_select(@year_options, @year), { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-32" %>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Meeting Type</label>
+        <%= form.select :meeting_type, options_for_select(@meeting_type_options, @meeting_type), { include_blank: "All" },
+            class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-48" %>
+      </div>
+
+      <button type="submit"
+          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white hover:bg-slate-800">
+        <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-4 w-4" } %>
+        Filter
+      </button>
+    <% end %>
+  </section>
+
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between gap-3 p-4 sm:p-5 lg:p-6">
       <div>
         <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Records</p>
         <h2 class="mt-2 text-2xl font-black text-slate-950">Minute Records</h2>
       </div>
 
-      <span class="text-xs font-black uppercase tracking-wide text-slate-400">Newest first</span>
+      <span class="text-xs font-black uppercase tracking-wide text-slate-400"><%= pluralize(@pagy.count, "record") %></span>
     </div>
 
     <% if @meeting_minutes.any? %>
-      <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 px-4 pb-4 sm:px-5 sm:pb-5 lg:px-6 lg:pb-6 xl:grid-cols-2">
         <%= render @meeting_minutes %>
       </div>
+
+      <%= render "admin/shared/pagination", pagy: @pagy, page_url: ->(page) {
+        admin_meeting_minutes_path(request.query_parameters.merge(page: page))
+      } %>
     <% else %>
-      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+      <div class="mx-4 mb-4 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center sm:mx-5 sm:mb-5 lg:mx-6 lg:mb-6">
         <p class="font-black text-slate-700">No minute records yet.</p>
 
         <% if can_manage_church? %>
-          <p class="mt-2 text-sm text-slate-500">Create a simple church minute record.</p>
+          <p class="mt-2 text-sm text-slate-500">Kohhran minute record awlsam takin siam rawh.</p>
         <% end %>
       </div>
     <% end %>
   </section>
 
-  <section class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
-    <div class="mb-5 flex items-center justify-between gap-3">
+  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between gap-3 p-4 sm:p-5 lg:p-6">
       <div>
         <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Archive</p>
         <h2 class="mt-2 text-2xl font-black text-slate-950">PDF Archive</h2>
@@ -81,19 +108,23 @@
     </div>
 
     <% if @archived_minutes.any? %>
-      <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 px-4 pb-4 sm:px-5 sm:pb-5 lg:px-6 lg:pb-6 xl:grid-cols-2">
         <% @archived_minutes.each_with_index do |meeting_minute, index| %>
           <%= render "meeting_minute",
               meeting_minute: meeting_minute,
-              archive_number: @archived_minutes.size - index %>
+              archive_number: @archive_pagy.count - (@archive_pagy.from - 1) - index %>
         <% end %>
       </div>
+
+      <%= render "admin/shared/pagination", pagy: @archive_pagy, page_url: ->(page) {
+        admin_meeting_minutes_path(request.query_parameters.merge(archive_page: page))
+      } %>
     <% else %>
-      <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+      <div class="mx-4 mb-4 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center sm:mx-5 sm:mb-5 lg:mx-6 lg:mb-6">
         <p class="font-black text-slate-700">No PDF archives yet.</p>
 
         <% if can_manage_church? %>
-          <p class="mt-2 text-sm text-slate-500">Upload old PDF minutes to keep them here.</p>
+          <p class="mt-2 text-sm text-slate-500">Minute PDF hlui te hetah dah turin upload rawh.</p>
         <% end %>
       </div>
     <% end %>

@@ -50,7 +50,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to admin_users_path
-    assert_equal "You cannot delete your own account.", flash[:alert]
+    assert_equal "Mahni account delete theih a ni lo.", flash[:alert]
   end
 
   test "a member who owns records is retained instead of causing a foreign key error" do
@@ -77,7 +77,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert @current_user.reload.active?
-    assert_includes response.body, "You cannot deactivate or remove administrator access"
+    assert_includes response.body, "Mahni account deactivate emaw administrator access paih"
   end
 
   test "a super admin cannot remove their own administrator role" do
@@ -92,6 +92,6 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert @current_user.reload.super_admin?
-    assert_includes response.body, "You cannot deactivate or remove administrator access"
+    assert_includes response.body, "Mahni account deactivate emaw administrator access paih"
   end
 end

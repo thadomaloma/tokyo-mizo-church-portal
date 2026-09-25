@@ -23,7 +23,7 @@ module Admin
           div do
             p(class: "text-xs font-black uppercase tracking-[0.22em] text-slate-400") { "Monthly Overview" }
             h2(class: "mt-2 text-xl font-black text-slate-950 lg:text-2xl") { "Income vs Expense" }
-            p(class: "mt-1 text-sm text-slate-500") { "Year-to-date finance trend." }
+            p(class: "mt-1 text-sm text-slate-500") { "Kum kal mek chhunga finance kal dan." }
           end
 
           div(class: "grid grid-cols-2 gap-2 sm:min-w-64") do

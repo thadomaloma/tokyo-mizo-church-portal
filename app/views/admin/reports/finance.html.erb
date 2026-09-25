@@ -11,7 +11,7 @@
         </h1>
 
         <p class="mt-3 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          <%= @period_caption %> income, expense and balance records prepared for review.
+          <%= @finance_unit_label %> · <%= @period_caption %> sum lut, sum chhuak leh balance record ennawn tur.
         </p>
 
         <div class="mt-3 max-w-xl">
@@ -20,7 +20,17 @@
               data: { turbo: false } do |form| %>
             <%= form.hidden_field :ledger_type, value: @ledger_type %>
 
-            <div class="grid grid-cols-2 gap-1.5 rounded-2xl bg-white/10 p-1.5 ring-1 ring-white/15 sm:grid-cols-[76px_104px_104px_auto] sm:items-end">
+            <div class="grid grid-cols-2 gap-1.5 rounded-2xl bg-white/10 p-1.5 ring-1 ring-white/15 sm:grid-cols-[minmax(150px,1.5fr)_76px_104px_104px_auto] sm:items-end">
+              <div class="col-span-2 space-y-1 sm:col-span-1">
+                <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_unit">Finance Unit</label>
+                <% unit_options = available_finance_units.map { |unit| [unit.name, unit.id] } %>
+                <% unit_options.unshift(["All Units (Consolidated)", "all"]) if current_user.super_admin? %>
+                <%= form.select :finance_unit_id,
+                    options_for_select(unit_options, @finance_unit_selector),
+                    {},
+                    id: "finance_report_unit",
+                    class: "min-h-10 w-full rounded-xl border-0 bg-white px-2.5 text-xs font-black text-slate-950 focus:ring-0" %>
+              </div>
               <div class="space-y-1">
                 <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_year">Year</label>
                 <%= form.select :year,
@@ -54,6 +64,11 @@
               </button>
             </div>
           <% end %>
+
+          <%= link_to "Full Year Summary",
+              finance_admin_reports_path(year: @period_year, start_month: 1, end_month: 12, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type),
+              data: { turbo: false },
+              class: "mt-2 inline-flex items-center gap-1.5 text-xs font-black text-white/70 underline decoration-white/30 underline-offset-2 hover:text-white" %>
         </div>
       </div>
 
@@ -70,7 +85,7 @@
               </h2>
 
               <p class="mt-1 text-xs font-semibold leading-5 text-white/60">
-                <%= @period_label %> records. This selection also applies to PDF and Excel exports.
+                <%= @period_label %> record te. He thlan dan hi PDF leh Excel export-ah pawh hman a ni ang.
               </p>
             </div>
 
@@ -81,6 +96,7 @@
                       year: @period_year,
                       start_month: @start_month,
                       end_month: @end_month,
+                      finance_unit_id: @finance_unit_selector,
                       ledger_type: type
                     ),
                     class: class_names(
@@ -96,7 +112,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, ledger_type: @ledger_type, format: :pdf),
+          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type, format: :pdf),
               data: { turbo: false },
               class: "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
             <%= heroicon "document-arrow-down",
@@ -105,7 +121,7 @@
             Export PDF
           <% end %>
 
-          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, ledger_type: @ledger_type, format: :xlsx),
+          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type, format: :xlsx),
               data: { turbo: false },
               class: "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15" do %>
             <%= heroicon "table-cells",
@@ -148,10 +164,10 @@
           Ledger
         </p>
 
-        <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @period_label %> <%= @ledger_type_label %></h2>
+        <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @finance_unit_label %> · <%= @period_label %> <%= @ledger_type_label %></h2>
 
         <p class="mt-1 text-sm text-slate-500">
-          <%= @ledger_type == "all" ? "Income and expense" : @ledger_type.humanize %> records for <%= @period_label.downcase %>.
+          <%= @period_label.downcase %> chhunga <%= @ledger_type == "all" ? "sum lut leh sum chhuak" : @ledger_type.humanize.downcase %> record te.
         </p>
       </div>
 
@@ -208,6 +224,11 @@
                         <%= heroicon "user-circle", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
                         <%= transaction.recorded_by&.name || "Not recorded" %>
                       </span>
+
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700">
+                        <%= heroicon "building-office-2", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
+                        <%= transaction.finance_unit.name %>
+                      </span>
                     </div>
 
                     <h3 class="mt-2 break-words text-base font-black text-slate-950">
@@ -215,7 +236,7 @@
                     </h3>
 
                     <p class="mt-1 break-words text-sm leading-5 text-slate-500">
-                      <%= transaction.description.presence || "No description added." %>
+                      <%= transaction.description.presence || "Description dah a ni lo." %>
                     </p>
                   </div>
                 </div>
@@ -233,7 +254,7 @@
       <%= render "admin/reports/finance_pagination", pagy: @pagy %>
     <% else %>
       <div class="p-10 text-center text-sm font-semibold text-slate-400">
-        No transactions found for <%= @period_label.downcase %>.
+        <%= @period_label.downcase %> atan transaction a awm lo.
       </div>
     <% end %>
   </section>

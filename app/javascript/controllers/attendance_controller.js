@@ -53,7 +53,7 @@ export default class extends Controller {
 
   previewText(members) {
     if (members.length === 0) {
-      return "No members selected."
+      return "Member thlan a ni lo."
     }
 
     return members.map((member) => member.name).join(", ")

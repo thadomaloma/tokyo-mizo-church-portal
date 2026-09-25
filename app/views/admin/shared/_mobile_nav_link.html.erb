@@ -1,11 +1,22 @@
-<%= link_to path,
-    class: "flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition #{active ? 'bg-[#0b1f33] text-white shadow-sm' : 'text-slate-400 hover:bg-slate-100 hover:text-sky-800'}" do %>
+<% badge = local_assigns[:badge].to_i %>
 
-  <%= heroicon icon,
-      variant: :outline,
-      options: { class: "h-5 w-5 shrink-0" } %>
+<%= link_to path,
+    class: "relative flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition #{active ? 'bg-[#0b1f33] text-white shadow-sm' : 'text-slate-400 hover:bg-slate-100 hover:text-sky-800'}" do %>
+
+  <span class="relative">
+    <%= heroicon icon,
+        variant: :outline,
+        options: { class: "h-5 w-5 shrink-0" } %>
+
+    <% if badge.positive? %>
+      <span aria-hidden="true"
+            class="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black leading-none text-white">
+        <%= badge > 9 ? "9+" : badge %>
+      </span>
+    <% end %>
+  </span>
 
   <span class="max-w-full truncate text-[10px] font-black leading-none">
-    <%= name %>
+    <%= name %><%= " (#{badge})" if badge.positive? %>
   </span>
 <% end %>

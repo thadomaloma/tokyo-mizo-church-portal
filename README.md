@@ -7,7 +7,7 @@ Tokyo Mizo Church Portal is a modern church management system built with Ruby on
 ## Features
 
 * Member Management
-* Finance Management (Income, Expenses, Reports)
+* Multi-Unit Finance Management (Income, Expenses, Reports)
 * Meeting Minutes & Resolution Tracking
 * Church Announcements
 * Event Management
@@ -24,6 +24,20 @@ Tokyo Mizo Church Portal is a modern church management system built with Ruby on
 * Secretary
 * Treasurer
 * Member
+
+## Finance Units
+
+The portal keeps each ministry ledger separate while retaining one shared login
+and administration area. The default units are Main Church Finance, Naupang
+Department, Thalai Department, Hmeichhe Department, Building Sum, and Mission
+Sum.
+
+President and Secretary accounts can oversee every unit, assign unit-specific
+finance roles, and export a consolidated report. Church and department units
+support Treasurers, Finance Secretaries, and Viewers; Building Sum and Mission
+Sum use a Treasurer (plus optional read-only Viewers). Unit managers can update
+only their assigned ledgers. Existing finance records are assigned to Main
+Church Finance automatically when the multi-unit migration runs.
 
 ## Technology Stack
 

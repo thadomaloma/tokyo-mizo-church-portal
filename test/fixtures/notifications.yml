@@ -3,13 +3,13 @@
 one:
   title: MyString
   message: MyText
-  notification_type: MyString
+  notification_type: member
   link: MyString
   actor: one
 
 two:
   title: MyString
   message: MyText
-  notification_type: MyString
+  notification_type: member
   link: MyString
   actor: two

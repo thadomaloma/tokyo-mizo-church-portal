@@ -1,65 +1,61 @@
 module Admin
   class FinanceTransactionsController < BaseController
-    before_action :require_finance_admin!, except: :index
+    before_action :require_finance_access!
     before_action :set_finance_transaction, only: %i[edit update destroy receipt]
+    before_action :set_finance_unit, only: %i[index new create]
+    before_action :require_finance_unit_manager!, except: %i[index receipt]
 
     def index
-      @summary_month_options = finance_month_options
-      @summary_year_options = finance_year_options
-
-      @income_summary_year = selected_summary_year(:income_summary_year)
-      @income_summary_month = selected_summary_month(:income_summary_month)
-      @income_summary_month_label = finance_month_label(@income_summary_year, @income_summary_month)
-      income_summary_period = finance_month_period(@income_summary_year, @income_summary_month)
-
-      @expense_summary_year = selected_summary_year(:expense_summary_year)
-      @expense_summary_month = selected_summary_month(:expense_summary_month)
-      @expense_summary_month_label = finance_month_label(@expense_summary_year, @expense_summary_month)
-      expense_summary_period = finance_month_period(@expense_summary_year, @expense_summary_month)
-
-      @monthly_income = FinanceTransaction.income.where(transaction_date: income_summary_period).sum(:amount)
-      @monthly_expense = FinanceTransaction.expense.where(transaction_date: expense_summary_period).sum(:amount)
-      @ledger_filter = selected_ledger_filter
-      @ledger_title = ledger_title
-      @ledger_description = ledger_description
+      @finance_summary = FinanceSummary.new(@finance_unit)
+      @query = params[:q].presence
+      @category_filter = params[:category_id].presence
+      @payment_location_filter = params[:payment_location].presence_in(%w[cash bank])
+      @filter_categories = @finance_unit.finance_categories.system_defined.order(:category_type, :position, :name)
 
       @cash_balance =
-        FinanceTransaction.income.cash_records.sum(:amount) -
-        FinanceTransaction.expense.cash_records.sum(:amount)
+        finance_transactions.income.cash_records.sum(:amount) -
+        finance_transactions.expense.cash_records.sum(:amount)
 
       @bank_balance =
-        FinanceTransaction.income.bank_records.sum(:amount) -
-        FinanceTransaction.expense.bank_records.sum(:amount)
+        finance_transactions.income.bank_records.sum(:amount) -
+        finance_transactions.expense.bank_records.sum(:amount)
 
       transactions = finance_ledger_transactions
 
       @pagy, @transactions = pagy(transactions, limit: 10)
       @transactions_count = @pagy.count
+      @closed_periods = @finance_unit.finance_periods.closed.pluck(:year, :month).to_set
     end
 
     def receipt
       return if @finance_transaction.expense?
 
-      redirect_to admin_finance_transactions_path,
-                  alert: "Receipt is only available for expense records."
+      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
+                  alert: "Receipt chu sum chhuak record atan chauh a awm."
     end
 
     def new
       @finance_transaction = FinanceTransaction.new(
         transaction_type: params[:transaction_type],
-        transaction_date: Date.current
+        transaction_date: Date.current,
+        finance_unit: @finance_unit
       )
 
       load_categories
     end
 
     def create
-      @finance_transaction = FinanceTransaction.new(finance_transaction_params)
+      @finance_transaction = FinanceTransaction.new(finance_transaction_attributes)
       @finance_transaction.recorded_by = current_user
+      @finance_transaction.finance_unit = @finance_unit
 
-      if @finance_transaction.save
-        create_notification("New Finance Entry", "#{current_user.name} added #{@finance_transaction.transaction_type.humanize} record.")
-        redirect_to admin_finance_transactions_path, notice: "Finance entry was saved."
+      if closed_period_for(@finance_transaction.transaction_date)
+        load_categories
+        flash.now[:alert] = closed_period_message(@finance_transaction.transaction_date)
+        render :new, status: :unprocessable_entity
+      elsif @finance_transaction.save
+        create_notification("New Finance Entry", "#{current_user.name} in #{@finance_transaction.transaction_type.humanize} record a dah.")
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry save fel a ni."
       else
         load_categories
         render :new, status: :unprocessable_entity
@@ -71,9 +67,19 @@ module Admin
     end
 
     def update
-      if @finance_transaction.update(finance_transaction_params)
-        create_notification("Finance Entry Updated", "#{current_user.name} updated a finance record.")
-        redirect_to admin_finance_transactions_path, notice: "Finance entry was updated."
+      new_attrs = finance_transaction_attributes
+      submitted_date = FinanceTransaction.type_for_attribute("transaction_date").cast(new_attrs[:transaction_date])
+      new_date = submitted_date || @finance_transaction.transaction_date
+      blocking_date = closed_period_for(@finance_transaction.transaction_date) ? @finance_transaction.transaction_date : nil
+      blocking_date ||= new_date if closed_period_for(new_date)
+
+      if blocking_date
+        load_categories
+        flash.now[:alert] = closed_period_message(blocking_date)
+        render :edit, status: :unprocessable_entity
+      elsif @finance_transaction.update(new_attrs)
+        create_notification("Finance Entry Updated", "#{current_user.name} in finance record a siam tha.")
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry siamthat fel a ni."
       else
         load_categories
         render :edit, status: :unprocessable_entity
@@ -81,21 +87,38 @@ module Admin
     end
 
     def destroy
+      if closed_period_for(@finance_transaction.transaction_date)
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
+                    alert: closed_period_message(@finance_transaction.transaction_date)
+        return
+      end
+
       @finance_transaction.destroy
-      redirect_to admin_finance_transactions_path, notice: "Finance entry was deleted."
+      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry delete fel a ni."
     end
 
     private
 
     def set_finance_transaction
-      @finance_transaction = FinanceTransaction.find(params[:id])
+      @finance_transaction = FinanceTransaction
+                               .where(finance_unit: available_finance_units)
+                               .find(params[:id])
+      @finance_unit = @finance_transaction.finance_unit
+      @current_finance_unit = @finance_unit
+    end
+
+    def set_finance_unit
+      requested_id = params[:finance_unit_id].presence ||
+                     params.dig(:finance_transaction, :finance_unit_id).presence
+      @finance_unit = requested_id ? available_finance_units.find(requested_id) : current_finance_unit
+      @current_finance_unit = @finance_unit
     end
 
     def load_categories
       @finance_categories =
-        FinanceCategory
+        @finance_unit.finance_categories.system_defined
           .for_transaction_type(selected_transaction_type)
-          .order(:name)
+          .order(:position, :name)
     end
 
     def finance_transaction_params
@@ -109,89 +132,45 @@ module Admin
       )
     end
 
-    def selected_summary_year(param_name)
-      legacy_year = params[:summary_year].to_i
-      year = params[param_name].presence&.to_i || legacy_year
-
-      return year if year.positive?
-
-      Date.current.year
-    end
-
-    def selected_summary_month(param_name)
-      legacy_month = params[:summary_month].to_i
-      month = params[param_name].presence&.to_i || legacy_month
-
-      return month if month.between?(1, 12)
-
-      Date.current.month
-    end
-
-    def finance_month_label(year, month)
-      Date.new(year, month, 1).strftime("%B %Y")
-    end
-
-    def finance_month_period(year, month)
-      Date.new(year, month, 1).all_month
-    end
-
-    def finance_month_options
-      Date::MONTHNAMES.each_with_index.filter_map do |month_name, index|
-        [ month_name, index ] if index.positive?
+    def finance_transaction_attributes
+      attrs = finance_transaction_params.to_h.symbolize_keys
+      if attrs.key?(:finance_category_id)
+        category_id = attrs.delete(:finance_category_id)
+        attrs[:finance_category] = @finance_unit.finance_categories.system_defined.find_by(id: category_id)
       end
+
+      attrs
     end
 
-    def finance_year_options
-      transaction_years = FinanceTransaction
-                            .where.not(transaction_date: nil)
-                            .distinct
-                            .pluck(:transaction_date)
-                            .map(&:year)
+    def closed_period_for(date)
+      return nil unless date
 
-      (transaction_years + [ Date.current.year ]).uniq.sort.reverse
+      FinancePeriod.find_by(finance_unit: @finance_unit, year: date.year, month: date.month, status: :closed)
     end
 
-    def selected_ledger_filter
-      filter = params[:ledger_filter].to_s
-
-      filter.in?(%w[income expense]) ? filter : nil
+    def closed_period_message(date)
+      "#{date.strftime("%B %Y")} close a ni. Thlakna siam hmain Monthly Review atangin reopen rawh."
     end
 
     def finance_ledger_transactions
-      transactions = FinanceTransaction
+      transactions = finance_transactions
                        .includes(:finance_category)
                        .latest
 
-      case @ledger_filter
-      when "income"
-        transactions.income.where(transaction_date: finance_month_period(@income_summary_year, @income_summary_month))
-      when "expense"
-        transactions.expense.where(transaction_date: finance_month_period(@expense_summary_year, @expense_summary_month))
-      else
-        transactions
-      end
+      transactions = transactions.where(finance_category_id: @category_filter) if @category_filter
+      transactions = transactions.where(payment_location: @payment_location_filter) if @payment_location_filter
+      transactions = search_transactions(transactions, @query) if @query
+
+      transactions
     end
 
-    def ledger_title
-      case @ledger_filter
-      when "income"
-        "Income Transactions"
-      when "expense"
-        "Expense Transactions"
-      else
-        "Recent Transactions"
-      end
-    end
+    def search_transactions(transactions, query)
+      pattern = "%#{query}%"
 
-    def ledger_description
-      case @ledger_filter
-      when "income"
-        "Income records for #{@income_summary_month_label}."
-      when "expense"
-        "Expense records for #{@expense_summary_month_label}."
-      else
-        "Latest income and expense records."
-      end
+      transactions.joins(:finance_category).where(
+        "finance_categories.name ILIKE :q OR finance_transactions.description ILIKE :q",
+        q: pattern
+      )
     end
 
     def selected_transaction_type
@@ -204,10 +183,15 @@ module Admin
       NotificationCreator.call(
         actor: current_user,
         title: title,
-        message: message,
+        message: "#{@finance_unit.name}: #{message}",
         notification_type: "finance",
-        link: admin_finance_transactions_path
+        link: admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
+        finance_unit: @finance_unit
       )
+    end
+
+    def finance_transactions
+      @finance_unit.finance_transactions
     end
   end
 end

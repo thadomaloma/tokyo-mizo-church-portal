@@ -17,4 +17,11 @@ two:
   encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>
   role: 2
   active: true
+
+three:
+  name: Department Treasurer
+  email: department-treasurer@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>
+  role: 7
+  active: true
 # column: value

@@ -3,7 +3,7 @@
 <div class="w-full">
   <div class="hidden md:grid md:grid-cols-2 md:gap-2">
     <%= render ::RubyUI::Link.new(
-        href: new_admin_finance_transaction_path(transaction_type: :income),
+        href: new_admin_finance_transaction_path(transaction_type: :income, finance_unit_id: current_finance_unit.id),
         variant: :secondary,
         size: :xl,
         class: "rounded-2xl bg-white px-4 py-3 text-sm font-black text-sky-900 shadow-sm hover:bg-sky-50"
@@ -15,7 +15,7 @@
     <% end %>
 
     <%= render ::RubyUI::Link.new(
-        href: new_admin_finance_transaction_path(transaction_type: :expense),
+        href: new_admin_finance_transaction_path(transaction_type: :expense, finance_unit_id: current_finance_unit.id),
         variant: :secondary,
         size: :xl,
         class: "rounded-2xl bg-white px-4 py-3 text-sm font-black text-sky-900 shadow-sm hover:bg-sky-50"
@@ -27,21 +27,57 @@
     <% end %>
 
     <%= render ::RubyUI::Link.new(
-        href: admin_finance_categories_path,
+        href: admin_finance_categories_path(finance_unit_id: current_finance_unit.id),
         variant: :ghost,
         size: :xl,
-        class: "col-span-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/20"
+        class: "rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/20"
       ) do %>
       <%= heroicon "adjustments-horizontal",
           variant: :solid,
           options: { class: "h-5 w-5" } %>
-      Categories
+      Category Guide
+    <% end %>
+
+    <%= render ::RubyUI::Link.new(
+        href: finance_admin_reports_path(finance_unit_id: current_finance_unit.id),
+        variant: :ghost,
+        size: :xl,
+        class: "rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/20"
+      ) do %>
+      <%= heroicon "document-chart-bar",
+          variant: :solid,
+          options: { class: "h-5 w-5" } %>
+      Generate Report
+    <% end %>
+
+    <%= render ::RubyUI::Link.new(
+        href: admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: current_finance_unit.id),
+        variant: :ghost,
+        size: :xl,
+        class: "col-span-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/20"
+      ) do %>
+      <%= heroicon "calendar-days",
+          variant: :solid,
+          options: { class: "h-5 w-5" } %>
+      Review Month
+    <% end %>
+
+    <% if current_user.super_admin? %>
+      <%= render ::RubyUI::Link.new(
+          href: admin_finance_units_path,
+          variant: :ghost,
+          size: :lg,
+          class: "col-span-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/20"
+        ) do %>
+        <%= heroicon "building-office-2", variant: :outline, options: { class: "h-5 w-5" } %>
+        Finance Access
+      <% end %>
     <% end %>
   </div>
 
   <div class="grid grid-cols-2 gap-2 md:hidden">
     <%= render ::RubyUI::Link.new(
-        href: new_admin_finance_transaction_path(transaction_type: :income),
+        href: new_admin_finance_transaction_path(transaction_type: :income, finance_unit_id: current_finance_unit.id),
         variant: :secondary,
         size: :xl,
         class: "rounded-2xl bg-white px-4 py-3 text-sm font-black text-sky-900 shadow-sm hover:bg-sky-50"
@@ -53,7 +89,7 @@
     <% end %>
 
     <%= render ::RubyUI::Link.new(
-        href: new_admin_finance_transaction_path(transaction_type: :expense),
+        href: new_admin_finance_transaction_path(transaction_type: :expense, finance_unit_id: current_finance_unit.id),
         variant: :secondary,
         size: :xl,
         class: "rounded-2xl bg-white px-4 py-3 text-sm font-black text-sky-900 shadow-sm hover:bg-sky-50"
@@ -65,15 +101,51 @@
     <% end %>
 
     <%= render ::RubyUI::Link.new(
-        href: admin_finance_categories_path,
+        href: admin_finance_categories_path(finance_unit_id: current_finance_unit.id),
         variant: :ghost,
         size: :lg,
-        class: "col-span-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+        class: "rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
       ) do %>
       <%= heroicon "adjustments-horizontal",
           variant: :outline,
           options: { class: "h-5 w-5" } %>
-      Categories
+      Category Guide
+    <% end %>
+
+    <%= render ::RubyUI::Link.new(
+        href: finance_admin_reports_path(finance_unit_id: current_finance_unit.id),
+        variant: :ghost,
+        size: :lg,
+        class: "rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+      ) do %>
+      <%= heroicon "document-chart-bar",
+          variant: :outline,
+          options: { class: "h-5 w-5" } %>
+      Report
+    <% end %>
+
+    <%= render ::RubyUI::Link.new(
+        href: admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: current_finance_unit.id),
+        variant: :ghost,
+        size: :lg,
+        class: "col-span-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+      ) do %>
+      <%= heroicon "calendar-days",
+          variant: :outline,
+          options: { class: "h-5 w-5" } %>
+      Review Month
+    <% end %>
+
+    <% if current_user.super_admin? %>
+      <%= render ::RubyUI::Link.new(
+          href: admin_finance_units_path,
+          variant: :ghost,
+          size: :lg,
+          class: "col-span-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+        ) do %>
+        <%= heroicon "building-office-2", variant: :outline, options: { class: "h-5 w-5" } %>
+        Finance Access
+      <% end %>
     <% end %>
   </div>
 </div>

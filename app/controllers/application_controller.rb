@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
               with: :handle_mail_delivery_error
 
   rescue_from Pundit::NotAuthorizedError do
-    redirect_to admin_root_path, alert: "You are not authorized to access this page."
+    redirect_to admin_root_path, alert: "He page hman phalna i nei lo."
   end
 
   private
@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
     Rails.logger.error("Mail delivery failed: #{error.class} - #{error.message}")
 
     redirect_to new_user_password_path,
-                alert: "Password reset email could not be sent. Please check the Gmail app password settings."
+                alert: "Password siamthatna email thawn theih a ni lo. Gmail app password setting en rawh."
   end
 
   def layout_by_resource

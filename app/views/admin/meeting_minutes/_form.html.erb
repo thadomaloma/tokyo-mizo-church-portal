@@ -5,7 +5,7 @@
 
   <% if meeting_minute.errors.any? %>
     <div class="rounded-2xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">
-      <p class="mb-2 font-black">Please fix these errors:</p>
+      <p class="mb-2 font-black">Heng error te hi siam tha rawh:</p>
 
       <ul class="list-inside list-disc">
         <% meeting_minute.errors.full_messages.each do |message| %>
@@ -24,7 +24,7 @@
       <div>
         <h2 class="font-black text-slate-900">Meeting Details</h2>
         <p class="mt-1 text-sm leading-6 text-slate-500">
-          Basic information for the official church minutes header.
+          Official church minute header-a chanchin bulpui dahna.
         </p>
       </div>
     </div>
@@ -36,7 +36,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :title,
-            placeholder: "Enter minute title",
+            placeholder: "Minute title ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -78,7 +78,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :location,
-            placeholder: "Enter meeting location",
+            placeholder: "Meeting location ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -88,7 +88,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :chairperson,
-            placeholder: "Enter chairman name",
+            placeholder: "Chairman hming ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -98,7 +98,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :secretary_name,
-            placeholder: "Enter secretary name",
+            placeholder: "Secretary hming ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -108,7 +108,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :opening_prayer,
-            placeholder: "Enter opening prayer name",
+            placeholder: "Opening prayer neitu hming ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -121,7 +121,7 @@
             form: form,
             attribute: :call_to_order,
             label: "Call to Order",
-            placeholder: "Enter call to order notes",
+            placeholder: "Call to order note ziak rawh",
             min_height: "100px" %>
       </div>
     </div>
@@ -138,7 +138,7 @@
         <div>
           <h2 class="font-black text-slate-900">Attendance</h2>
           <p class="mt-1 text-sm leading-6 text-slate-500">
-            Select members present. Unselected members will be saved as absent automatically.
+            Member present te thlang rawh. Thlan loh te chu absent anga save a ni ang.
           </p>
         </div>
       </div>
@@ -204,7 +204,7 @@
           <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
             <p class="font-black text-slate-700">No active members found.</p>
             <p class="mt-2 text-sm text-slate-500">
-              Add members in Member Management first.
+              Member Management-ah member dah hmasa rawh.
             </p>
           </div>
         <% end %>
@@ -220,7 +220,7 @@
         <div>
           <h2 class="font-black text-slate-900">Reports & Agenda</h2>
           <p class="mt-1 text-sm leading-6 text-slate-500">
-            Keep reports, previous minute approval, and agenda items clear.
+            Report, minute hmasa pawmna leh agenda item te chiang takin ziak rawh.
           </p>
         </div>
       </div>
@@ -235,7 +235,7 @@
               form: form,
               attribute: :reports,
               label: "Reports",
-              placeholder: "Enter reports",
+              placeholder: "Report te ziak rawh",
               min_height: "100px" %>
         </div>
 
@@ -248,7 +248,7 @@
               form: form,
               attribute: :previous_minutes,
               label: "Previous Minute Approval",
-              placeholder: "Enter previous minute approval",
+              placeholder: "Minute hmasa pawmna ziak rawh",
               min_height: "110px" %>
         </div>
 
@@ -261,7 +261,7 @@
               form: form,
               attribute: :agenda_items,
               label: "Agenda Items",
-              placeholder: "1. First agenda item\n2. Second agenda item",
+              placeholder: "1. Agenda hmasa\n2. Agenda pahnihna",
               min_height: "140px" %>
         </div>
 
@@ -278,7 +278,7 @@
       <div>
         <h2 class="font-black text-slate-900">Decisions & Follow-up</h2>
         <p class="mt-1 text-sm leading-6 text-slate-500">
-          Record resolutions and follow-up actions from the meeting.
+          Meeting-a thurel leh follow-up action te record rawh.
         </p>
       </div>
     </div>
@@ -293,7 +293,7 @@
             form: form,
             attribute: :motions,
             label: "Decisions / Resolutions",
-            placeholder: "Agenda 1: ...\nDecision: ...",
+            placeholder: "Agenda 1: ...\nThurel: ...",
             min_height: "100px" %>
       </div>
 
@@ -306,7 +306,7 @@
             form: form,
             attribute: :action_items,
             label: "Follow-up Actions",
-            placeholder: "1. Assign task to a member",
+            placeholder: "1. Member pakhat hnenah mawhphurhna pe rawh",
             min_height: "100px" %>
 
         <p class="mt-2 text-xs font-semibold leading-5 text-slate-400">
@@ -324,7 +324,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :adjournment,
-            placeholder: "Enter adjournment notes",
+            placeholder: "Adjournment note ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -343,7 +343,7 @@
             class: "mb-2 block text-sm font-bold text-slate-700" %>
 
         <%= form.text_field :approved_by,
-            placeholder: "Enter secretary name",
+            placeholder: "Secretary hming ziak rawh",
             class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
       </div>
 
@@ -357,7 +357,7 @@
             class: "block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-black file:text-white hover:file:bg-sky-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
 
         <p class="mt-2 text-xs font-semibold text-slate-400">
-          Upload signature as a PNG file.
+          Signature chu PNG file-in upload rawh.
         </p>
 
         <% if meeting_minute.secretary_signature.attached? %>

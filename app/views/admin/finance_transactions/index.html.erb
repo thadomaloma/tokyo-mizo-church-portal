@@ -7,16 +7,36 @@
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto]">
       <div class="p-6 sm:p-8 lg:p-10">
         <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
-          Finance Management
+          <%= @finance_unit.name %>
         </p>
 
         <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-          Manage church finances.
+          Manage finance records.
         </h1>
 
         <p class="mt-4 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          Record income, expenses and balances in one place.
+          He finance unit-a sum lut, sum chhuak leh balance te record rawh.
         </p>
+
+        <% if available_finance_units.many? %>
+          <%= form_with url: admin_finance_transactions_path,
+              method: :get,
+              data: { turbo: false },
+              class: "mt-6 max-w-sm" do |form| %>
+            <%= form.label :finance_unit_id, "Finance Unit",
+                class: "mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/55" %>
+            <div class="flex gap-2">
+              <%= form.collection_select :finance_unit_id,
+                  available_finance_units,
+                  :id,
+                  :name,
+                  { selected: @finance_unit.id },
+                  class: "min-h-11 min-w-0 flex-1 rounded-xl border-0 bg-white px-3 text-sm font-black text-slate-950 focus:ring-2 focus:ring-sky-300" %>
+              <%= form.submit "Open",
+                  class: "rounded-xl bg-sky-500 px-4 text-sm font-black text-white hover:bg-sky-400" %>
+            </div>
+          <% end %>
+        <% end %>
       </div>
 
       <div class="border-t border-white/10 bg-white/[0.08] p-6 sm:p-8 lg:w-96 lg:border-l lg:border-t-0">
@@ -29,7 +49,7 @@
         </p>
 
         <p class="mt-2 text-sm font-semibold text-white/55">
-          <%= pluralize(@transactions_count, "transaction") %> recorded.
+          Transaction record <%= @transactions_count %> a awm.
         </p>
 
         <div class="mt-6">
@@ -39,91 +59,33 @@
     </div>
   </section>
 
-  <section class="space-y-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm lg:p-6">
-    <div class="max-w-xl">
-      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Monthly Summary</p>
+  <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <%= render "summary_card",
+        title: "Current Balance",
+        value: "¥#{number_with_delimiter(@finance_summary.current_balance)}",
+        icon: "banknotes",
+        color: "sky" %>
 
-      <h2 class="mt-2 text-2xl font-black text-slate-950">
-        Income and expense filters.
-      </h2>
+    <%= render "summary_card",
+        title: "This Month Income",
+        value: "¥#{number_with_delimiter(@finance_summary.month_income)}",
+        icon: "arrow-trending-up",
+        color: "emerald" %>
 
-      <p class="mt-1 text-sm text-slate-500">
-        Filter the monthly income and monthly expense cards separately.
-      </p>
-    </div>
+    <%= render "summary_card",
+        title: "This Month Expense",
+        value: "¥#{number_with_delimiter(@finance_summary.month_expense)}",
+        icon: "arrow-trending-down",
+        color: "rose" %>
 
-    <div class="grid gap-3 lg:grid-cols-2">
-      <%= tag.form action: admin_finance_transactions_path,
-          method: :get,
-          data: { turbo: false },
-          class: "rounded-[1.5rem] border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm" do %>
-        <%= hidden_field_tag :ledger_filter, "income" %>
-
-        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">
-          Income Filter
-        </p>
-
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:items-end">
-          <div class="space-y-1">
-            <label class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400" for="finance_income_summary_year">Year</label>
-            <%= select_tag :income_summary_year,
-                options_for_select(@summary_year_options, @income_summary_year),
-                id: "finance_income_summary_year",
-                class: "min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-950 focus:border-sky-400 focus:ring-sky-100" %>
-          </div>
-
-          <div class="space-y-1">
-            <label class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400" for="finance_income_summary_month">Month</label>
-            <%= select_tag :income_summary_month,
-                options_for_select(@summary_month_options, @income_summary_month),
-                id: "finance_income_summary_month",
-                class: "min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-950 focus:border-sky-400 focus:ring-sky-100" %>
-          </div>
-
-          <button type="submit"
-                  class="col-span-2 inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-xs font-black text-white hover:bg-emerald-700 sm:col-span-1">
-            Show Income
-          </button>
-        </div>
-      <% end %>
-
-      <%= tag.form action: admin_finance_transactions_path,
-          method: :get,
-          data: { turbo: false },
-          class: "rounded-[1.5rem] border border-rose-100 bg-rose-50/50 p-4 shadow-sm" do %>
-        <%= hidden_field_tag :ledger_filter, "expense" %>
-
-        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600">
-          Expense Filter
-        </p>
-
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:items-end">
-          <div class="space-y-1">
-            <label class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400" for="finance_expense_summary_year">Year</label>
-            <%= select_tag :expense_summary_year,
-                options_for_select(@summary_year_options, @expense_summary_year),
-                id: "finance_expense_summary_year",
-                class: "min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-950 focus:border-sky-400 focus:ring-sky-100" %>
-          </div>
-
-          <div class="space-y-1">
-            <label class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400" for="finance_expense_summary_month">Month</label>
-            <%= select_tag :expense_summary_month,
-                options_for_select(@summary_month_options, @expense_summary_month),
-                id: "finance_expense_summary_month",
-                class: "min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-950 focus:border-sky-400 focus:ring-sky-100" %>
-          </div>
-
-          <button type="submit"
-                  class="col-span-2 inline-flex min-h-10 items-center justify-center rounded-xl bg-rose-600 px-4 text-xs font-black text-white hover:bg-rose-700 sm:col-span-1">
-            Show Expense
-          </button>
-        </div>
-      <% end %>
-    </div>
+    <%= render "summary_card",
+        title: "Net Change",
+        value: "#{@finance_summary.net_change.negative? ? "-" : "+"}¥#{number_with_delimiter(@finance_summary.net_change.abs)}",
+        icon: "scale",
+        color: @finance_summary.net_change.negative? ? "rose" : "emerald" %>
   </section>
 
-  <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
     <%= render "summary_card",
         title: "Cash Balance",
         value: "¥#{number_with_delimiter(@cash_balance)}",
@@ -136,19 +98,6 @@
         icon: "building-library",
         color: "blue" %>
 
-    <%= render "summary_card",
-        title: "Monthly Income",
-        value: "¥#{number_with_delimiter(@monthly_income)}",
-        note: @income_summary_month_label,
-        icon: "arrow-trending-up",
-        color: "emerald" %>
-
-    <%= render "summary_card",
-        title: "Monthly Expense",
-        value: "¥#{number_with_delimiter(@monthly_expense)}",
-        note: @expense_summary_month_label,
-        icon: "arrow-trending-down",
-        color: "rose" %>
   </section>
 
   <%= render ::RubyUI::Card.new(class: "overflow-hidden rounded-[1.75rem] border-slate-200 bg-white p-0 shadow-sm") do %>
@@ -159,35 +108,75 @@
         </p>
 
         <h2 class="mt-2 text-2xl font-black text-slate-950">
-          <%= @ledger_title %>
+          Recent Transactions
         </h2>
 
         <p class="mt-1 text-sm text-slate-500">
-          <%= @ledger_description %>
+          Sum lut leh sum chhuak record thar ber te.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <% if @ledger_filter.present? %>
-          <%= link_to admin_finance_transactions_path,
-              class: "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-white px-3 text-xs font-black text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100" do %>
-            <%= heroicon "x-mark", variant: :outline, options: { class: "h-4 w-4" } %>
-            Clear Filter
-          <% end %>
-        <% end %>
-
         <span class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-3 text-xs font-black text-slate-500 ring-1 ring-slate-200">
           <%= pluralize(@transactions_count, "record") %>
         </span>
       </div>
     </div>
 
+    <div class="border-b border-slate-100 p-4 sm:p-5 lg:p-6">
+      <%= form_with url: admin_finance_transactions_path, method: :get, data: { turbo: false },
+          class: "flex flex-col gap-3 sm:flex-row sm:items-end" do |form| %>
+        <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
+
+        <div class="flex-1">
+          <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Search</label>
+          <%= form.text_field :q, value: @query, placeholder: "Category emaw description",
+              class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+        </div>
+
+        <div>
+          <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Category</label>
+          <%= form.collection_select :category_id, @filter_categories, :id, :name, { include_blank: "All" },
+              class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-44" %>
+        </div>
+
+        <div>
+          <label class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Payment</label>
+          <%= form.select :payment_location, [["Cash", "cash"], ["Bank", "bank"]], { include_blank: "All" },
+              class: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 sm:w-32" %>
+        </div>
+
+        <button type="submit"
+            class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white hover:bg-slate-800">
+          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-4 w-4" } %>
+          Filter
+        </button>
+
+        <% if @query.present? || @category_filter.present? || @payment_location_filter.present? %>
+          <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
+              class: "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-white px-3 text-xs font-black text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100" do %>
+            <%= heroicon "x-mark", variant: :outline, options: { class: "h-4 w-4" } %>
+            Clear
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
     <% if @transactions.any? %>
       <div class="divide-y divide-slate-100 bg-white md:max-h-[420px] md:overflow-y-auto md:overscroll-contain md:[scrollbar-gutter:stable]">
-        <%= render @transactions %>
+        <%= render partial: "finance_transaction", collection: @transactions, locals: { closed_periods: @closed_periods } %>
       </div>
 
       <%= render "pagination", pagy: @pagy %>
+    <% elsif @query.present? || @category_filter.present? || @payment_location_filter.present? %>
+      <div class="p-10 text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-7 w-7" } %>
+        </div>
+
+        <p class="mt-4 font-black text-slate-700">No transactions match your search.</p>
+        <p class="mt-2 text-sm text-slate-500">Search thu dang hmang la, filter te clear rawh.</p>
+      </div>
     <% else %>
       <div class="p-10 text-center">
         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
@@ -195,7 +184,7 @@
         </div>
 
         <p class="mt-4 font-black text-slate-700">No transactions yet.</p>
-        <p class="mt-2 text-sm text-slate-500">Finance records will appear here after entries are added.</p>
+        <p class="mt-2 text-sm text-slate-500">Finance entry dah hnuah record te hetah a lang ang.</p>
       </div>
     <% end %>
   <% end %>
