@@ -1,0 +1,17 @@
+<%# Compact finance-unit picker; renders nothing for single-unit users. %>
+<% if available_finance_units.many? %>
+  <%= form_with url: url, method: :get, data: { turbo: false }, class: "flex items-center gap-2" do |form| %>
+    <% local_assigns.fetch(:params, {}).each do |name, value| %>
+      <%= hidden_field_tag name, value %>
+    <% end %>
+    <%= form.label :finance_unit_id, "Finance unit", class: "sr-only" %>
+    <%= form.collection_select :finance_unit_id,
+        available_finance_units,
+        :id,
+        :name,
+        { selected: current_finance_unit&.id },
+        class: "min-h-10 min-w-0 max-w-60 rounded-xl border border-slate-200 bg-white px-3 text-sm font-black text-slate-900 shadow-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-100" %>
+    <%= form.submit "Show",
+        class: "min-h-10 rounded-xl bg-slate-900 px-3 text-sm font-black text-white hover:bg-slate-800" %>
+  <% end %>
+<% end %>

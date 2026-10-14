@@ -6,23 +6,13 @@ module Admin
     before_action :require_finance_unit_manager!, except: %i[index receipt]
 
     def index
-      @finance_summary = FinanceSummary.new(@finance_unit)
       @query = params[:q].presence
+      @type_filter = params[:transaction_type].presence_in(FinanceTransaction::TYPES)
       @category_filter = params[:category_id].presence
-      @payment_location_filter = params[:payment_location].presence_in(%w[cash bank])
+      @payment_location_filter = params[:payment_location].presence_in(FinanceTransaction::LOCATIONS)
       @filter_categories = @finance_unit.finance_categories.system_defined.order(:category_type, :position, :name)
 
-      @cash_balance =
-        finance_transactions.income.cash_records.sum(:amount) -
-        finance_transactions.expense.cash_records.sum(:amount)
-
-      @bank_balance =
-        finance_transactions.income.bank_records.sum(:amount) -
-        finance_transactions.expense.bank_records.sum(:amount)
-
-      transactions = finance_ledger_transactions
-
-      @pagy, @transactions = pagy(transactions, limit: 10)
+      @pagy, @transactions = pagy(finance_ledger_transactions, limit: 15)
       @transactions_count = @pagy.count
       @closed_periods = @finance_unit.finance_periods.closed.pluck(:year, :month).to_set
     end
@@ -35,10 +25,13 @@ module Admin
     end
 
     def new
+      transaction_type = params[:transaction_type].presence_in(FinanceTransaction::TYPES) || "expense"
       @finance_transaction = FinanceTransaction.new(
-        transaction_type: params[:transaction_type],
+        transaction_type: transaction_type,
         transaction_date: Date.current,
-        finance_unit: @finance_unit
+        finance_unit: @finance_unit,
+        payment_location: "cash",
+        transfer_to_location: ("bank" if transaction_type == "transfer")
       )
 
       load_categories
@@ -126,6 +119,7 @@ module Admin
         :amount,
         :transaction_date,
         :payment_location,
+        :transfer_to_location,
         :description
       )
     end
@@ -155,8 +149,12 @@ module Admin
                        .includes(:finance_category)
                        .latest
 
+      transactions = transactions.where(transaction_type: @type_filter) if @type_filter
       transactions = transactions.where(finance_category_id: @category_filter) if @category_filter
-      transactions = transactions.where(payment_location: @payment_location_filter) if @payment_location_filter
+      if @payment_location_filter
+        transactions = transactions.where(payment_location: @payment_location_filter)
+                                   .or(transactions.where(transfer_to_location: @payment_location_filter))
+      end
       transactions = search_transactions(transactions, @query) if @query
 
       transactions
@@ -165,7 +163,7 @@ module Admin
     def search_transactions(transactions, query)
       pattern = "%#{query}%"
 
-      transactions.joins(:finance_category).where(
+      transactions.left_joins(:finance_category).where(
         "finance_categories.name LIKE :q OR finance_transactions.description LIKE :q",
         q: pattern
       )

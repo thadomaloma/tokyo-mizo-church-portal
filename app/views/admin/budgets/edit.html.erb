@@ -1,0 +1,41 @@
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit.name,
+    title: "#{@year} Budget",
+    subtitle: "Category tin atan kum chhunga hman tur zat ziak rawh. A ruak chu budget-ah a tel lo vang." %>
+
+<%= form_with url: admin_budget_path(@year), method: :patch,
+    class: "mx-auto max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" do |form| %>
+  <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
+
+  <div class="hidden border-b border-slate-100 bg-slate-50 px-6 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400 sm:grid sm:grid-cols-[minmax(0,1fr)_10rem_12rem] sm:gap-4">
+    <span>Category</span>
+    <span class="text-right"><%= @year - 1 %> hman zat</span>
+    <span>Budget (¥)</span>
+  </div>
+
+  <ul class="divide-y divide-slate-100">
+    <% @categories.each do |category| %>
+      <li class="grid grid-cols-1 gap-2 px-5 py-3.5 sm:grid-cols-[minmax(0,1fr)_10rem_12rem] sm:items-center sm:gap-4 sm:px-6">
+        <label for="amounts_<%= category.id %>" class="font-bold text-slate-800"><%= category.name %></label>
+        <span class="text-xs font-semibold text-slate-400 sm:text-right sm:text-sm">
+          <span class="sm:hidden"><%= @year - 1 %>: </span><%= yen(@last_year_spent.fetch(category.id, 0)) %>
+        </span>
+        <%= number_field_tag "amounts[#{category.id}]",
+            (@amounts[category.id] if @amounts[category.id].to_i.positive?),
+            id: "amounts_#{category.id}",
+            min: 0,
+            step: 1,
+            inputmode: "numeric",
+            placeholder: "0",
+            class: "block w-full rounded-xl border border-slate-300 px-3 py-2.5 text-right font-bold text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="flex flex-col gap-3 border-t border-slate-100 p-5 sm:flex-row sm:px-6">
+    <%= form.submit "Save budget",
+        class: "rounded-xl bg-[#0b1f33] px-5 py-3 text-sm font-black text-white hover:bg-sky-900" %>
+    <%= link_to "Cancel", admin_budget_path(@year, finance_unit_id: @finance_unit.id),
+        class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
+  </div>
+<% end %>

@@ -1,0 +1,26 @@
+<%
+  location = local_assigns[:location]
+  tone = transaction_tone(transaction, location: location)
+  title = transaction.transfer? ? "Transfer" : transaction.finance_category&.name
+  details = [
+    (transaction.transfer? ? transaction.title : transaction.location_label),
+    transaction.transaction_date.strftime("%-d %b")
+  ]
+%>
+
+<li class="flex items-center gap-3 px-5 py-3.5 sm:px-6">
+  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 <%= tone_classes(transaction.transfer? ? :transfer : tone, :icon) %>">
+    <%= heroicon transaction_icon(transaction), variant: :outline, options: { class: "h-5 w-5" } %>
+  </span>
+
+  <span class="min-w-0 flex-1">
+    <span class="block truncate text-sm font-black text-slate-900"><%= transaction.description.presence || title %></span>
+    <span class="block truncate text-xs font-semibold text-slate-500">
+      <%= [ (title if transaction.description.present?), *details ].compact.join(" · ") %>
+    </span>
+  </span>
+
+  <span class="shrink-0 whitespace-nowrap text-sm font-black <%= tone_classes(tone, :amount) %>">
+    <%= signed_yen(transaction, location: location) %>
+  </span>
+</li>

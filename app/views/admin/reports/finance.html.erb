@@ -139,6 +139,7 @@
         title: "Income",
         value: "¥#{number_with_delimiter(@income)}",
         note: @period_caption,
+        badge: (percent_change_badge(FinanceSummary.change_percent(@income, @previous_income), good_when: :up) if @ledger_type == "all"),
         color: "emerald",
         icon: "banknotes" %>
 
@@ -146,6 +147,7 @@
         title: "Expense",
         value: "¥#{number_with_delimiter(@expense)}",
         note: @period_caption,
+        badge: (percent_change_badge(FinanceSummary.change_percent(@expense, @previous_expense), good_when: :down) if @ledger_type == "all"),
         color: "rose",
         icon: "arrow-trending-down" %>
 
@@ -156,6 +158,41 @@
         color: "sky",
         icon: "wallet" %>
   </div>
+
+  <% if @ledger_type == "all" %>
+    <p class="-mt-2 text-xs font-semibold text-slate-400">Percentage chu <%= @previous_period_label %> nen khaikhinna a ni.</p>
+  <% end %>
+
+  <% if @expense_by_category.any? %>
+    <% top_amount = @expense_by_category.first.last %>
+    <section class="premium-panel rounded-2xl p-5 sm:p-6" data-spending-by-category>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-black text-slate-950">Spending by category</h2>
+        <% if @finance_unit %>
+          <%= link_to admin_finance_period_path(@period_year, @end_month, finance_unit_id: @finance_unit.id),
+              class: "inline-flex items-center gap-1.5 text-sm font-black text-sky-700 hover:text-sky-900" do %>
+            <%= heroicon "calendar-days", variant: :outline, options: { class: "h-4 w-4" } %>
+            Monthly review
+          <% end %>
+        <% end %>
+      </div>
+      <ul class="mt-4 space-y-3">
+        <% @expense_by_category.each do |name, amount| %>
+          <li>
+            <div class="flex justify-between gap-3 text-sm">
+              <span class="truncate font-bold text-slate-700"><%= name %></span>
+              <span class="shrink-0 font-black text-slate-900"><%= yen(amount) %>
+                <span class="font-bold text-slate-400">· <%= @expense.zero? ? 0 : (amount * 100.0 / @expense).round %>%</span>
+              </span>
+            </div>
+            <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div class="h-full rounded-full bg-rose-500/80" style="width: <%= (amount * 100.0 / top_amount).round %>%"></div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
 
   <section class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
     <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-5 sm:flex-row sm:items-end sm:justify-between lg:p-6">

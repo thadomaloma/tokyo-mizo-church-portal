@@ -1,8 +1,8 @@
 <%
-  income_record = finance_transaction.income?
-  amount_color = income_record ? "text-emerald-700 bg-emerald-50 ring-emerald-100" : "text-rose-700 bg-rose-50 ring-rose-100"
-  accent_color = income_record ? "bg-emerald-500" : "bg-rose-500"
-  icon_color = income_record ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : "bg-rose-50 text-rose-600 ring-rose-100"
+  tone = transaction_tone(finance_transaction)
+  amount_color = { income: "text-emerald-700 bg-emerald-50 ring-emerald-100", expense: "text-rose-700 bg-rose-50 ring-rose-100", transfer: "text-sky-800 bg-sky-50 ring-sky-100" }.fetch(tone)
+  accent_color = { income: "bg-emerald-500", expense: "bg-rose-500", transfer: "bg-sky-500" }.fetch(tone)
+  badge_variant = { income: :emerald, expense: :rose, transfer: :sky }.fetch(tone)
 %>
 
 <div class="relative overflow-hidden p-4 transition hover:bg-slate-50/70 sm:p-5">
@@ -11,8 +11,8 @@
   <div class="grid gap-4 pl-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
     <div class="min-w-0">
       <div class="flex items-start gap-3">
-        <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= icon_color %>">
-          <%= heroicon income_record ? "arrow-trending-up" : "arrow-trending-down",
+        <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= tone_classes(tone, :icon) %>">
+          <%= heroicon transaction_icon(finance_transaction),
               variant: :outline,
               options: { class: "h-5 w-5" } %>
         </div>
@@ -20,7 +20,7 @@
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center gap-2">
             <%= render ::RubyUI::Badge.new(
-                variant: income_record ? :emerald : :rose,
+                variant: badge_variant,
                 size: :sm,
                 class: "rounded-full px-2.5 py-1 text-[11px] font-black"
               ) do %>
@@ -33,10 +33,10 @@
             </span>
 
             <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-              <%= heroicon finance_transaction.payment_location_bank? ? "building-library" : "wallet",
+              <%= heroicon finance_transaction.transfer? ? "arrows-right-left" : (finance_transaction.payment_location_bank? ? "building-library" : "wallet"),
                   variant: :outline,
                   options: { class: "h-3.5 w-3.5" } %>
-              <%= finance_transaction.payment_location_bank? ? "Bank" : "Cash" %>
+              <%= finance_transaction.transfer? ? finance_transaction.title : finance_transaction.location_label %>
             </span>
 
             <% if local_assigns[:closed_periods]&.include?([finance_transaction.transaction_date.year, finance_transaction.transaction_date.month]) %>
@@ -48,7 +48,7 @@
           </div>
 
           <h3 class="mt-2 break-words text-base font-black text-slate-950">
-            <%= finance_transaction.finance_category&.name || "No Category" %>
+            <%= finance_transaction.transfer? ? "Transfer" : finance_transaction.title %>
           </h3>
 
           <p class="mt-1 break-words text-sm leading-5 text-slate-500">
@@ -61,7 +61,7 @@
     <div class="flex flex-col gap-3 lg:min-w-60 lg:items-end">
       <p class="inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-base font-black ring-1 lg:w-auto lg:min-w-44 <%= amount_color %>">
         <span class="text-[10px] uppercase tracking-[0.16em] opacity-70">Amount</span>
-        <span><%= income_record ? "+" : "-" %>¥<%= number_with_delimiter(finance_transaction.amount) %></span>
+        <span><%= signed_yen(finance_transaction) %></span>
       </p>
 
       <% if can_manage_finance? || finance_transaction.expense? %>

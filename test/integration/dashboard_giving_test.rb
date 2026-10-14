@@ -21,8 +21,8 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_match "Kum kal mek chhunga finance kal dan.", response.body
-    assert_match "Jan", response.body
+    assert_match "Thla 6 kal ta chhunga sum lut leh chhuak.", response.body
+    assert_match Date.current.strftime("%b"), response.body
     assert_match "¥12,000", response.body
     assert_match "¥8,000", response.body
   end

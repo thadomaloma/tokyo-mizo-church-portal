@@ -3,10 +3,11 @@
 module Admin
   module Dashboard
     class MonthlyFinanceChart < Phlex::HTML
-      def initialize(months:, income_total:, expense_total:)
+      def initialize(months:, income_total: nil, expense_total: nil, subtitle: "Kum kal mek chhunga finance kal dan.")
         @months = months
         @income_total = income_total
         @expense_total = expense_total
+        @subtitle = subtitle
       end
 
       def view_template
@@ -23,8 +24,10 @@ module Admin
           div do
             p(class: "text-xs font-black uppercase tracking-[0.22em] text-slate-400") { "Monthly Overview" }
             h2(class: "mt-2 text-xl font-black text-slate-950 lg:text-2xl") { "Income vs Expense" }
-            p(class: "mt-1 text-sm text-slate-500") { "Kum kal mek chhunga finance kal dan." }
+            p(class: "mt-1 text-sm text-slate-500") { @subtitle }
           end
+
+          return if @income_total.nil? || @expense_total.nil?
 
           div(class: "grid grid-cols-2 gap-2 sm:min-w-64") do
             total_card(label: "Income", amount: @income_total, tone: :income)

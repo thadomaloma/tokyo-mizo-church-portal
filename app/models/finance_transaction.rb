@@ -1,12 +1,17 @@
 class FinanceTransaction < ApplicationRecord
   audited
 
-  belongs_to :finance_category
+  TYPES = %w[income expense transfer].freeze
+  LOCATIONS = %w[cash bank].freeze
+  LOCATION_LABELS = { "cash" => "Cash", "bank" => "Bank" }.freeze
+
+  belongs_to :finance_category, optional: true
   belongs_to :finance_unit
   belongs_to :recorded_by, class_name: "User", inverse_of: :finance_transactions
 
   before_validation :assign_finance_unit_from_category
-  before_validation :clear_voucher_number, if: :income?
+  before_validation :clear_voucher_number, unless: :expense?
+  before_validation :clear_transfer_fields, if: :transfer?
   before_save :assign_voucher_number, if: :expense?
 
   enum :payment_location, {
@@ -14,7 +19,9 @@ class FinanceTransaction < ApplicationRecord
     bank: "bank"
   }, prefix: true
 
-  validates :transaction_type, presence: true, inclusion: { in: %w[income expense] }
+  normalizes :transfer_to_location, with: ->(value) { value.presence }
+
+  validates :transaction_type, presence: true, inclusion: { in: TYPES }
   validates :amount, numericality: { greater_than: 0 }
   validates :transaction_date, presence: true
   validates :payment_location, presence: true
@@ -24,11 +31,17 @@ class FinanceTransaction < ApplicationRecord
               conditions: -> { where(transaction_type: "expense") },
               allow_nil: true
             }
+  validates :finance_category, presence: true, unless: :transfer?
+  validates :transfer_to_location, inclusion: { in: LOCATIONS }, if: :transfer?
+  validates :transfer_to_location, absence: true, unless: :transfer?
   validate :finance_category_type_matches_transaction_type
+  validate :transfer_moves_between_accounts, if: :transfer?
 
   scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
   scope :income, -> { where(transaction_type: "income") }
   scope :expense, -> { where(transaction_type: "expense") }
+  scope :transfers, -> { where(transaction_type: "transfer") }
+  scope :income_or_expense, -> { where(transaction_type: %w[income expense]) }
   scope :this_month, -> { where(transaction_date: Date.current.beginning_of_month..Date.current.end_of_month) }
   scope :cash_records, -> { where(payment_location: "cash") }
   scope :bank_records, -> { where(payment_location: "bank") }
@@ -61,6 +74,25 @@ class FinanceTransaction < ApplicationRecord
 
   def expense?
     transaction_type == "expense"
+  end
+
+  def transfer?
+    transaction_type == "transfer"
+  end
+
+  def location_label
+    LOCATION_LABELS.fetch(payment_location, payment_location.to_s.humanize)
+  end
+
+  def transfer_to_label
+    LOCATION_LABELS.fetch(transfer_to_location, transfer_to_location.to_s.humanize)
+  end
+
+  # Shown wherever a category name would be: transfers have no category.
+  def title
+    return "#{location_label} → #{transfer_to_label}" if transfer?
+
+    finance_category&.name || "No Category"
   end
 
   def expense_voucher_number
@@ -105,6 +137,17 @@ class FinanceTransaction < ApplicationRecord
       FinanceVoucherSequence.create!(finance_unit: finance_unit, year: year, next_number: 0)
   rescue ActiveRecord::RecordNotUnique
     FinanceVoucherSequence.find_by!(finance_unit: finance_unit, year: year)
+  end
+
+  def clear_transfer_fields
+    self.finance_category = nil
+  end
+
+  def transfer_moves_between_accounts
+    return if payment_location.blank? || transfer_to_location.blank?
+    return unless payment_location == transfer_to_location
+
+    errors.add(:transfer_to_location, "must be a different account")
   end
 
   def finance_category_type_matches_transaction_type

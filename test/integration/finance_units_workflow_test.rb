@@ -36,7 +36,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Naupang Department"
-    assert_select "a[href*='finance_unit_id=#{@naupang.id}']", text: /Income/
+    assert_select "a[href*='finance_unit_id=#{@naupang.id}']", text: /Add transaction/
 
     assert_difference -> { @naupang.finance_transactions.count }, 1 do
       post admin_finance_transactions_path, params: {

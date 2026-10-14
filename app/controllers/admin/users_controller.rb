@@ -1,13 +1,7 @@
 module Admin
   class UsersController < BaseController
-    before_action :require_super_admin!, except: %i[index show]
-    before_action :set_user, only: %i[show edit update destroy]
-
-    def index
-      @users = User.order(:role, :name)
-    end
-
-    def show; end
+    before_action :require_super_admin!
+    before_action :set_user, only: %i[edit update destroy]
 
     def new
       @user = User.new
@@ -18,7 +12,7 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && @user.save
-        redirect_to admin_users_path, notice: "Member siam fel a ni."
+        redirect_to admin_settings_path, notice: "User siam fel a ni."
       else
         render :new, status: :unprocessable_entity
       end
@@ -37,7 +31,7 @@ module Admin
       end
 
       if role_assigned && @user.save
-        redirect_to admin_users_path, notice: "Member siamthat fel a ni."
+        redirect_to admin_settings_path, notice: "User siamthat fel a ni."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -45,12 +39,12 @@ module Admin
 
     def destroy
       if @user == current_user
-        redirect_to admin_users_path, alert: "Mahni account delete theih a ni lo."
+        redirect_to admin_settings_path, alert: "Mahni account delete theih a ni lo."
       elsif @user.destroy
-        redirect_to admin_users_path, notice: "Member delete fel a ni."
+        redirect_to admin_settings_path, notice: "User delete fel a ni."
       else
-        redirect_to admin_users_path,
-                    alert: @user.errors.full_messages.to_sentence.presence || "Member delete theih a ni lo."
+        redirect_to admin_settings_path,
+                    alert: @user.errors.full_messages.to_sentence.presence || "User delete theih a ni lo."
       end
     end
 

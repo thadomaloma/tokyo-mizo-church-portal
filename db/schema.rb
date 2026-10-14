@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_001000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_011000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -61,6 +61,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_001000) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "finance_budget_lines", force: :cascade do |t|
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.integer "finance_budget_id", null: false
+    t.integer "finance_category_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["finance_budget_id", "finance_category_id"], name: "index_finance_budget_lines_on_budget_and_category", unique: true
+    t.index ["finance_budget_id"], name: "index_finance_budget_lines_on_finance_budget_id"
+    t.index ["finance_category_id"], name: "index_finance_budget_lines_on_finance_category_id"
+  end
+
+  create_table "finance_budgets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "finance_unit_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "year", null: false
+    t.index ["finance_unit_id", "year"], name: "index_finance_budgets_on_finance_unit_id_and_year", unique: true
+    t.index ["finance_unit_id"], name: "index_finance_budgets_on_finance_unit_id"
+  end
+
   create_table "finance_categories", force: :cascade do |t|
     t.string "category_type"
     t.string "code"
@@ -97,13 +117,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_001000) do
     t.integer "amount"
     t.datetime "created_at", null: false
     t.text "description"
-    t.bigint "finance_category_id", null: false
+    t.bigint "finance_category_id"
     t.bigint "finance_unit_id", null: false
     t.string "payer_name"
     t.string "payment_location", default: "cash", null: false
     t.bigint "recorded_by_id", null: false
     t.date "transaction_date"
     t.string "transaction_type"
+    t.string "transfer_to_location"
     t.datetime "updated_at", null: false
     t.integer "voucher_number"
     t.integer "voucher_year"
@@ -310,6 +331,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_001000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "finance_budget_lines", "finance_budgets"
+  add_foreign_key "finance_budget_lines", "finance_categories"
+  add_foreign_key "finance_budgets", "finance_units"
   add_foreign_key "finance_categories", "finance_units"
   add_foreign_key "finance_periods", "finance_units"
   add_foreign_key "finance_periods", "users", column: "closed_by_id"

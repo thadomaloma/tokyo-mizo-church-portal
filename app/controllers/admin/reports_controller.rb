@@ -28,6 +28,7 @@ module Admin
       respond_to do |format|
         format.html do
           @pagy, @ledger_transactions = pagy(transactions, limit: 12)
+          load_period_overview(period_transactions)
         end
 
         format.pdf do
@@ -71,6 +72,25 @@ module Admin
     end
 
     private
+
+    # Sumvon-style overview for the on-screen report: change against the
+    # previous period of the same length, and where the money went.
+    def load_period_overview(period_transactions)
+      period_start = Date.new(@period_year, @start_month, 1)
+      month_count = @end_month - @start_month + 1
+      previous = @finance_scope.income_or_expense
+                               .where(transaction_date: (period_start << month_count)...period_start)
+      @previous_income = previous.income.sum(:amount)
+      @previous_expense = previous.expense.sum(:amount)
+      @previous_period_label = finance_period_label((period_start << month_count).year,
+                                                    (period_start << month_count).month,
+                                                    (period_start - 1).month)
+
+      totals = period_transactions.expense.reorder(nil).group(:finance_category_id).sum(:amount)
+      names = FinanceCategory.where(id: totals.keys).pluck(:id, :name).to_h
+      @expense_by_category = totals.map { |id, amount| [ names.fetch(id, "No Category"), amount ] }
+                                   .sort_by { |_, amount| -amount }
+    end
 
     def selected_finance_year
       year = params[:year].to_i
@@ -143,6 +163,7 @@ module Admin
       period_end = Date.new(year, end_month, -1)
 
       transactions = @finance_scope
+                       .income_or_expense
                        .includes(:finance_category, :finance_unit, :recorded_by)
                        .order(transaction_date: :desc, created_at: :desc)
 

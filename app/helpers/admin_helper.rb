@@ -1,55 +1,31 @@
 module AdminHelper
-  # Bottom dock on phones: Home, Finance and Reports, with everything else
-  # (members, finance access, profile) under the More sheet.
+  # Main destinations, in Sumvon's order. Users without finance access only
+  # get Home; Settings sits apart in the "More" group and the account menu.
+  def primary_nav_items
+    items = [ nav_item("Home", admin_root_path, "home", active: current_page?(admin_root_path)) ]
+    return items unless finance_access?
+
+    items + [
+      nav_item("Transactions", admin_finance_transactions_path, "arrows-right-left",
+               prefixes: %w[/admin/finance_transactions /admin/finance_categories /admin/finance_periods]),
+      nav_item("Budget", admin_budget_path, "chart-pie", prefixes: %w[/admin/budget]),
+      nav_item("Reports", admin_reports_path, "chart-bar", prefixes: %w[/admin/reports]),
+      nav_item("Accounts", admin_accounts_path, "wallet", prefixes: %w[/admin/accounts])
+    ]
+  end
+
+  def secondary_nav_items
+    [ nav_item("Settings", admin_settings_path, "cog-6-tooth", prefixes: %w[/admin/settings /admin/users /admin/finance_units]) ]
+  end
+
+  # Phone dock: the four most used destinations around a central Add button.
   def mobile_dock_items
-    items = [
-      {
-        name: "Home",
-        path: admin_root_path,
-        active: current_page?(admin_root_path),
-        icon: "home"
-      }
-    ]
-
-    if finance_access?
-      items << {
-        name: "Finance",
-        path: admin_finance_transactions_path,
-        active: request.path.start_with?("/admin/finance_transactions") ||
-                request.path.start_with?("/admin/finance_categories") ||
-                request.path.start_with?("/admin/finance_periods"),
-        icon: "banknotes"
-      }
-
-      items << {
-        name: "Reports",
-        path: admin_reports_path,
-        active: request.path.start_with?("/admin/reports"),
-        icon: "document-chart-bar"
-      }
-    end
-
-    items
+    items = primary_nav_items.reject { |item| item[:name] == "Accounts" }
+    finance_access? ? items : items + secondary_nav_items
   end
 
-  def more_menu_active?
-    %w[/admin/users /admin/finance_units /admin/profile]
-      .any? { |prefix| request.path.start_with?(prefix) } &&
-      !mobile_dock_items.any? { |item| item[:active] }
-  end
-
-  def more_menu_items
-    items = [
-      { name: "Members", path: admin_users_path, icon: "users", active: request.path.start_with?("/admin/users") }
-    ]
-
-    if current_user.super_admin?
-      items << { name: "Finance Access", path: admin_finance_units_path, icon: "building-office-2", active: request.path.start_with?("/admin/finance_units") }
-    end
-
-    items << { name: "My Profile", path: admin_profile_path, icon: "user-circle", active: request.path.start_with?("/admin/profile") }
-
-    items
+  def can_add_transaction?
+    finance_access? && current_finance_unit.present? && can_manage_finance?
   end
 
   def can_manage_finance?(finance_unit = current_finance_unit)
@@ -66,7 +42,11 @@ module AdminHelper
     )
   end
 
-  def can_manage_church?
-    current_user.super_admin?
+  private
+
+  def nav_item(name, path, icon, active: nil, prefixes: [])
+    active = prefixes.any? { |prefix| request.path.start_with?(prefix) } if active.nil?
+
+    { name: name, path: path, icon: icon, active: active }
   end
 end

@@ -33,12 +33,18 @@
     </div>
 
     <div class="border-t border-slate-100 p-3">
-      <%= link_to admin_profile_path,
+      <% if finance_access? %>
+        <%= link_to admin_accounts_path,
+            class: "flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-100" do %>
+          <%= heroicon "wallet", variant: :outline, options: { class: "h-5 w-5" } %>
+          Accounts
+        <% end %>
+      <% end %>
+
+      <%= link_to admin_settings_path,
           class: "flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-100" do %>
-        <%= heroicon "user-circle",
-            variant: :outline,
-            options: { class: "h-5 w-5" } %>
-        My Profile
+        <%= heroicon "cog-6-tooth", variant: :outline, options: { class: "h-5 w-5" } %>
+        Settings
       <% end %>
 
       <%= button_to destroy_user_session_path,

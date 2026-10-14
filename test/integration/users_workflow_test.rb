@@ -23,7 +23,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal "treasurer", User.find_by!(email: "new-treasurer@example.com").role
-    assert_redirected_to admin_users_path
+    assert_redirected_to admin_settings_path
   end
 
   test "an invalid member role returns a form error instead of a bad request" do
@@ -49,7 +49,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
       delete admin_user_path(@current_user)
     end
 
-    assert_redirected_to admin_users_path
+    assert_redirected_to admin_settings_path
     assert_equal "Mahni account delete theih a ni lo.", flash[:alert]
   end
 
@@ -60,7 +60,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
       delete admin_user_path(member)
     end
 
-    assert_redirected_to admin_users_path
+    assert_redirected_to admin_settings_path
     assert User.exists?(member.id)
     assert_match(/Cannot delete record/, flash[:alert])
   end

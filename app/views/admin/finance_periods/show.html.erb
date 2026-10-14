@@ -48,15 +48,15 @@
   <% end %>
 
   <section class="grid grid-cols-2 gap-3 lg:grid-cols-5">
-    <%= render "admin/finance_transactions/summary_card", title: "Opening Balance", value: "¥#{number_with_delimiter(@opening_balance)}", icon: "banknotes", color: "sky" %>
-    <%= render "admin/finance_transactions/summary_card", title: "Income", value: "¥#{number_with_delimiter(@income)}", icon: "arrow-trending-up", color: "emerald" %>
-    <%= render "admin/finance_transactions/summary_card", title: "Expense", value: "¥#{number_with_delimiter(@expense)}", icon: "arrow-trending-down", color: "rose" %>
-    <%= render "admin/finance_transactions/summary_card",
+    <%= render "summary_card", title: "Opening Balance", value: "¥#{number_with_delimiter(@opening_balance)}", icon: "banknotes", color: "sky" %>
+    <%= render "summary_card", title: "Income", value: "¥#{number_with_delimiter(@income)}", icon: "arrow-trending-up", color: "emerald" %>
+    <%= render "summary_card", title: "Expense", value: "¥#{number_with_delimiter(@expense)}", icon: "arrow-trending-down", color: "rose" %>
+    <%= render "summary_card",
         title: "Net Change",
         value: "#{@net_change.negative? ? "-" : "+"}¥#{number_with_delimiter(@net_change.abs)}",
         icon: "scale",
         color: @net_change.negative? ? "rose" : "emerald" %>
-    <%= render "admin/finance_transactions/summary_card", title: "Closing Balance", value: "¥#{number_with_delimiter(@closing_balance)}", icon: "lock-closed", color: "blue" %>
+    <%= render "summary_card", title: "Closing Balance", value: "¥#{number_with_delimiter(@closing_balance)}", icon: "lock-closed", color: "blue" %>
   </section>
 
   <% if can_manage_finance? %>

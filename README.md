@@ -6,12 +6,18 @@ Tokyo Mizo Church Portal is a finance management app built with Ruby on Rails 8.
 
 ## Features
 
-* Multi-Unit Finance Management (Income, Expenses, Cash & Bank balances)
-* Expense vouchers with printable receipts
-* Monthly closing
-* PDF & Excel Report Export
-* User accounts with per-unit finance access
-* Mobile-Friendly Responsive Design (installable as a PWA)
+The workflow follows Sumvon (our personal finance app): Home, Transactions,
+Budget, Reports and Accounts, with one prominent "Add transaction" action.
+
+* Multi-unit ledgers (Main Church, departments, funds)
+* Income, expense and Cash ↔ Bank transfers (transfers never count as income or expense)
+* Accounts page with Cash and Bank balances
+* Yearly budget per expense category, with progress on the dashboard
+* Monthly comparison and spending by category in reports
+* Expense vouchers with printable receipts, and monthly closing
+* PDF & Excel report export
+* A handful of user accounts with per-unit finance access, managed from Settings
+* Mobile-friendly, installable as a PWA
 
 ## User Roles
 

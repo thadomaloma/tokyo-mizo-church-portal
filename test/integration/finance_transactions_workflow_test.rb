@@ -13,8 +13,6 @@ class FinanceTransactionsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "section", text: /Monthly Summary/, count: 0
     assert_match first.description, response.body
     assert_match second.description, response.body
-    assert_match(/Cash Balance/, response.body)
-    assert_match(/Bank Balance/, response.body)
   end
 
   test "new entry form shows concise fixed categories without an add option" do
@@ -29,7 +27,7 @@ class FinanceTransactionsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "select[name='finance_transaction[finance_category_id]'] option", text: /Fixture Expense/
     assert_no_match(/Fixed expense category for tests/, response.body)
     assert_no_match(/Add New Category/, response.body)
-    assert_match(/Description \/ Note/, response.body)
+    assert_select "label", text: "Note"
   end
 
   test "category guide is read only and does not show descriptions" do

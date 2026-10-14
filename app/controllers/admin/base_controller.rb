@@ -42,7 +42,9 @@ module Admin
 
     def current_finance_unit
       @current_finance_unit ||= begin
+        # "all" is the consolidated report selector, not a unit of its own.
         requested_id = params[:finance_unit_id].presence
+        requested_id = nil if requested_id == "all"
         requested_id ? available_finance_units.find(requested_id) : preferred_accessible_finance_unit
       end
     end

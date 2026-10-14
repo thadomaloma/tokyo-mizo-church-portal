@@ -37,6 +37,7 @@ class FinanceCategory < ApplicationRecord
   audited
 
   has_many :finance_transactions, dependent: :restrict_with_error
+  has_many :finance_budget_lines, dependent: :restrict_with_error
   belongs_to :finance_unit
 
   validates :name, presence: true

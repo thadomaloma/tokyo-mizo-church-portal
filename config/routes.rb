@@ -22,9 +22,13 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
 
-    resource :profile, only: :show
+    resource :settings, only: :show
+    resources :accounts, only: :index
+    get "budget(/:year)", to: "budgets#show", as: :budget, constraints: { year: /\d{4}/ }
+    get "budget/:year/edit", to: "budgets#edit", as: :edit_budget, constraints: { year: /\d{4}/ }
+    patch "budget/:year", to: "budgets#update", as: nil, constraints: { year: /\d{4}/ }
 
-    resources :users
+    resources :users, except: %i[index show]
     resources :finance_categories, only: :index
     resources :finance_transactions, except: :show do
       get :receipt, on: :member

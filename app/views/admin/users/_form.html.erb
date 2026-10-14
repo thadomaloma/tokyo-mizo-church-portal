@@ -23,7 +23,7 @@
 
         <div class="min-w-0">
           <p class="font-black text-slate-900">
-            <%= user.name.presence || "New Member" %>
+            <%= user.name.presence || "New User" %>
           </p>
 
           <p class="break-words text-sm text-slate-500">
@@ -93,7 +93,7 @@
               class: "font-bold text-slate-800" %>
 
           <p class="mt-1 text-sm text-slate-500">
-            Active member chu portal-ah a lut thei; inactive member chu a lut thei lo.
+            Active user chu app-ah a lut thei; inactive user chu a lut thei lo.
           </p>
         </div>
       </div>
@@ -110,7 +110,7 @@
         </p>
       <% else %>
         <p class="mt-1 text-sm text-slate-500">
-          He member tan temporary password siam rawh.
+          He user tan temporary password siam rawh.
         </p>
       <% end %>
 
@@ -183,11 +183,11 @@
   </div>
 
   <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
-    <%= form.submit user.persisted? ? "Update Member" : "Create Member",
+    <%= form.submit user.persisted? ? "Update User" : "Create User",
         class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700" %>
 
     <%= link_to "Cancel",
-        admin_users_path,
+        admin_settings_path,
         class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
   </div>
 <% end %>

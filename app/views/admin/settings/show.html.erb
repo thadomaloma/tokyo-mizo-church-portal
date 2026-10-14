@@ -1,0 +1,94 @@
+<%= render "admin/shared/page_header",
+    eyebrow: "Settings",
+    title: "Settings",
+    subtitle: current_user.super_admin? ? "I account, app hmangtu te leh finance access." : "I account chanchin." %>
+
+<div class="mx-auto max-w-4xl space-y-6">
+  <section class="premium-panel rounded-2xl p-5 sm:p-6">
+    <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">My account</h2>
+
+    <div class="mt-4 flex items-center gap-4">
+      <%= render "admin/shared/user_avatar",
+          user: current_user,
+          size_class: "h-14 w-14",
+          text_class: "text-lg" %>
+
+      <div class="min-w-0">
+        <p class="font-black text-slate-900"><%= current_user.name %></p>
+        <p class="break-words text-sm text-slate-500"><%= current_user.email %></p>
+        <p class="mt-2 inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
+          <%= current_user.role.humanize %>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <% if current_user.super_admin? %>
+    <section class="premium-panel overflow-hidden rounded-2xl" data-settings-users>
+      <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5 sm:p-6">
+        <div>
+          <h2 class="text-lg font-black text-slate-950">Users</h2>
+          <p class="mt-1 text-sm text-slate-500">App hmang thei te. Finance unit tin access chu Finance Access-ah pek a ni.</p>
+        </div>
+
+        <%= link_to new_admin_user_path,
+            class: "inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#0b1f33] px-4 py-2.5 text-sm font-black text-white hover:bg-sky-900" do %>
+          <%= heroicon "user-plus", variant: :outline, options: { class: "h-4 w-4" } %>
+          <span class="max-sm:sr-only">Add user</span>
+        <% end %>
+      </div>
+
+      <ul class="divide-y divide-slate-100">
+        <% @users.each do |user| %>
+          <li class="flex items-center gap-3 px-5 py-4 sm:px-6">
+            <%= render "admin/shared/user_avatar", user: user, size_class: "h-10 w-10", text_class: "text-sm" %>
+
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-black text-slate-900">
+                <%= user.name %>
+                <% unless user.active? %>
+                  <span class="ml-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-black text-rose-700">Inactive</span>
+                <% end %>
+              </p>
+              <p class="truncate text-xs font-semibold text-slate-500">
+                <%= user.role.humanize %>
+                <% if user.super_admin? %>
+                  · All finance units
+                <% elsif user.finance_unit_memberships.any? %>
+                  · <%= user.finance_unit_memberships.map { |membership| "#{membership.finance_unit.name} (#{membership.role.humanize})" }.to_sentence %>
+                <% else %>
+                  · No finance access
+                <% end %>
+              </p>
+            </div>
+
+            <%= link_to edit_admin_user_path(user),
+                class: "inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-200" do %>
+              <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
+              <span class="max-sm:sr-only">Edit</span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <%= link_to admin_finance_units_path,
+        class: "premium-panel flex items-center gap-4 rounded-2xl p-5 transition hover:border-sky-200 sm:p-6" do %>
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+        <%= heroicon "building-office-2", variant: :outline, options: { class: "h-5 w-5" } %>
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block font-black text-slate-950">Finance Access</span>
+        <span class="block text-sm text-slate-500">Finance unit tin Treasurer, Finance Secretary leh Viewer ruat rawh.</span>
+      </span>
+      <%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5 text-slate-400" } %>
+    <% end %>
+  <% end %>
+
+  <%= button_to destroy_user_session_path,
+      method: :delete,
+      class: "flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 hover:bg-rose-100" do %>
+    <%= heroicon "arrow-left-on-rectangle", variant: :outline, options: { class: "h-5 w-5" } %>
+    Logout
+  <% end %>
+</div>

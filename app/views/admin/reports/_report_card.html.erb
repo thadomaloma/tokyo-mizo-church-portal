@@ -19,6 +19,9 @@
       <% if local_assigns[:note].present? %>
         <p class="mt-1 text-xs font-semibold text-slate-400"><%= note %></p>
       <% end %>
+      <% if local_assigns[:badge].present? %>
+        <div class="mt-2"><%= badge %></div>
+      <% end %>
     </div>
 
     <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl <%= colors[card_color] || colors["sky"] %>">
