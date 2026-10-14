@@ -1,298 +1,140 @@
-<div class="space-y-6 lg:space-y-8">
-  <section class="premium-hero rounded-[1.5rem] text-white">
-    <div class="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10">
-      <div class="-mt-1 sm:-mt-2 lg:-mt-3">
-        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
-          Finance Report
-        </p>
+<%
+  multi_unit = available_finance_units.many?
+  period_params = { year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector }
+  actions = capture do
+    concat(link_to(finance_admin_reports_path(period_params.merge(ledger_type: @ledger_type, format: :pdf)), data: { turbo: false }, class: "btn btn-primary") do
+      heroicon("document-arrow-down", variant: :outline, options: { class: "h-5 w-5" }) + "Export PDF"
+    end)
+    concat(link_to(finance_admin_reports_path(period_params.merge(ledger_type: @ledger_type, format: :xlsx)), data: { turbo: false }, class: "btn btn-secondary") do
+      heroicon("table-cells", variant: :outline, options: { class: "h-5 w-5" }) + "Export Excel"
+    end)
+  end
+%>
 
-        <h1 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-          Finance summary by period.
-        </h1>
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit_label,
+    title: "Report & export",
+    subtitle: "#{@period_caption}. Thla eng zat pawh thlang la, PDF emaw Excel-in la chhuak rawh.",
+    actions: actions %>
 
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/65 sm:text-base">
-          <%= @finance_unit_label %> · <%= @period_caption %> sum lut, sum chhuak leh balance record ennawn tur.
-        </p>
+<div class="space-y-5">
+  <section class="card card-pad">
+    <%= form_with url: finance_admin_reports_path, method: :get, data: { turbo: false } do |form| %>
+      <%= form.hidden_field :ledger_type, value: @ledger_type %>
 
-        <div class="mt-3 max-w-xl">
-          <%= form_with url: finance_admin_reports_path,
-              method: :get,
-              data: { turbo: false } do |form| %>
-            <%= form.hidden_field :ledger_type, value: @ledger_type %>
-
-            <div class="grid grid-cols-2 gap-1.5 rounded-2xl bg-white/10 p-1.5 ring-1 ring-white/15 sm:grid-cols-[minmax(150px,1.5fr)_76px_104px_104px_auto] sm:items-end">
-              <div class="col-span-2 space-y-1 sm:col-span-1">
-                <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_unit">Finance Unit</label>
-                <% unit_options = available_finance_units.map { |unit| [unit.name, unit.id] } %>
-                <% unit_options.unshift(["All Units (Consolidated)", "all"]) if current_user.super_admin? %>
-                <%= form.select :finance_unit_id,
-                    options_for_select(unit_options, @finance_unit_selector),
-                    {},
-                    id: "finance_report_unit",
-                    class: "min-h-10 w-full rounded-xl border-0 bg-white px-2.5 text-xs font-black text-slate-950 focus:ring-0" %>
-              </div>
-              <div class="space-y-1">
-                <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_year">Year</label>
-                <%= form.select :year,
-                    options_for_select(@year_options, @period_year),
-                    {},
-                    id: "finance_report_year",
-                    class: "min-h-10 w-full rounded-xl border-0 bg-white px-2.5 text-xs font-black text-slate-950 focus:ring-0" %>
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_start_month">From</label>
-                <%= form.select :start_month,
-                    options_for_select(@month_options, @start_month),
-                    {},
-                    id: "finance_report_start_month",
-                    class: "min-h-10 w-full rounded-xl border-0 bg-white px-2.5 text-xs font-black text-slate-950 focus:ring-0" %>
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-[9px] font-black uppercase tracking-[0.16em] text-white/60" for="finance_report_end_month">To</label>
-                <%= form.select :end_month,
-                    options_for_select(@month_options, @end_month),
-                    {},
-                    id: "finance_report_end_month",
-                    class: "min-h-10 w-full rounded-xl border-0 bg-white px-2.5 text-xs font-black text-slate-950 focus:ring-0" %>
-              </div>
-
-              <button type="submit"
-                      class="inline-flex min-h-10 items-center justify-center rounded-xl bg-sky-950/30 px-3 text-xs font-black text-white hover:bg-sky-950/40">
-                Apply
-              </button>
-            </div>
-          <% end %>
-
-          <%= link_to "Full Year Summary",
-              finance_admin_reports_path(year: @period_year, start_month: 1, end_month: 12, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type),
-              data: { turbo: false },
-              class: "mt-2 inline-flex items-center gap-1.5 text-xs font-black text-white/70 underline decoration-white/30 underline-offset-2 hover:text-white" %>
-        </div>
-      </div>
-
-      <div class="w-full space-y-3 lg:max-w-sm lg:min-w-80">
-        <div class="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15">
-          <div class="flex flex-col gap-3">
-            <div>
-              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
-                Ledger View
-              </p>
-
-              <h2 class="mt-1 text-lg font-black text-white">
-                <%= @ledger_type_label %>
-              </h2>
-
-              <p class="mt-1 text-xs font-semibold leading-5 text-white/60">
-                <%= @period_label %> record te. He thlan dan hi PDF leh Excel export-ah pawh hman a ni ang.
-              </p>
-            </div>
-
-            <div class="grid grid-cols-3 gap-1.5 rounded-2xl bg-sky-950/20 p-1.5 ring-1 ring-white/10">
-              <% [["all", "All"], ["income", "Income"], ["expense", "Expense"]].each do |type, label| %>
-                <% active = @ledger_type == type %>
-                <%= link_to finance_admin_reports_path(
-                      year: @period_year,
-                      start_month: @start_month,
-                      end_month: @end_month,
-                      finance_unit_id: @finance_unit_selector,
-                      ledger_type: type
-                    ),
-                    class: class_names(
-                      "inline-flex min-h-10 items-center justify-center rounded-xl px-2 text-xs font-black transition",
-                      active ? "bg-white text-slate-950 shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"
-                    ),
-                    aria: { current: ("page" if active) } do %>
-                  <%= label %>
-                <% end %>
-              <% end %>
-            </div>
+      <div class="grid grid-cols-2 gap-3 sm:items-end <%= multi_unit ? "lg:grid-cols-[minmax(0,1.4fr)_7rem_9rem_9rem_auto]" : "sm:grid-cols-[7rem_9rem_9rem_auto]" %>">
+        <% if multi_unit %>
+          <div class="col-span-2 lg:col-span-1">
+            <label class="field-label" for="finance_report_unit">Finance unit</label>
+            <% unit_options = available_finance_units.map { |unit| [ unit.name, unit.id ] } %>
+            <% unit_options.unshift([ "All Units (Consolidated)", "all" ]) if current_user.super_admin? %>
+            <%= form.select :finance_unit_id, options_for_select(unit_options, @finance_unit_selector), {}, id: "finance_report_unit", class: "input" %>
           </div>
+        <% else %>
+          <%= form.hidden_field :finance_unit_id, value: @finance_unit_selector %>
+        <% end %>
+        <div class="col-span-2 sm:col-span-1">
+          <label class="field-label" for="finance_report_year">Kum</label>
+          <%= form.select :year, options_for_select(@year_options, @period_year), {}, id: "finance_report_year", class: "input" %>
         </div>
-
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type, format: :pdf),
-              data: { turbo: false },
-              class: "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-black text-slate-950 hover:bg-slate-100" do %>
-            <%= heroicon "document-arrow-down",
-                variant: :outline,
-                options: { class: "h-5 w-5" } %>
-            Export PDF
-          <% end %>
-
-          <%= link_to finance_admin_reports_path(year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector, ledger_type: @ledger_type, format: :xlsx),
-              data: { turbo: false },
-              class: "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15" do %>
-            <%= heroicon "table-cells",
-                variant: :outline,
-                options: { class: "h-5 w-5" } %>
-            Export Excel
-          <% end %>
+        <div>
+          <label class="field-label" for="finance_report_start_month">Atanga</label>
+          <%= form.select :start_month, options_for_select(@month_options, @start_month), {}, id: "finance_report_start_month", class: "input" %>
         </div>
+        <div>
+          <label class="field-label" for="finance_report_end_month">Thleng</label>
+          <%= form.select :end_month, options_for_select(@month_options, @end_month), {}, id: "finance_report_end_month", class: "input" %>
+        </div>
+        <button type="submit" class="btn btn-primary col-span-2 sm:col-span-1">Show</button>
+      </div>
+    <% end %>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-4">
+      <%= link_to "Kum pum (Jan–Dec)", finance_admin_reports_path(period_params.merge(start_month: 1, end_month: 12, ledger_type: @ledger_type)), data: { turbo: false }, class: "link text-[15px]" %>
+
+      <div>
+        <p class="sr-only">Ledger View</p>
+        <nav class="segmented" aria-label="Ledger type">
+          <% [ [ "all", "All" ], [ "income", "Income" ], [ "expense", "Expense" ] ].each do |type, label| %>
+            <%= link_to label, finance_admin_reports_path(period_params.merge(ledger_type: type)),
+                class: "!min-h-10 px-4", aria: { current: ("page" if @ledger_type == type) } %>
+          <% end %>
+        </nav>
       </div>
     </div>
   </section>
 
-  <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
-    <%= render "admin/reports/report_card",
-        title: "Income",
-        value: "¥#{number_with_delimiter(@income)}",
-        note: @period_caption,
-        badge: (percent_change_badge(FinanceSummary.change_percent(@income, @previous_income), good_when: :up) if @ledger_type == "all"),
-        color: "emerald",
-        icon: "banknotes" %>
-
-    <%= render "admin/reports/report_card",
-        title: "Expense",
-        value: "¥#{number_with_delimiter(@expense)}",
-        note: @period_caption,
-        badge: (percent_change_badge(FinanceSummary.change_percent(@expense, @previous_expense), good_when: :down) if @ledger_type == "all"),
-        color: "rose",
-        icon: "arrow-trending-down" %>
-
-    <%= render "admin/reports/report_card",
-        title: "Balance",
-        value: "¥#{number_with_delimiter(@balance)}",
-        note: @period_caption,
-        color: "sky",
-        icon: "wallet" %>
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="card card-pad">
+      <p class="stat-label">Income</p>
+      <p class="stat-value money-in">+<%= yen(@income) %></p>
+      <% if @ledger_type == "all" %>
+        <div class="mt-2"><%= percent_change_badge(FinanceSummary.change_percent(@income, @previous_income), good_when: :up) %></div>
+      <% end %>
+    </div>
+    <div class="card card-pad">
+      <p class="stat-label">Expense</p>
+      <p class="stat-value money-out">−<%= yen(@expense) %></p>
+      <% if @ledger_type == "all" %>
+        <div class="mt-2"><%= percent_change_badge(FinanceSummary.change_percent(@expense, @previous_expense), good_when: :down) %></div>
+      <% end %>
+    </div>
+    <div class="card card-pad">
+      <p class="stat-label">Balance</p>
+      <p class="stat-value <%= @balance.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= yen(@balance) %></p>
+    </div>
   </div>
-
   <% if @ledger_type == "all" %>
-    <p class="-mt-2 text-xs font-semibold text-slate-400">Percentage chu <%= @previous_period_label %> nen khaikhinna a ni.</p>
+    <p class="-mt-2 text-sm text-[var(--ink-muted)]">Percentage chu <%= @previous_period_label %> nen khaikhinna a ni.</p>
   <% end %>
 
   <% if @expense_by_category.any? %>
     <% top_amount = @expense_by_category.first.last %>
-    <section class="premium-panel rounded-2xl p-5 sm:p-6" data-spending-by-category>
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-lg font-black text-slate-950">Spending by category</h2>
-        <% if @finance_unit %>
-          <%= link_to admin_finance_period_path(@period_year, @end_month, finance_unit_id: @finance_unit.id),
-              class: "inline-flex items-center gap-1.5 text-sm font-black text-sky-700 hover:text-sky-900" do %>
-            <%= heroicon "calendar-days", variant: :outline, options: { class: "h-4 w-4" } %>
-            Monthly review
-          <% end %>
-        <% end %>
-      </div>
-      <ul class="mt-4 space-y-3">
+    <section class="card card-pad" data-spending-by-category>
+      <h2 class="card-title">Sum chhuak category tin</h2>
+      <ul class="mt-4 space-y-3.5">
         <% @expense_by_category.each do |name, amount| %>
           <li>
-            <div class="flex justify-between gap-3 text-sm">
-              <span class="truncate font-bold text-slate-700"><%= name %></span>
-              <span class="shrink-0 font-black text-slate-900"><%= yen(amount) %>
-                <span class="font-bold text-slate-400">· <%= @expense.zero? ? 0 : (amount * 100.0 / @expense).round %>%</span>
+            <div class="flex justify-between gap-3 text-[15px]">
+              <span class="truncate text-[var(--ink-soft)]"><%= name %></span>
+              <span class="money shrink-0 font-semibold text-[var(--ink)]"><%= yen(amount) %>
+                <span class="font-normal text-[var(--ink-muted)]">· <%= @expense.zero? ? 0 : (amount * 100.0 / @expense).round %>%</span>
               </span>
             </div>
-            <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div class="h-full rounded-full bg-rose-500/80" style="width: <%= (amount * 100.0 / top_amount).round %>%"></div>
-            </div>
+            <div class="bar mt-1.5"><span class="bg-rose-500" style="width: <%= (amount * 100.0 / top_amount).round %>%"></span></div>
           </li>
         <% end %>
       </ul>
     </section>
   <% end %>
 
-  <section class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-    <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-5 sm:flex-row sm:items-end sm:justify-between lg:p-6">
-      <div>
-        <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
-          Ledger
-        </p>
-
-        <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @finance_unit_label %> · <%= @period_label %> <%= @ledger_type_label %></h2>
-
-        <p class="mt-1 text-sm text-slate-500">
-          <%= @period_label.downcase %> chhunga <%= @ledger_type == "all" ? "sum lut leh sum chhuak" : @ledger_type.humanize.downcase %> record te.
-        </p>
-      </div>
-
-      <span class="inline-flex min-h-10 w-fit items-center justify-center rounded-xl bg-white px-3 text-xs font-black text-slate-500 ring-1 ring-slate-200">
-        <%= pluralize(@pagy.count, "record") %>
-      </span>
+  <section class="card overflow-hidden">
+    <div class="card-head">
+      <h2 class="card-title"><%= @period_label %> <%= @ledger_type_label %></h2>
+      <span class="text-sm text-[var(--ink-muted)]"><%= pluralize(@pagy.count, "record") %></span>
     </div>
 
     <% if @ledger_transactions.any? %>
-      <div class="divide-y divide-slate-100 bg-white md:max-h-[420px] md:overflow-y-auto md:overscroll-contain md:[scrollbar-gutter:stable]">
+      <ul class="row-list">
         <% @ledger_transactions.each do |transaction| %>
-          <%
-            income_record = transaction.income?
-            amount_color = income_record ? "text-emerald-700 bg-emerald-50 ring-emerald-100" : "text-rose-700 bg-rose-50 ring-rose-100"
-            accent_color = income_record ? "bg-emerald-500" : "bg-rose-500"
-            icon_color = income_record ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : "bg-rose-50 text-rose-600 ring-rose-100"
-          %>
-
-          <div class="relative overflow-hidden p-4 transition hover:bg-slate-50/70 sm:p-5">
-            <div class="absolute inset-y-4 left-0 w-1 rounded-r-full <%= accent_color %>"></div>
-
-            <div class="grid gap-4 pl-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-              <div class="min-w-0">
-                <div class="flex items-start gap-3">
-                  <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= icon_color %>">
-                    <%= heroicon income_record ? "arrow-trending-up" : "arrow-trending-down",
-                        variant: :outline,
-                        options: { class: "h-5 w-5" } %>
-                  </div>
-
-                  <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <%= render ::RubyUI::Badge.new(
-                          variant: income_record ? :emerald : :rose,
-                          size: :sm,
-                          class: "rounded-full px-2.5 py-1 text-[11px] font-black"
-                        ) do %>
-                        <%= transaction.transaction_type.humanize %>
-                      <% end %>
-
-                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-                        <%= heroicon "calendar-days", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
-                        <%= transaction.transaction_date.strftime("%b %d, %Y") %>
-                      </span>
-
-                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-                        <%= heroicon transaction.payment_location_bank? ? "building-library" : "wallet",
-                            variant: :outline,
-                            options: { class: "h-3.5 w-3.5" } %>
-                        <%= transaction.payment_location_bank? ? "Bank" : "Cash" %>
-                      </span>
-
-                      <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-                        <%= heroicon "user-circle", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
-                        <%= transaction.recorded_by&.name || "Not recorded" %>
-                      </span>
-
-                      <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700">
-                        <%= heroicon "building-office-2", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
-                        <%= transaction.finance_unit.name %>
-                      </span>
-                    </div>
-
-                    <h3 class="mt-2 break-words text-base font-black text-slate-950">
-                      <%= transaction.finance_category&.name || "No Category" %>
-                    </h3>
-
-                    <p class="mt-1 break-words text-sm leading-5 text-slate-500">
-                      <%= transaction.description.presence || "Description dah a ni lo." %>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <p class="inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-base font-black ring-1 lg:w-auto lg:min-w-44 <%= amount_color %>">
-                <span class="text-[10px] uppercase tracking-[0.16em] opacity-70">Amount</span>
-                <span><%= income_record ? "+" : "-" %>¥<%= number_with_delimiter(transaction.amount) %></span>
-              </p>
-            </div>
-          </div>
+          <% tone = transaction_tone(transaction) %>
+          <li class="row">
+            <span class="row-icon <%= tone_classes(tone, :icon) %>" aria-hidden="true"><%= heroicon transaction_icon(transaction), variant: :outline, options: { class: "h-5 w-5" } %></span>
+            <span class="min-w-0 flex-1">
+              <span class="row-title block break-words"><%= transaction.description.presence || transaction.title %></span>
+              <span class="row-meta block">
+                <%= [ (transaction.title if transaction.description.present?), transaction.location_label,
+                      transaction.transaction_date.strftime("%-d %b %Y"), (transaction.finance_unit.name if multi_unit),
+                      transaction.recorded_by&.name ].compact.join(" · ") %>
+              </span>
+            </span>
+            <span class="money shrink-0 text-base font-semibold <%= tone_classes(tone, :amount) %>"><%= signed_yen(transaction) %></span>
+          </li>
         <% end %>
-      </div>
-
-      <%= render "admin/reports/finance_pagination", pagy: @pagy %>
+      </ul>
+      <%= render "admin/shared/pagination", pagy: @pagy %>
     <% else %>
-      <div class="p-10 text-center text-sm font-semibold text-slate-400">
-        <%= @period_label.downcase %> atan transaction a awm lo.
-      </div>
+      <p class="px-6 py-10 text-center text-[15px] text-[var(--ink-muted)]"><%= @period_label %> atan record a awm lo.</p>
     <% end %>
   </section>
 </div>

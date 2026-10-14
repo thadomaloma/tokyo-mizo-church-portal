@@ -2,8 +2,11 @@ module Admin
   class ReportsController < BaseController
     before_action :require_finance_access!, only: :finance
 
+    # Reports open on this month's treasurer statement; the custom-period
+    # ledger with PDF/Excel export lives at #finance.
     def index
-      redirect_to finance_admin_reports_path(request.query_parameters)
+      redirect_to admin_finance_period_path(Date.current.year, Date.current.month,
+                                            finance_unit_id: params[:finance_unit_id].presence)
     end
 
     def finance

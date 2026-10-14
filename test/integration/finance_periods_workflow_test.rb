@@ -16,7 +16,7 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
 
     get admin_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert_response :success
-    assert_select "button", text: /Close Month/
+    assert_select "button", text: /Close month/i
 
     patch admin_close_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert_redirected_to admin_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)

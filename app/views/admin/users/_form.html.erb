@@ -1,20 +1,9 @@
-<%= form_with model: [:admin, user],
-    class: "mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" do |form| %>
+<%= form_with model: [:admin, user], class: "card card-pad mx-auto max-w-2xl" do |form| %>
 
-  <% if user.errors.any? %>
-    <div class="mb-6 rounded-xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">
-      <p class="mb-2 font-black">Heng error te hi siam tha rawh:</p>
-
-      <ul class="list-inside list-disc">
-        <% user.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "admin/shared/form_errors", object: user %>
 
   <div class="grid grid-cols-1 gap-5">
-    <div class="rounded-2xl bg-slate-50 p-5">
+    <div class="rounded-xl bg-[var(--app-bg)] p-4">
       <div class="flex items-center gap-4">
         <%= render "admin/shared/user_avatar",
             user: user,
@@ -22,7 +11,7 @@
             text_class: "text-lg" %>
 
         <div class="min-w-0">
-          <p class="font-black text-slate-900">
+          <p class="font-semibold text-slate-900">
             <%= user.name.presence || "New User" %>
           </p>
 
@@ -37,21 +26,21 @@
       <div>
         <%= form.label :name,
             "Full Name",
-            class: "mb-2 block text-sm font-bold text-slate-700" %>
+            class: "field-label" %>
 
         <%= form.text_field :name,
             placeholder: "Hming pum pui ziak rawh",
-            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+            class: "input" %>
       </div>
 
       <div>
         <%= form.label :email,
             "Email Address",
-            class: "mb-2 block text-sm font-bold text-slate-700" %>
+            class: "field-label" %>
 
         <%= form.email_field :email,
             placeholder: "Email address ziak rawh",
-            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+            class: "input" %>
       </div>
     </div>
 
@@ -59,22 +48,22 @@
       <div>
         <%= form.label :phone,
             "Phone Number",
-            class: "mb-2 block text-sm font-bold text-slate-700" %>
+            class: "field-label" %>
 
         <%= form.text_field :phone,
             placeholder: "Phone number ziak rawh",
-            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+            class: "input" %>
       </div>
 
       <div>
         <%= form.label :role,
             "Role",
-            class: "mb-2 block text-sm font-bold text-slate-700" %>
+            class: "field-label" %>
 
         <%= form.select :role,
             User::ROLE_OPTIONS,
             { prompt: "Select role" },
-            class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+            class: "input" %>
 
         <p class="mt-2 text-xs leading-5 text-slate-500">
           Hei hi kohhran post/title a ni. Finance permission chu Finance Access page-ah unit hranpaa assign tur a ni.
@@ -82,7 +71,7 @@
       </div>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+    <div class="rounded-xl border border-[var(--line)] p-4">
       <div class="flex items-start gap-3">
         <%= form.check_box :active,
             class: "mt-1 rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
@@ -99,8 +88,8 @@
       </div>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-      <h2 class="font-black text-slate-900">
+    <div class="rounded-xl bg-[var(--app-bg)] p-4">
+      <h2 class="font-semibold text-slate-900">
         Password
       </h2>
 
@@ -118,9 +107,9 @@
         <div>
           <%= form.label :password,
               "Password",
-              class: "mb-2 block text-sm font-bold text-slate-700" %>
+              class: "field-label" %>
 
-          <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
+          <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
             <%= form.password_field :password,
                 placeholder: user.persisted? ? "Password ngai hman tur chuan dah ruak rawh" : "Character 12 aia tlem lo",
                 data: { password_input: true },
@@ -150,9 +139,9 @@
         <div>
           <%= form.label :password_confirmation,
               "Confirm Password",
-              class: "mb-2 block text-sm font-bold text-slate-700" %>
+              class: "field-label" %>
 
-          <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
+          <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
             <%= form.password_field :password_confirmation,
                 placeholder: "Password ziak nawn rawh",
                 data: { password_input: true },
@@ -182,12 +171,12 @@
     </div>
   </div>
 
-  <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
+  <div class="mt-6 flex flex-col gap-3 border-t border-[var(--line)] pt-6 sm:flex-row">
     <%= form.submit user.persisted? ? "Update User" : "Create User",
-        class: "rounded-xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-sky-700" %>
+        class: "btn btn-primary" %>
 
     <%= link_to "Cancel",
         admin_settings_path,
-        class: "rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-black text-slate-700 hover:bg-slate-200" %>
+        class: "btn btn-secondary" %>
   </div>
 <% end %>

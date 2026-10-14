@@ -1,13 +1,10 @@
+<%= render "admin/shared/page_header",
+    eyebrow: Date.current.strftime("%B %Y"),
+    title: "Chibai, #{current_user.name.split.first}",
+    subtitle: (@finance_unit ? "#{@finance_unit.name} sum leh pai dinhmun." : nil),
+    actions: (render("admin/shared/unit_switcher", url: admin_root_path) if @finance_unit) %>
+
 <div class="space-y-5 lg:space-y-6">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700"><%= Date.current.strftime("%B %Y") %></p>
-      <h1 class="mt-2 text-2xl font-black tracking-[-0.025em] text-[#0b1f33] sm:text-3xl">Chibai, <%= current_user.name %></h1>
-    </div>
-
-    <%= render "admin/shared/unit_switcher", url: admin_root_path if @finance_unit %>
-  </div>
-
   <%= render "admin/shared/pwa_install_card" %>
 
   <% if @finance_unit %>
@@ -17,131 +14,133 @@
       expense_change = FinanceSummary.change_percent(summary.month_expense, summary.previous_month_expense)
     %>
 
-    <section class="premium-hero rounded-[1.5rem] p-6 text-white sm:p-8" data-balance-card>
+    <section class="hero-card p-5 sm:p-7" data-balance-card>
       <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="text-sm font-bold text-white/70"><%= @finance_unit.name %> · Total balance</p>
-          <p class="mt-2 text-4xl font-black tracking-tight sm:text-5xl"><%= yen(summary.current_balance) %></p>
+          <p class="text-[15px] text-white/75">Sum awm zawng zawng</p>
+          <p class="money mt-1 text-4xl font-bold sm:text-5xl"><%= yen(summary.current_balance) %></p>
         </div>
-
         <%= link_to admin_accounts_path(finance_unit_id: @finance_unit.id),
-            class: "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-2 text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/20" do %>
-          Accounts
-          <%= heroicon "arrow-right", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
+            class: "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-4 text-sm font-semibold hover:bg-white/20" do %>
+          Accounts <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
         <% end %>
       </div>
 
-      <div class="mt-6 grid grid-cols-2 gap-3">
-        <% [ [ "Cash", summary.cash_balance ], [ "Bank", summary.bank_balance ] ].each do |name, balance| %>
-          <div class="rounded-2xl bg-white/[0.08] px-4 py-3 ring-1 ring-white/15">
-            <p class="text-xs font-bold text-white/60"><%= name %></p>
-            <p class="mt-1 text-lg font-black sm:text-xl"><%= yen(balance) %></p>
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <% [ [ "Cash", "wallet", summary.cash_balance ], [ "Bank", "building-library", summary.bank_balance ] ].each do |name, icon, balance| %>
+          <div class="hero-tile px-4 py-3">
+            <p class="flex items-center gap-1.5 text-sm text-white/70">
+              <%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %><%= name %>
+            </p>
+            <p class="money mt-1 text-lg font-semibold sm:text-xl"><%= yen(balance) %></p>
           </div>
         <% end %>
       </div>
     </section>
 
-    <section class="grid grid-cols-3 gap-3" aria-label="This month">
-      <div class="premium-panel rounded-2xl p-4">
-        <p class="text-xs font-bold text-slate-500">Income</p>
-        <p class="mt-1 truncate text-base font-black text-emerald-700 sm:text-xl"><%= yen(summary.month_income) %></p>
-        <div class="mt-2"><%= percent_change_badge(income_change, good_when: :up) %></div>
-      </div>
+    <% if can_manage_finance? %>
+      <nav class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Quick actions">
+        <% [
+             [ "Pathianni thawhlawm", "gift", new_admin_offering_path(finance_unit_id: @finance_unit.id), "tone-in" ],
+             [ "Sum chhuak dah", "arrow-trending-down", new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "expense"), "tone-out" ],
+             [ "Bank-ah dah / la", "arrows-right-left", new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "transfer"), "tone-move" ],
+             [ "Thla report", "document-text", admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), "tone-move" ]
+           ].each do |label, icon, path, tone| %>
+          <%= link_to path, class: "card flex min-h-[4.5rem] items-center gap-3 px-4 py-3 transition hover:border-[var(--line-strong)]" do %>
+            <span class="row-icon <%= tone %>" aria-hidden="true"><%= heroicon icon, variant: :outline, options: { class: "h-5 w-5" } %></span>
+            <span class="text-[15px] font-semibold leading-snug text-[var(--ink)]"><%= label %></span>
+          <% end %>
+        <% end %>
+      </nav>
+    <% end %>
 
-      <div class="premium-panel rounded-2xl p-4">
-        <p class="text-xs font-bold text-slate-500">Spent</p>
-        <p class="mt-1 truncate text-base font-black text-rose-700 sm:text-xl"><%= yen(summary.month_expense) %></p>
-        <div class="mt-2"><%= percent_change_badge(expense_change, good_when: :down) %></div>
-      </div>
-
-      <div class="premium-panel rounded-2xl p-4">
-        <p class="text-xs font-bold text-slate-500">Net</p>
-        <p class="mt-1 truncate text-base font-black sm:text-xl <%= summary.net_change.negative? ? "text-rose-700" : "text-slate-950" %>">
-          <%= summary.net_change.negative? ? "−" : "+" %><%= yen(summary.net_change.abs) %>
-        </p>
-        <p class="mt-2 text-[11px] font-bold text-slate-400"><%= Date.current.strftime("%B") %></p>
+    <section aria-labelledby="this-month">
+      <h2 id="this-month" class="mb-3 text-[15px] font-semibold text-[var(--ink-muted)]"><%= Date.current.strftime("%B") %> thla chhung</h2>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="card card-pad">
+          <p class="stat-label">Sum lut</p>
+          <p class="stat-value money-in">+<%= yen(summary.month_income) %></p>
+          <p class="mt-2 flex items-center gap-2 text-sm text-[var(--ink-muted)]"><%= percent_change_badge(income_change, good_when: :up) %> <%= "thla kal ta aiin" if income_change %></p>
+        </div>
+        <div class="card card-pad">
+          <p class="stat-label">Sum chhuak</p>
+          <p class="stat-value money-out">−<%= yen(summary.month_expense) %></p>
+          <p class="mt-2 flex items-center gap-2 text-sm text-[var(--ink-muted)]"><%= percent_change_badge(expense_change, good_when: :down) %> <%= "thla kal ta aiin" if expense_change %></p>
+        </div>
+        <div class="card card-pad">
+          <p class="stat-label">A bang (Net)</p>
+          <p class="stat-value <%= summary.net_change.negative? ? "money-out" : "text-[var(--ink)]" %>">
+            <%= summary.net_change.negative? ? "−" : "+" %><%= yen(summary.net_change.abs) %>
+          </p>
+          <p class="mt-2 text-sm text-[var(--ink-muted)]">Sum lut − sum chhuak</p>
+        </div>
       </div>
     </section>
 
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] lg:gap-6">
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)] lg:gap-6">
       <%= render Admin::Dashboard::MonthlyFinanceChart.new(
           months: @monthly_overview,
-          subtitle: "Thla 6 kal ta chhunga sum lut leh chhuak."
+          subtitle: "Thla 6 kal ta chhung."
         ) %>
 
       <div class="space-y-5">
-        <section class="premium-panel rounded-2xl p-5" data-budget-card>
+        <section class="card card-pad" data-budget-card>
           <div class="flex items-center justify-between gap-3">
-            <h2 class="text-lg font-black text-slate-950"><%= Date.current.year %> Budget</h2>
-            <%= link_to admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id),
-                class: "inline-flex items-center gap-1 text-sm font-black text-sky-700 hover:text-sky-900" do %>
-              <%= @budget_progress.planned? ? "View" : "Create" %>
-              <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
-            <% end %>
+            <h2 class="card-title"><%= Date.current.year %> Budget</h2>
+            <%= link_to (@budget_progress.planned? ? "View" : "Siam rawh"), admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "link text-[15px]" %>
           </div>
 
           <% if @budget_progress.planned? %>
-            <p class="mt-3 text-2xl font-black text-slate-950">
-              <%= @budget_progress.percent_used %>%
-              <span class="text-sm font-bold text-slate-400">hman tawh</span>
+            <p class="mt-3 text-[15px] text-[var(--ink-soft)]">
+              <span class="money text-2xl font-bold text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> hman tawh
             </p>
-            <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-100">
-              <div class="h-full rounded-full <%= @budget_progress.status == :over ? "bg-rose-500" : "bg-emerald-600" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></div>
-            </div>
-            <p class="mt-2 text-sm text-slate-500">
-              <%= yen(@budget_progress.spent_total) %> / <%= yen(@budget_progress.planned_total) %>
-            </p>
+            <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
+            <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= yen(@budget_progress.spent_total) %> / <%= yen(@budget_progress.planned_total) %></p>
 
-            <ul class="mt-4 space-y-3 border-t border-slate-100 pt-4">
+            <ul class="mt-4 space-y-3 border-t border-[var(--line)] pt-4">
               <% @budget_progress.lines.sort_by { |line| -line.percent_used }.first(3).each do |line| %>
                 <li>
                   <div class="flex justify-between gap-2 text-sm">
-                    <span class="truncate font-bold text-slate-700"><%= line.category.name %></span>
-                    <span class="shrink-0 font-bold text-slate-500"><%= line.percent_used %>%</span>
+                    <span class="truncate text-[var(--ink-soft)]"><%= line.category.name %></span>
+                    <span class="money shrink-0 font-semibold <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= line.percent_used %>%</span>
                   </div>
-                  <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div class="h-full rounded-full <%= line.over? ? "bg-rose-500" : "bg-sky-600" %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></div>
-                  </div>
+                  <div class="bar mt-1.5 !h-1.5"><span class="<%= line.over? ? "bg-rose-600" : "bg-sky-700" %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
                 </li>
               <% end %>
             </ul>
           <% else %>
-            <p class="mt-3 text-sm text-slate-500">Kum <%= Date.current.year %> atan budget a la awm lo. Category tin atan hman tur zat ruahman rawh.</p>
+            <p class="card-note mt-2">Kum <%= Date.current.year %> atan budget a la awm lo. Category tin hman tur zat ruahman la, hetah hman zat a lang ang.</p>
           <% end %>
         </section>
 
-        <section class="rounded-2xl border border-sky-100 bg-sky-50 p-5">
-          <p class="text-[11px] font-black uppercase tracking-wide text-sky-700">This month giving</p>
-          <div class="mt-3 grid grid-cols-2 gap-3">
+        <section class="card card-pad">
+          <h2 class="card-title">Thla hi thawhlawm</h2>
+          <dl class="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <p class="text-xs font-bold text-slate-500">Tithe</p>
-              <p class="mt-1 text-xl font-black text-slate-950"><%= yen(@sawmapakhat_total) %></p>
+              <dt class="stat-label">Sawm a pakhat</dt>
+              <dd class="money mt-0.5 text-xl font-bold text-[var(--ink)]"><%= yen(@sawmapakhat_total) %></dd>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-500">Offering</p>
-              <p class="mt-1 text-xl font-black text-slate-950"><%= yen(@weekly_offering_total) %></p>
+              <dt class="stat-label">Thawhlawm</dt>
+              <dd class="money mt-0.5 text-xl font-bold text-[var(--ink)]"><%= yen(@weekly_offering_total) %></dd>
             </div>
-          </div>
+          </dl>
         </section>
       </div>
     </div>
 
-    <section class="premium-panel overflow-hidden rounded-2xl">
-      <div class="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
-        <h2 class="text-lg font-black text-slate-950">Recent activity</h2>
-        <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-            class: "inline-flex items-center gap-1 text-sm font-black text-sky-700 hover:text-sky-900" do %>
-          View all
-          <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
-        <% end %>
+    <section class="card overflow-hidden">
+      <div class="card-head">
+        <h2 class="card-title">A thar ber te</h2>
+        <%= link_to "A vaiin en rawh", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "link text-[15px]" %>
       </div>
 
       <% if @recent_transactions.any? %>
-        <ul class="divide-y divide-slate-100 border-t border-slate-100">
+        <ul class="row-list">
           <%= render partial: "admin/shared/activity_row", collection: @recent_transactions, as: :transaction %>
         </ul>
       <% else %>
-        <%= render "empty_state",
+        <%= render "admin/shared/empty_state",
             icon: "banknotes",
             title: "Record a la awm lo",
             message: "Sum lut emaw sum chhuak emaw dah hnuah hetah a lang ang.",
@@ -150,11 +149,11 @@
       <% end %>
     </section>
   <% else %>
-    <section class="premium-panel rounded-2xl">
-      <%= render "empty_state",
+    <section class="card">
+      <%= render "admin/shared/empty_state",
           icon: "lock-closed",
           title: "Finance access pek i la ni lo",
-          message: "President emaw Secretary-in finance unit access an pek hunah i finance record te hetah a lang ang." %>
+          message: "Admin-in finance access a pek hunah record te hetah a lang ang." %>
     </section>
   <% end %>
 </div>

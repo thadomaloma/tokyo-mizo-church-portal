@@ -1,132 +1,48 @@
-<div class="relative min-h-screen overflow-hidden bg-[#f4f7fa]">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(14,116,144,0.11),transparent_28rem),radial-gradient(circle_at_85%_80%,rgba(15,23,42,0.08),transparent_32rem)]"></div>
-  <div class="relative flex min-h-screen items-center justify-center px-5 py-10 sm:px-6 sm:py-12">
-    <div class="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_32px_100px_rgba(15,23,42,0.14)] lg:grid-cols-[1.05fr_0.95fr]">
-
-      <div class="premium-hero hidden min-h-[640px] flex-col justify-between p-10 text-white lg:flex xl:p-12">
-        <div>
-          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-xl">
-            <%= image_tag "tokyo_mizo_church_logo.png", alt: "Tokyo Mizo Church Logo", class: "h-12 w-12 object-contain" %>
-          </div>
-          <p class="mt-8 text-[11px] font-black uppercase tracking-[0.28em] text-sky-200">Tokyo Mizo Church</p>
-          <h1 class="mt-4 max-w-md text-4xl font-black leading-tight tracking-[-0.035em] xl:text-5xl">Kohhran enkawlna zawng zawng hmun khatah.</h1>
-          <p class="mt-5 max-w-md text-base leading-7 text-slate-300">Sum leh pai, meeting thuziak, hunbi, thu rel leh member te fel fai taka dah khawmna.</p>
-        </div>
-        <p class="text-xs font-semibold text-slate-400">Tokyo, Japan · Kohhran hnathawhna hmun</p>
-      </div>
-
-      <div class="flex items-center p-6 sm:p-10 lg:p-12">
-        <div class="mx-auto w-full max-w-md">
-
-      <!-- Logo & Header -->
-      <div class="mb-8 text-center lg:text-left">
-
-        <div class="mb-5 flex justify-center lg:hidden">
-          <%= image_tag "tokyo_mizo_church_logo.png",
-              alt: "Tokyo Mizo Church Logo",
-              class: "h-20 w-20 rounded-2xl border-4 border-white bg-white object-contain shadow-xl ring-1 ring-slate-200" %>
-        </div>
-
-        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Secure Portal Access</p>
-        <h1 class="mt-3 text-3xl font-black tracking-[-0.03em] text-[#0b1f33]">
-          Welcome Back
-        </h1>
-
-        <p class="mt-3 text-sm leading-6 text-slate-500">
-          Tokyo Mizo Church Portal chhunzawm turin lut rawh.
-        </p>
-
-      </div>
-
-      <!-- Login Card -->
-      <div class="rounded-2xl border border-slate-200 bg-[#f9fbfc] p-5 sm:p-6">
-
-        <%= form_for(resource,
-            as: resource_name,
-            url: session_path(resource_name)) do |f| %>
-
-          <div class="space-y-5">
-
-            <div>
-              <%= f.label :email,
-                  "Email Address",
-                  class: "mb-2 block text-sm font-bold text-slate-700" %>
-
-              <%= f.email_field :email,
-                  autofocus: true,
-                  autocomplete: "email",
-                  placeholder: "I email address ziak rawh",
-                  class: "block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
-            </div>
-
-            <div>
-              <%= f.label :password,
-                  "Password",
-                  class: "mb-2 block text-sm font-bold text-slate-700" %>
-
-              <div class="flex items-center rounded-xl border border-slate-300 bg-white shadow-sm focus-within:border-sky-600 focus-within:ring-2 focus-within:ring-sky-100" data-password-wrapper>
-                <%= f.password_field :password,
-                    autocomplete: "current-password",
-                    placeholder: "I password ziak rawh",
-                    data: { password_input: true },
-                    class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 focus:outline-none focus:ring-0" %>
-
-                <button type="button"
-                        class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sky-600 hover:bg-sky-50"
-                        data-password-toggle
-                        onclick="return window.togglePasswordVisibility(this)"
-                        aria-label="Show password"
-                        title="Show password">
-                  <span data-password-show-icon>
-                    <%= heroicon "eye",
-                        variant: :outline,
-                        options: { class: "h-5 w-5" } %>
-                  </span>
-
-                  <span class="hidden" data-password-hide-icon>
-                    <%= heroicon "eye-slash",
-                        variant: :outline,
-                        options: { class: "h-5 w-5" } %>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <% if devise_mapping.rememberable? %>
-              <div class="flex items-center gap-2">
-                <%= f.check_box :remember_me,
-                    class: "rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
-
-                <%= f.label :remember_me,
-                    "Remember me",
-                    class: "text-sm font-medium text-slate-600" %>
-              </div>
-            <% end %>
-
-            <%= f.submit "Sign In",
-                class: "w-full rounded-xl bg-[#0b1f33] px-4 py-3 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-sky-900" %>
-
-          </div>
-
-        <% end %>
-
-        <div class="mt-6 text-center">
-          <%= link_to "Forgot your password?",
-              new_password_path(resource_name),
-              class: "text-sm font-bold text-sky-600 hover:text-sky-700" %>
-        </div>
-
-      </div>
-
-      <!-- Footer -->
-      <div class="mt-7 text-center">
-        <p class="text-xs font-medium text-slate-400">
-          © <%= Date.current.year %> Tokyo Mizo Church, Japan
-        </p>
-      </div>
-        </div>
-      </div>
-
+<div class="flex min-h-screen items-center justify-center px-4 py-10">
+  <div class="w-full max-w-md">
+    <div class="mb-8 text-center">
+      <%= image_tag "tokyo_mizo_church_logo.png", alt: "Tokyo Mizo Church", class: "mx-auto h-20 w-20 rounded-2xl bg-white object-contain p-1.5 shadow-sm ring-1 ring-[var(--line)]" %>
+      <p class="mt-5 text-[15px] font-semibold text-[var(--brand-soft)]">Tokyo Mizo Church Finance</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight text-[var(--ink)]">Welcome Back</h1>
+      <p class="mt-2 text-[15px] text-[var(--ink-muted)]">Kohhran sum leh pai enkawlna-ah lut rawh.</p>
     </div>
+
+    <div class="card card-pad">
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="space-y-5">
+          <div>
+            <%= f.label :email, "Email Address", class: "field-label" %>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "name@example.com", class: "input" %>
+          </div>
+
+          <div>
+            <%= f.label :password, "Password", class: "field-label" %>
+            <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
+              <%= f.password_field :password, autocomplete: "current-password", data: { password_input: true },
+                  class: "min-h-[2.875rem] min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3.5 text-[var(--ink)] focus:outline-none focus:ring-0" %>
+              <button type="button" class="mr-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--ink-muted)] hover:bg-[var(--app-bg)]"
+                      data-password-toggle onclick="return window.togglePasswordVisibility(this)" aria-label="Show password" title="Show password">
+                <span data-password-show-icon><%= heroicon "eye", variant: :outline, options: { class: "h-5 w-5" } %></span>
+                <span class="hidden" data-password-hide-icon><%= heroicon "eye-slash", variant: :outline, options: { class: "h-5 w-5" } %></span>
+              </button>
+            </div>
+          </div>
+
+          <% if devise_mapping.rememberable? %>
+            <div class="flex items-center gap-2.5">
+              <%= f.check_box :remember_me, class: "h-5 w-5 rounded border-[var(--line-strong)]" %>
+              <%= f.label :remember_me, "Remember me", class: "text-[15px] text-[var(--ink-soft)]" %>
+            </div>
+          <% end %>
+
+          <%= f.submit "Sign In", class: "btn btn-primary w-full" %>
+        </div>
+      <% end %>
+    </div>
+
+    <p class="mt-5 text-center">
+      <%= link_to "Forgot your password?", new_password_path(resource_name), class: "link text-[15px]" %>
+    </p>
+    <p class="mt-8 text-center text-sm text-[var(--ink-muted)]">© <%= Date.current.year %> Tokyo Mizo Church, Japan</p>
   </div>
 </div>

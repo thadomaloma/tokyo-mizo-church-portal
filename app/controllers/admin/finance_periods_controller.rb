@@ -21,14 +21,12 @@ module Admin
       @opening_balance = prior_transactions.income.sum(:amount) - prior_transactions.expense.sum(:amount)
       @closing_balance = @opening_balance + @net_change
 
-      @income_by_category = transactions.income.joins(:finance_category)
-                                         .reorder(nil)
-                                         .group("finance_categories.name")
-                                         .sum(:amount)
-      @expense_by_category = transactions.expense.joins(:finance_category)
-                                          .reorder(nil)
-                                          .group("finance_categories.name")
-                                          .sum(:amount)
+      @income_by_category = category_totals(transactions.income)
+      @expense_by_category = category_totals(transactions.expense)
+
+      summary = FinanceSummary.new(@finance_unit)
+      @closing_accounts = FinanceTransaction::LOCATIONS.to_h { |location| [ location, summary.account_balance(location, on: @period_end) ] }
+      @budget_progress = BudgetProgress.new(@finance_unit, @year)
 
       @closing_issues = closing_issues(transactions)
     end
@@ -75,6 +73,12 @@ module Admin
 
     def set_finance_period
       @finance_period = FinancePeriod.find_or_open(@finance_unit, @year, @month)
+    end
+
+    def category_totals(scope)
+      scope.joins(:finance_category).reorder(nil)
+           .group("finance_categories.name").sum(:amount)
+           .sort_by { |_, amount| -amount }
     end
 
     def period_transactions

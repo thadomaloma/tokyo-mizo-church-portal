@@ -1,70 +1,24 @@
 <% return if pagy.pages <= 1 %>
+<% page_url = ->(page) { url_for(request.query_parameters.merge(page: page, only_path: true)) } %>
 
-<div class="flex flex-col gap-4 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-  <p class="text-sm font-semibold text-slate-500">
-    Showing <span class="font-black text-slate-700"><%= pagy.from %>-<%= pagy.to %></span>
-    of <span class="font-black text-slate-700"><%= pagy.count %></span>
+<nav class="flex items-center justify-between gap-3 border-t border-[var(--line)] px-5 py-4 sm:px-6" aria-label="Pages">
+  <% if pagy.previous %>
+    <%= link_to page_url.call(pagy.previous), class: "btn btn-secondary btn-sm", rel: "prev" do %>
+      <%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %> Prev
+    <% end %>
+  <% else %>
+    <span class="btn btn-secondary btn-sm opacity-40" aria-disabled="true"><%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %> Prev</span>
+  <% end %>
+
+  <p class="text-sm text-[var(--ink-muted)]">
+    <span class="font-semibold text-[var(--ink)]"><%= pagy.from %>–<%= pagy.to %></span> / <%= pagy.count %>
   </p>
 
-  <nav class="flex items-center justify-between gap-2 sm:justify-end" aria-label="Pages">
-    <% if pagy.previous %>
-      <%= render ::RubyUI::Link.new(
-          href: page_url.call(pagy.previous),
-          variant: :outline,
-          size: :lg,
-          class: "h-10 rounded-xl px-3 text-sm font-black text-slate-700 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
-        ) do %>
-        <%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %>
-        Prev
-      <% end %>
-    <% else %>
-      <span class="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-black text-slate-300">
-        <%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %>
-        Prev
-      </span>
+  <% if pagy.next %>
+    <%= link_to page_url.call(pagy.next), class: "btn btn-secondary btn-sm", rel: "next" do %>
+      Next <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %>
     <% end %>
-
-    <div class="hidden items-center gap-1 sm:flex">
-      <% pagination_series(pagy).each do |page| %>
-        <% if page == :gap %>
-          <span class="inline-flex h-10 w-10 items-center justify-center text-sm font-black text-slate-400">...</span>
-        <% elsif page == pagy.page %>
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-sm font-black text-white shadow-sm">
-            <%= page %>
-          </span>
-        <% else %>
-          <%= render ::RubyUI::Link.new(
-              href: page_url.call(page),
-              variant: :outline,
-              icon: true,
-              size: :lg,
-              class: "h-10 w-10 rounded-xl text-sm font-black text-slate-700 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
-            ) do %>
-            <%= page %>
-          <% end %>
-        <% end %>
-      <% end %>
-    </div>
-
-    <span class="inline-flex h-10 items-center justify-center rounded-xl bg-slate-100 px-3 text-sm font-black text-slate-600 sm:hidden">
-      <%= pagy.page %> / <%= pagy.pages %>
-    </span>
-
-    <% if pagy.next %>
-      <%= render ::RubyUI::Link.new(
-          href: page_url.call(pagy.next),
-          variant: :outline,
-          size: :lg,
-          class: "h-10 rounded-xl px-3 text-sm font-black text-slate-700 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
-        ) do %>
-        Next
-        <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %>
-      <% end %>
-    <% else %>
-      <span class="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-black text-slate-300">
-        Next
-        <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %>
-      </span>
-    <% end %>
-  </nav>
-</div>
+  <% else %>
+    <span class="btn btn-secondary btn-sm opacity-40" aria-disabled="true">Next <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %></span>
+  <% end %>
+</nav>

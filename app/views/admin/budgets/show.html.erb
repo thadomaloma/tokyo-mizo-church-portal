@@ -1,97 +1,81 @@
 <%
-  status_labels = { on_track: "On track", watch: "Watch closely", over: "Over budget" }
-  status_classes = { on_track: "bg-emerald-50 text-emerald-700", watch: "bg-amber-50 text-amber-700", over: "bg-rose-50 text-rose-700" }
-  bar_class = ->(line) { line.over? ? "bg-rose-500" : (line.percent_used > 85 ? "bg-amber-500" : "bg-emerald-600") }
+  status_labels = { on_track: "A kal dik", watch: "Fimkhur rawh", over: "Budget a tlu" }
+  status_chips = { on_track: "chip-in", watch: "chip-warn", over: "chip-out" }
+  bar_class = ->(line) { line.over? ? "bg-rose-600" : (line.percent_used > 85 ? "bg-amber-500" : "bg-emerald-600") }
+  actions = capture do
+    concat render("admin/shared/unit_switcher", url: admin_budget_path(@year))
+    if can_manage_finance?
+      concat link_to((@progress.planned? ? "Edit budget" : "Budget siam rawh"), admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id), class: "btn btn-primary")
+    end
+  end
 %>
 
-<div class="space-y-6">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700"><%= @finance_unit.name %></p>
-      <h1 class="mt-2 text-2xl font-black tracking-[-0.025em] text-[#0b1f33] sm:text-3xl">Budget</h1>
-      <p class="mt-1 text-sm text-slate-500">Kum chhunga sum hman tur ruahmanna leh hman tawh zat.</p>
-    </div>
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit.name,
+    title: "Budget",
+    subtitle: "Kum chhunga category tin hman tur ruahmanna leh hman tawh zat.",
+    actions: actions %>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <%= render "admin/shared/unit_switcher", url: admin_budget_path(@year) %>
-
-      <% if can_manage_finance? %>
-        <%= link_to admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id),
-            class: "inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#0b1f33] px-4 text-sm font-black text-white hover:bg-sky-900" do %>
-          <%= heroicon @progress.planned? ? "pencil-square" : "plus", variant: :outline, options: { class: "h-4 w-4" } %>
-          <%= @progress.planned? ? "Edit budget" : "Create budget" %>
-        <% end %>
-      <% end %>
-    </div>
-  </div>
-
-  <nav class="premium-panel flex items-center justify-between rounded-2xl px-4 py-3" aria-label="Budget year">
-    <%= link_to admin_budget_path(@year - 1, finance_unit_id: @finance_unit.id), class: "inline-flex items-center gap-1.5 text-sm font-black text-slate-600 hover:text-sky-700" do %>
-      <%= heroicon "arrow-left", variant: :outline, options: { class: "h-4 w-4" } %><%= @year - 1 %>
+<div class="space-y-5">
+  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Budget kum">
+    <%= link_to admin_budget_path(@year - 1, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
+      <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= @year - 1 %>
     <% end %>
-    <p class="text-base font-black text-slate-950"><%= @year %></p>
-    <%= link_to admin_budget_path(@year + 1, finance_unit_id: @finance_unit.id), class: "inline-flex items-center gap-1.5 text-sm font-black text-slate-600 hover:text-sky-700" do %>
-      <%= @year + 1 %><%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
+    <p class="text-lg font-bold text-[var(--ink)]"><%= @year %></p>
+    <%= link_to admin_budget_path(@year + 1, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
+      <%= @year + 1 %><%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5" } %>
     <% end %>
   </nav>
 
   <% if @progress.planned? %>
     <% status = @progress.status %>
-    <section class="premium-panel rounded-2xl p-5 sm:p-6" data-budget-summary>
+    <section class="card card-pad" data-budget-summary>
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Hman tawh</p>
-          <p class="mt-2 text-3xl font-black text-slate-950">
-            <%= yen(@progress.spent_total) %>
-            <span class="text-base font-bold text-slate-400">/ <%= yen(@progress.planned_total) %></span>
+          <p class="stat-label">Hman tawh</p>
+          <p class="money mt-1 text-3xl font-bold text-[var(--ink)]">
+            <%= yen(@progress.spent_total) %> <span class="text-lg font-medium text-[var(--ink-muted)]">/ <%= yen(@progress.planned_total) %></span>
           </p>
         </div>
-        <span class="rounded-full px-3 py-1 text-xs font-black <%= status_classes[status] %>"><%= status_labels[status] %></span>
+        <span class="chip <%= status_chips[status] %>"><%= status_labels[status] %></span>
       </div>
 
-      <div class="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
-        <div class="h-full rounded-full <%= status == :over ? "bg-rose-500" : "bg-emerald-600" %>" style="width: <%= [ @progress.percent_used, 100 ].min %>%"></div>
-      </div>
+      <div class="bar mt-4 !h-3"><span class="<%= status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @progress.percent_used, 100 ].min %>%"></span></div>
 
-      <div class="mt-3 flex flex-wrap justify-between gap-2 text-sm">
-        <span class="font-semibold text-slate-500"><%= @progress.percent_used %>% hman tawh · kum <%= @progress.year_elapsed_percent %>% a kal tawh</span>
-        <span class="font-black <%= @progress.remaining_total.negative? ? "text-rose-700" : "text-slate-900" %>">
+      <div class="mt-3 flex flex-wrap justify-between gap-2 text-[15px]">
+        <span class="text-[var(--ink-muted)]"><%= @progress.percent_used %>% hman tawh · kum <%= @progress.year_elapsed_percent %>% a kal tawh</span>
+        <span class="money font-semibold <%= @progress.remaining_total.negative? ? "money-out" : "text-[var(--ink)]" %>">
           <%= @progress.remaining_total.negative? ? "#{yen(-@progress.remaining_total)} a tlu" : "#{yen(@progress.remaining_total)} a la bang" %>
         </span>
       </div>
     </section>
 
-    <section class="premium-panel overflow-hidden rounded-2xl">
-      <h2 class="border-b border-slate-100 px-5 py-4 text-lg font-black text-slate-950 sm:px-6">Category tin</h2>
-      <ul class="divide-y divide-slate-100">
+    <section class="card overflow-hidden">
+      <div class="card-head"><h2 class="card-title">Category tin</h2></div>
+      <ul class="row-list">
         <% @progress.lines.each do |line| %>
           <li class="px-5 py-4 sm:px-6">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <p class="font-black text-slate-900"><%= line.category.name %></p>
-              <p class="text-sm font-bold text-slate-500">
-                <span class="<%= line.over? ? "text-rose-700" : "text-slate-900" %>"><%= yen(line.spent) %></span> / <%= yen(line.planned) %>
+              <p class="text-[15px] font-semibold text-[var(--ink)]"><%= line.category.name %></p>
+              <p class="money text-[15px] text-[var(--ink-muted)]">
+                <span class="font-semibold <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= yen(line.spent) %></span> / <%= yen(line.planned) %>
               </p>
             </div>
-            <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div class="h-full rounded-full <%= bar_class.call(line) %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></div>
-            </div>
+            <div class="bar mt-2"><span class="<%= bar_class.call(line) %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
           </li>
         <% end %>
       </ul>
 
       <% if @progress.unplanned_spending.positive? %>
-        <p class="border-t border-slate-100 bg-amber-50 px-5 py-3 text-sm font-semibold text-amber-800 sm:px-6">
-          Budget-a awm lo category-ah <%= yen(@progress.unplanned_spending) %> hman a ni.
-        </p>
+        <p class="notice notice-warn !rounded-none">Budget-a awm lo category-ah <%= yen(@progress.unplanned_spending) %> hman a ni.</p>
       <% end %>
     </section>
   <% else %>
-    <section class="premium-panel rounded-2xl p-10 text-center">
-      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-        <%= heroicon "chart-pie", variant: :outline, options: { class: "h-7 w-7" } %>
-      </div>
-      <p class="mt-4 font-black text-slate-800"><%= @year %> budget a la awm lo</p>
-      <p class="mt-2 text-sm text-slate-500">Category tin atan kum chhunga hman tur zat ruahman la, hman zat leh la bang zat hetah a lang ang.</p>
+    <section class="card">
+      <%= render "admin/shared/empty_state", icon: "chart-pie", title: "#{@year} budget a la awm lo",
+          message: "Category tin atan kum chhunga hman tur zat ruahman la, hman zat leh la bang zat hetah a lang ang.",
+          path: (admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id) if can_manage_finance?),
+          action: "Budget siam rawh" %>
     </section>
   <% end %>
 </div>

@@ -1,17 +1,6 @@
-<%
-  base_class = "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition"
-  active_class = "bg-white text-[#0b1f33] shadow-[0_10px_26px_rgba(0,0,0,0.2)]"
-  inactive_class = "text-slate-400 hover:bg-white/[0.07] hover:text-white"
-%>
-
 <%= link_to path,
-    class: "#{base_class} #{active ? active_class : inactive_class}" do %>
-
-  <%= heroicon icon,
-      variant: :outline,
-      options: { class: "h-5 w-5 shrink-0 #{active ? 'text-sky-700' : 'text-slate-500 group-hover:text-sky-300'}" } %>
-
-  <span class="truncate">
-    <%= name %>
-  </span>
+    aria: { current: (active ? "page" : nil) },
+    class: "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium transition #{active ? "bg-white/12 text-white" : "text-slate-300 hover:bg-white/[0.06] hover:text-white"}" do %>
+  <%= heroicon icon, variant: (active ? :solid : :outline), options: { class: "h-5 w-5 shrink-0 #{active ? "text-sky-300" : "text-slate-400"}" } %>
+  <span class="truncate"><%= name %></span>
 <% end %>

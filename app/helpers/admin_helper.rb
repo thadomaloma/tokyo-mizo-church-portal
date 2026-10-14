@@ -7,9 +7,9 @@ module AdminHelper
 
     items + [
       nav_item("Transactions", admin_finance_transactions_path, "arrows-right-left",
-               prefixes: %w[/admin/finance_transactions /admin/finance_categories /admin/finance_periods]),
+               prefixes: %w[/admin/finance_transactions /admin/finance_categories /admin/offerings]),
       nav_item("Budget", admin_budget_path, "chart-pie", prefixes: %w[/admin/budget]),
-      nav_item("Reports", admin_reports_path, "chart-bar", prefixes: %w[/admin/reports]),
+      nav_item("Reports", admin_reports_path, "chart-bar", prefixes: %w[/admin/reports /admin/finance_periods]),
       nav_item("Accounts", admin_accounts_path, "wallet", prefixes: %w[/admin/accounts])
     ]
   end

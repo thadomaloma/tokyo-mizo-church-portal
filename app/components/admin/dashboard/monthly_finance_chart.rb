@@ -11,7 +11,7 @@ module Admin
       end
 
       def view_template
-        section(class: "premium-panel rounded-[1.25rem] p-5 lg:p-6") do
+        section(class: "card card-pad") do
           header
           chart_panel
         end
@@ -22,9 +22,8 @@ module Admin
       def header
         div(class: "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between") do
           div do
-            p(class: "text-xs font-black uppercase tracking-[0.22em] text-slate-400") { "Monthly Overview" }
-            h2(class: "mt-2 text-xl font-black text-slate-950 lg:text-2xl") { "Income vs Expense" }
-            p(class: "mt-1 text-sm text-slate-500") { @subtitle }
+            h2(class: "card-title") { "Sum lut leh sum chhuak" }
+            p(class: "card-note mt-0.5") { @subtitle }
           end
 
           return if @income_total.nil? || @expense_total.nil?
@@ -44,7 +43,7 @@ module Admin
       end
 
       def chart_panel
-        div(class: "mt-5 rounded-2xl border border-slate-200/70 bg-[#f7f9fb] p-4") do
+        div(class: "mt-4") do
           legend
           chart
         end
@@ -52,13 +51,13 @@ module Admin
 
       def legend
         div(class: "flex items-center gap-4") do
-          legend_item(label: "Income", color: "bg-emerald-500")
-          legend_item(label: "Expense", color: "bg-rose-500")
+          legend_item(label: "Sum lut", color: "bg-emerald-600")
+          legend_item(label: "Sum chhuak", color: "bg-rose-600")
         end
       end
 
       def legend_item(label:, color:)
-        div(class: "inline-flex items-center gap-2 text-xs font-black text-slate-600") do
+        div(class: "inline-flex items-center gap-2 text-sm font-medium text-slate-600") do
           span(class: "h-2.5 w-2.5 rounded-full #{color}")
           plain label
         end
@@ -69,7 +68,7 @@ module Admin
           raw view_context.column_chart(
             chart_series,
             height: "260px",
-            colors: [ "#10b981", "#f43f5e" ],
+            colors: [ "#059669", "#e11d48" ],
             thousands: ",",
             prefix: "¥",
             legend: false,
@@ -92,22 +91,22 @@ module Admin
 
       def total_label_classes(tone)
         case tone
-        when :income then "text-[11px] font-black uppercase tracking-wide text-emerald-700"
-        else "text-[11px] font-black uppercase tracking-wide text-rose-700"
+        when :income then "text-[11px] font-semibold uppercase tracking-wide text-emerald-700"
+        else "text-[11px] font-semibold uppercase tracking-wide text-rose-700"
         end
       end
 
       def total_amount_classes(tone)
         case tone
-        when :income then "mt-1 truncate text-lg font-black text-emerald-700"
-        else "mt-1 truncate text-lg font-black text-rose-700"
+        when :income then "mt-1 truncate text-lg font-semibold text-emerald-700"
+        else "mt-1 truncate text-lg font-semibold text-rose-700"
         end
       end
 
       def chart_series
         [
-          { name: "Income", data: month_data(:income) },
-          { name: "Expense", data: month_data(:expense) }
+          { name: "Sum lut", data: month_data(:income) },
+          { name: "Sum chhuak", data: month_data(:expense) }
         ]
       end
 

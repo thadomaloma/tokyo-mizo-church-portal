@@ -24,6 +24,7 @@ Rails.application.routes.draw do
 
     resource :settings, only: :show
     resources :accounts, only: :index
+    resources :offerings, only: %i[new create]
     get "budget(/:year)", to: "budgets#show", as: :budget, constraints: { year: /\d{4}/ }
     get "budget/:year/edit", to: "budgets#edit", as: :edit_budget, constraints: { year: /\d{4}/ }
     patch "budget/:year", to: "budgets#update", as: nil, constraints: { year: /\d{4}/ }
@@ -36,7 +37,7 @@ Rails.application.routes.draw do
     get "finance_periods/:year/:month", to: "finance_periods#show", as: :finance_period, constraints: { year: /\d{4}/, month: /\d{1,2}/ }
     patch "finance_periods/:year/:month/close", to: "finance_periods#close", as: :close_finance_period, constraints: { year: /\d{4}/, month: /\d{1,2}/ }
     patch "finance_periods/:year/:month/reopen", to: "finance_periods#reopen", as: :reopen_finance_period, constraints: { year: /\d{4}/, month: /\d{1,2}/ }
-    resources :finance_units, only: :index do
+    resources :finance_units, only: %i[index new create edit update] do
       resources :finance_unit_memberships, only: %i[create destroy]
     end
     resources :reports, only: [ :index ] do

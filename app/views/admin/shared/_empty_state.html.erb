@@ -1,0 +1,12 @@
+<div class="px-6 py-12 text-center">
+  <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-bg)] text-[var(--brand-soft)]" aria-hidden="true">
+    <%= heroicon icon, variant: :outline, options: { class: "h-6 w-6" } %>
+  </span>
+  <p class="mt-4 text-base font-semibold text-[var(--ink)]"><%= title %></p>
+  <% if local_assigns[:message].present? %>
+    <p class="mx-auto mt-1 max-w-sm text-[15px] text-[var(--ink-muted)]"><%= message %></p>
+  <% end %>
+  <% if local_assigns[:path].present? && local_assigns[:action].present? %>
+    <%= link_to action, path, class: "btn btn-primary mt-5" %>
+  <% end %>
+</div>

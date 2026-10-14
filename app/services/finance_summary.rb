@@ -21,13 +21,16 @@ class FinanceSummary
     account_balance("bank")
   end
 
-  def account_balance(location)
+  # Balance of one account (cash or bank), optionally as at the end of `on`.
+  def account_balance(location, on: nil)
     @account_balances ||= {}
-    @account_balances[location] ||=
-      transactions.income.where(payment_location: location).sum(:amount) -
-      transactions.expense.where(payment_location: location).sum(:amount) -
-      transactions.transfers.where(payment_location: location).sum(:amount) +
-      transactions.transfers.where(transfer_to_location: location).sum(:amount)
+    @account_balances[[ location, on ]] ||= begin
+      scope = on ? transactions.where(transaction_date: ..on) : transactions
+      scope.income.where(payment_location: location).sum(:amount) -
+        scope.expense.where(payment_location: location).sum(:amount) -
+        scope.transfers.where(payment_location: location).sum(:amount) +
+        scope.transfers.where(transfer_to_location: location).sum(:amount)
+    end
   end
 
   def month_income

@@ -240,11 +240,11 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     get admin_finance_units_path
 
     assert_response :success
-    assert_select "h1", text: "Finance Access"
+    assert_select "h1", text: "Finance units & access"
     assert_includes response.body, "Naupang Department"
     assert_includes response.body, "Building Sum"
     assert_includes response.body, "Mission Sum"
-    assert_no_match(/Add Finance Unit/, response.body)
+    assert_select "a[href=?]", new_admin_finance_unit_path, text: "Add finance unit"
     select_ids = css_select("select[id^='finance-unit-']").map { |select| select["id"] }
     assert_equal select_ids.uniq, select_ids
     assert_select "label[for='finance-unit-#{@naupang.id}-treasurer']", text: "Treasurer"
@@ -280,6 +280,54 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_root_path
 
     get finance_admin_reports_path(format: :xlsx)
+    assert_redirected_to admin_root_path
+  end
+
+  test "a new install seeds only the main church ledger" do
+    assert_equal [ FinanceUnit::MAIN_SLUG ], FinanceUnit::DEFAULT_UNITS.map { |unit| unit[:slug] }
+  end
+
+  test "president adds a finance unit from settings with its categories" do
+    sign_in(users(:one))
+
+    assert_difference -> { FinanceUnit.count }, 1 do
+      post admin_finance_units_path, params: { finance_unit: { name: "Youth Camp Fund", unit_type: "fund" } }
+    end
+
+    unit = FinanceUnit.find_by!(slug: "youth-camp-fund")
+    assert_redirected_to admin_finance_units_path
+    assert unit.active?
+    assert unit.finance_categories.system_defined.exists?(code: "donation")
+    assert_not unit.finance_categories.exists?(code: "tithe")
+  end
+
+  test "president renames or deactivates a unit but cannot change its type" do
+    sign_in(users(:one))
+
+    patch admin_finance_unit_path(@thalai), params: { finance_unit: { name: "Thalai Pawl", active: "0", unit_type: "fund" } }
+
+    assert_redirected_to admin_finance_units_path
+    @thalai.reload
+    assert_equal "Thalai Pawl", @thalai.name
+    assert_not @thalai.active?
+    assert_equal "department", @thalai.unit_type
+  end
+
+  test "an invalid unit re-renders the form" do
+    sign_in(users(:one))
+
+    assert_no_difference -> { FinanceUnit.count } do
+      post admin_finance_units_path, params: { finance_unit: { name: "", unit_type: "department" } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "only super admins manage finance units" do
+    sign_in(@department_user)
+
+    get new_admin_finance_unit_path
+
     assert_redirected_to admin_root_path
   end
 

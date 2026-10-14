@@ -1,7 +1,7 @@
 <% if object.errors.any? %>
-  <div class="mb-5 rounded-2xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">
-    <p class="mb-2 font-black">Heng error te hi siam tha rawh:</p>
-    <ul class="list-inside list-disc">
+  <div class="notice notice-error mb-5" role="alert">
+    <p class="font-semibold">Heng hi siam that rawh:</p>
+    <ul class="mt-1 list-inside list-disc">
       <% object.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>

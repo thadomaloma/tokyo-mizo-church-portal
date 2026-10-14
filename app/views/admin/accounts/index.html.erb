@@ -1,75 +1,64 @@
-<div class="space-y-6">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700"><%= @finance_unit.name %></p>
-      <h1 class="mt-2 text-2xl font-black tracking-[-0.025em] text-[#0b1f33] sm:text-3xl">Accounts</h1>
-      <p class="mt-1 text-sm text-slate-500">Cash leh Bank-a pawisa awm zat.</p>
-    </div>
+<%
+  actions = capture do
+    concat render("admin/shared/unit_switcher", url: admin_accounts_path)
+    if can_manage_finance?
+      concat(link_to(new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "transfer"), class: "btn btn-primary") do
+        heroicon("arrows-right-left", variant: :outline, options: { class: "h-5 w-5" }) + "Transfer"
+      end)
+    end
+  end
+%>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <%= render "admin/shared/unit_switcher", url: admin_accounts_path %>
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit.name,
+    title: "Accounts",
+    subtitle: "Cash-a kawl leh Bank-a dah zat.",
+    actions: actions %>
 
-      <% if can_manage_finance? %>
-        <%= link_to new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "transfer"),
-            class: "inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#0b1f33] px-4 text-sm font-black text-white hover:bg-sky-900" do %>
-          <%= heroicon "arrows-right-left", variant: :outline, options: { class: "h-4 w-4" } %>
-          Transfer
-        <% end %>
-      <% end %>
-    </div>
-  </div>
-
-  <section class="premium-hero rounded-[1.5rem] p-6 text-white sm:p-8">
-    <p class="text-sm font-bold text-white/70">Total balance</p>
-    <p class="mt-2 text-4xl font-black tracking-tight sm:text-5xl"><%= yen(@finance_summary.current_balance) %></p>
-    <p class="mt-2 text-sm text-white/60">Cash leh Bank belhkhawm. Transfer chuan he zat hi a thlak lo.</p>
+<div class="space-y-5">
+  <section class="hero-card p-5 sm:p-7">
+    <p class="text-[15px] text-white/75">Sum awm zawng zawng</p>
+    <p class="money mt-1 text-4xl font-bold sm:text-5xl"><%= yen(@finance_summary.current_balance) %></p>
+    <p class="mt-2 text-sm text-white/65">Cash leh Bank belhkhawm. Transfer chuan he zat hi a thlak lo.</p>
   </section>
 
   <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
     <% @accounts.each do |account| %>
-      <section class="premium-panel overflow-hidden rounded-2xl" data-account="<%= account[:location] %>">
-        <div class="p-5 sm:p-6">
+      <section class="card overflow-hidden" data-account="<%= account[:location] %>">
+        <div class="card-pad">
           <div class="flex items-center gap-3">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+            <span class="row-icon tone-move" aria-hidden="true">
               <%= heroicon account[:location] == "bank" ? "building-library" : "wallet", variant: :outline, options: { class: "h-5 w-5" } %>
             </span>
-            <div>
-              <h2 class="text-lg font-black text-slate-950"><%= account[:name] %></h2>
-              <p class="text-xs font-semibold text-slate-500">Balance</p>
-            </div>
+            <h2 class="card-title"><%= account[:name] %></h2>
           </div>
 
-          <p class="mt-4 text-3xl font-black tracking-tight <%= account[:balance].negative? ? "text-rose-700" : "text-slate-950" %>">
-            <%= yen(account[:balance]) %>
-          </p>
+          <p class="money mt-4 text-3xl font-bold <%= account[:balance].negative? ? "money-out" : "text-[var(--ink)]" %>"><%= yen(account[:balance]) %></p>
 
-          <div class="mt-4 grid grid-cols-2 gap-3">
-            <div class="rounded-xl bg-emerald-50 px-3 py-2.5">
-              <p class="text-[11px] font-black uppercase tracking-wide text-emerald-700">Lut (thla hi)</p>
-              <p class="mt-0.5 font-black text-emerald-800">+<%= yen(account[:month_in]) %></p>
+          <dl class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-xl bg-[var(--money-in-bg)] px-3.5 py-2.5">
+              <dt class="text-sm text-[#065f46]">Lut (thla hi)</dt>
+              <dd class="money font-semibold money-in">+<%= yen(account[:month_in]) %></dd>
             </div>
-            <div class="rounded-xl bg-rose-50 px-3 py-2.5">
-              <p class="text-[11px] font-black uppercase tracking-wide text-rose-700">Chhuak (thla hi)</p>
-              <p class="mt-0.5 font-black text-rose-800">−<%= yen(account[:month_out]) %></p>
+            <div class="rounded-xl bg-[var(--money-out-bg)] px-3.5 py-2.5">
+              <dt class="text-sm text-[#9f1239]">Chhuak (thla hi)</dt>
+              <dd class="money font-semibold money-out">−<%= yen(account[:month_out]) %></dd>
             </div>
-          </div>
+          </dl>
         </div>
 
-        <div class="border-t border-slate-100">
-          <% if account[:recent].any? %>
-            <ul class="divide-y divide-slate-100">
-              <%= render partial: "admin/shared/activity_row", collection: account[:recent], as: :transaction, locals: { location: account[:location] } %>
-            </ul>
-          <% else %>
-            <p class="px-6 py-8 text-center text-sm text-slate-500">He account-ah record a la awm lo.</p>
-          <% end %>
+        <% if account[:recent].any? %>
+          <ul class="row-list border-t border-[var(--line)]">
+            <%= render partial: "admin/shared/activity_row", collection: account[:recent], as: :transaction, locals: { location: account[:location] } %>
+          </ul>
+        <% else %>
+          <p class="border-t border-[var(--line)] px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">He account-ah record a la awm lo.</p>
+        <% end %>
 
-          <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id, payment_location: account[:location]),
-              class: "flex items-center justify-center gap-1.5 border-t border-slate-100 px-5 py-3 text-sm font-black text-sky-700 hover:bg-sky-50" do %>
-            <%= account[:name] %> transactions zawng zawng
-            <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
-          <% end %>
-        </div>
+        <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id, payment_location: account[:location]),
+            class: "flex min-h-12 items-center justify-center gap-1.5 border-t border-[var(--line)] text-[15px] font-semibold text-[var(--brand-soft)] hover:bg-[var(--brand-bg)]" do %>
+          <%= account[:name] %> record zawng zawng <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
+        <% end %>
       </section>
     <% end %>
   </div>

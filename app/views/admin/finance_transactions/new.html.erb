@@ -1,5 +1,3 @@
-<%= render "admin/shared/page_header",
-    eyebrow: "Fast entry",
-    title: "Add transaction" %>
+<%= render "admin/shared/page_header", eyebrow: @finance_unit.name, title: "Add transaction" %>
 
 <%= render "form", finance_transaction: @finance_transaction %>

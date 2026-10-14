@@ -1,0 +1,32 @@
+<%= form_with model: [:admin, finance_unit], class: "card card-pad mx-auto max-w-xl space-y-5" do |form| %>
+  <%= render "admin/shared/form_errors", object: finance_unit %>
+
+  <div>
+    <%= form.label :name, "Unit hming", class: "field-label" %>
+    <%= form.text_field :name, placeholder: "e.g. Thalai Department", class: "input" %>
+  </div>
+
+  <% if finance_unit.new_record? %>
+    <div>
+      <%= form.label :unit_type, "Type", class: "field-label" %>
+      <%= form.select :unit_type, FinanceUnit::UNIT_TYPE_LABELS.invert.to_a, {}, class: "input" %>
+      <p class="field-hint">Department chuan Treasurer leh Finance Secretary a nei thei; Fund (Building Sum ang) chuan Treasurer chauh. A hnuah thlak theih a ni lo.</p>
+    </div>
+  <% else %>
+    <p class="text-sm text-slate-500">Type: <span class="font-semibold text-slate-800"><%= FinanceUnit::UNIT_TYPE_LABELS[finance_unit.unit_type] %></span></p>
+
+    <% unless finance_unit.main? %>
+      <label class="flex items-center gap-3 text-sm font-bold text-slate-700">
+        <%= form.check_box :active, class: "h-5 w-5 rounded border-slate-300" %>
+        Active (inactive unit chu menu-ah a lang tawh lo; a record erawh a awm reng)
+      </label>
+    <% end %>
+  <% end %>
+
+  <div class="flex flex-col gap-3 border-t border-[var(--line)] pt-5 sm:flex-row">
+    <%= form.submit finance_unit.new_record? ? "Create unit" : "Save unit",
+        class: "btn btn-primary" %>
+    <%= link_to "Cancel", admin_finance_units_path,
+        class: "btn btn-secondary" %>
+  </div>
+<% end %>

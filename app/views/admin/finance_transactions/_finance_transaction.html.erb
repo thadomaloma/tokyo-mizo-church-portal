@@ -1,97 +1,51 @@
 <%
   tone = transaction_tone(finance_transaction)
-  amount_color = { income: "text-emerald-700 bg-emerald-50 ring-emerald-100", expense: "text-rose-700 bg-rose-50 ring-rose-100", transfer: "text-sky-800 bg-sky-50 ring-sky-100" }.fetch(tone)
-  accent_color = { income: "bg-emerald-500", expense: "bg-rose-500", transfer: "bg-sky-500" }.fetch(tone)
-  badge_variant = { income: :emerald, expense: :rose, transfer: :sky }.fetch(tone)
+  closed = local_assigns[:closed_periods]&.include?([ finance_transaction.transaction_date.year, finance_transaction.transaction_date.month ])
+  title = finance_transaction.description.presence || (finance_transaction.transfer? ? "Transfer" : finance_transaction.finance_category&.name)
+  meta = []
+  meta << (finance_transaction.transfer? ? finance_transaction.title : finance_transaction.finance_category&.name) if finance_transaction.description.present? || finance_transaction.transfer?
+  meta << finance_transaction.location_label unless finance_transaction.transfer?
+  meta << finance_transaction.transaction_date.strftime("%-d %b %Y")
+  meta << finance_transaction.expense_voucher_number if finance_transaction.expense_voucher_number
 %>
 
-<div class="relative overflow-hidden p-4 transition hover:bg-slate-50/70 sm:p-5">
-  <div class="absolute inset-y-4 left-0 w-1 rounded-r-full <%= accent_color %>"></div>
+<div class="row flex-wrap sm:flex-nowrap">
+  <span class="row-icon <%= tone_classes(tone, :icon) %>" aria-hidden="true">
+    <%= heroicon transaction_icon(finance_transaction), variant: :outline, options: { class: "h-5 w-5" } %>
+  </span>
 
-  <div class="grid gap-4 pl-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-    <div class="min-w-0">
-      <div class="flex items-start gap-3">
-        <div class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 sm:flex <%= tone_classes(tone, :icon) %>">
-          <%= heroicon transaction_icon(finance_transaction),
-              variant: :outline,
-              options: { class: "h-5 w-5" } %>
-        </div>
+  <div class="min-w-0 flex-1">
+    <p class="row-title break-words"><%= title %></p>
+    <p class="row-meta">
+      <%= meta.compact.join(" · ") %>
+      <% if closed %>
+        <span class="chip chip-muted ml-1 !py-0"><%= heroicon "lock-closed", variant: :outline, options: { class: "h-3.5 w-3.5" } %>Closed</span>
+      <% end %>
+    </p>
+  </div>
 
-        <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <%= render ::RubyUI::Badge.new(
-                variant: badge_variant,
-                size: :sm,
-                class: "rounded-full px-2.5 py-1 text-[11px] font-black"
-              ) do %>
-              <%= finance_transaction.transaction_type.humanize %>
-            <% end %>
+  <p class="money shrink-0 text-base font-semibold <%= tone_classes(tone, :amount) %>">
+    <span class="sr-only"><%= { income: "Sum lut", expense: "Sum chhuak", transfer: "Transfer" }.fetch(tone) %>:</span>
+    <%= signed_yen(finance_transaction) %>
+  </p>
 
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-              <%= heroicon "calendar-days", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
-              <%= finance_transaction.transaction_date.strftime("%b %d, %Y") %>
-            </span>
-
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-              <%= heroicon finance_transaction.transfer? ? "arrows-right-left" : (finance_transaction.payment_location_bank? ? "building-library" : "wallet"),
-                  variant: :outline,
-                  options: { class: "h-3.5 w-3.5" } %>
-              <%= finance_transaction.transfer? ? finance_transaction.title : finance_transaction.location_label %>
-            </span>
-
-            <% if local_assigns[:closed_periods]&.include?([finance_transaction.transaction_date.year, finance_transaction.transaction_date.month]) %>
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-2.5 py-1 text-[11px] font-black text-white">
-                <%= heroicon "lock-closed", variant: :outline, options: { class: "h-3.5 w-3.5" } %>
-                Closed
-              </span>
-            <% end %>
-          </div>
-
-          <h3 class="mt-2 break-words text-base font-black text-slate-950">
-            <%= finance_transaction.transfer? ? "Transfer" : finance_transaction.title %>
-          </h3>
-
-          <p class="mt-1 break-words text-sm leading-5 text-slate-500">
-            <%= finance_transaction.description.presence || "Description dah a ni lo." %>
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-3 lg:min-w-60 lg:items-end">
-      <p class="inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-base font-black ring-1 lg:w-auto lg:min-w-44 <%= amount_color %>">
-        <span class="text-[10px] uppercase tracking-[0.16em] opacity-70">Amount</span>
-        <span><%= signed_yen(finance_transaction) %></span>
-      </p>
-
-      <% if can_manage_finance? || finance_transaction.expense? %>
-        <div class="flex w-full flex-nowrap gap-2 lg:w-auto lg:justify-end">
-          <% if finance_transaction.expense? %>
-            <%= link_to receipt_admin_finance_transaction_path(finance_transaction),
-                class: "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-sky-50 px-3 text-[11px] font-black text-sky-700 hover:bg-sky-100 lg:flex-none" do %>
-              <%= heroicon "printer", variant: :outline, options: { class: "h-4 w-4" } %>
-              <span class="max-sm:sr-only">Receipt</span>
-            <% end %>
-          <% end %>
-
-          <% if can_manage_finance? %>
-            <%= link_to edit_admin_finance_transaction_path(finance_transaction),
-                class: "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-[11px] font-black text-slate-700 hover:bg-slate-200 lg:flex-none" do %>
-              <%= heroicon "pencil-square", variant: :outline, options: { class: "h-4 w-4" } %>
-              <span class="max-sm:sr-only">Edit</span>
-            <% end %>
-
-            <%= button_to admin_finance_transaction_path(finance_transaction),
-                method: :delete,
-                form: { data: { turbo_confirm: "He transaction hi delete i duh tak tak em?" } },
-                form_class: "flex-1 lg:flex-none",
-                class: "inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-3 text-[11px] font-black text-rose-600 hover:bg-rose-100" do %>
-              <%= heroicon "trash", variant: :outline, options: { class: "h-4 w-4" } %>
-              <span class="max-sm:sr-only">Delete</span>
-            <% end %>
-          <% end %>
-        </div>
+  <% if finance_transaction.expense? || can_manage_finance? %>
+    <div class="flex w-full justify-end gap-1 sm:w-auto">
+      <% if finance_transaction.expense? %>
+        <%= link_to receipt_admin_finance_transaction_path(finance_transaction), class: "btn btn-ghost btn-sm", title: "Voucher print" do %>
+          <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Voucher</span>
+        <% end %>
+      <% end %>
+      <% if can_manage_finance? %>
+        <%= link_to edit_admin_finance_transaction_path(finance_transaction), class: "btn btn-ghost btn-sm", title: "Edit" do %>
+          <%= heroicon "pencil-square", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Edit</span>
+        <% end %>
+        <%= button_to admin_finance_transaction_path(finance_transaction), method: :delete,
+            form: { data: { turbo_confirm: "He record hi delete i duh tak tak em?" } },
+            class: "btn btn-ghost btn-sm !text-[var(--money-out)] hover:!bg-[var(--money-out-bg)]", title: "Delete" do %>
+          <%= heroicon "trash", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Delete</span>
+        <% end %>
       <% end %>
     </div>
-  </div>
+  <% end %>
 </div>

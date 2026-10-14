@@ -1,109 +1,93 @@
 <%
   filtering = @query.present? || @type_filter.present? || @category_filter.present? || @payment_location_filter.present?
-  field_class = "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
-  shortcuts = [
-    [ "Monthly review", "calendar-days", admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id) ],
-    [ "Report", "document-chart-bar", finance_admin_reports_path(finance_unit_id: @finance_unit.id) ],
-    [ "Categories", "tag", admin_finance_categories_path(finance_unit_id: @finance_unit.id) ]
-  ]
+  actions = capture do
+    concat render("admin/shared/unit_switcher", url: admin_finance_transactions_path)
+    if can_manage_finance?
+      concat link_to("Pathianni thawhlawm", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary")
+      concat(link_to(new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id), class: "btn btn-primary max-lg:hidden") do
+        heroicon("plus", variant: :outline, options: { class: "h-5 w-5" }) + "Add transaction"
+      end)
+    end
+  end
 %>
 
-<div class="space-y-5">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700"><%= @finance_unit.name %></p>
-      <h1 class="mt-2 text-2xl font-black tracking-[-0.025em] text-[#0b1f33] sm:text-3xl">Transactions</h1>
-      <p class="mt-1 text-sm text-slate-500"><%= pluralize(@transactions_count, "record") %><%= " a inmil" if filtering %>.</p>
-    </div>
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit.name,
+    title: "Transactions",
+    subtitle: "Sum lut, sum chhuak leh transfer zawng zawng.",
+    actions: actions %>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <%= render "admin/shared/unit_switcher", url: admin_finance_transactions_path %>
-
-      <% if can_manage_finance? %>
-        <%= link_to new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id),
-            class: "inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#0b1f33] px-4 text-sm font-black text-white hover:bg-sky-900" do %>
-          <%= heroicon "plus", variant: :outline, options: { class: "h-4 w-4" } %>
-          Add transaction
-        <% end %>
-      <% end %>
-    </div>
-  </div>
-
+<div class="space-y-4">
   <nav class="flex gap-2 overflow-x-auto pb-1" aria-label="Finance tools">
-    <% shortcuts.each do |label, icon, path| %>
-      <%= link_to path,
-          class: "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-black text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50" do %>
-        <%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %>
-        <%= label %>
-      <% end %>
+    <%= link_to admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
+      <%= heroicon "document-text", variant: :outline, options: { class: "h-4 w-4" } %> Thla report
+    <% end %>
+    <%= link_to finance_admin_reports_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
+      <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "h-4 w-4" } %> PDF / Excel
+    <% end %>
+    <%= link_to admin_finance_categories_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
+      <%= heroicon "tag", variant: :outline, options: { class: "h-4 w-4" } %> Categories
     <% end %>
   </nav>
 
-  <section class="premium-panel overflow-hidden rounded-2xl">
-    <%= form_with url: admin_finance_transactions_path, method: :get, data: { turbo: false },
-        class: "grid grid-cols-2 gap-3 border-b border-slate-100 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_9rem_11rem_8rem_auto]" do |form| %>
+  <section class="card overflow-hidden">
+    <%= form_with url: admin_finance_transactions_path, method: :get, data: { turbo: false }, class: "border-b border-[var(--line)] p-4 sm:p-5" do |form| %>
       <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
 
-      <div class="col-span-2 lg:col-span-1">
-        <%= label_tag :q, "Search", class: "sr-only" %>
-        <%= form.search_field :q, value: @query, placeholder: "Category emaw note zawng rawh",
-            class: field_class + " px-4 placeholder-slate-400" %>
-      </div>
-
-      <div>
-        <%= label_tag :transaction_type, "Type", class: "sr-only" %>
-        <%= form.select :transaction_type, [ [ "Income", "income" ], [ "Expense", "expense" ], [ "Transfer", "transfer" ] ],
-            { include_blank: "All types", selected: @type_filter }, class: field_class %>
-      </div>
-
-      <div>
-        <%= label_tag :category_id, "Category", class: "sr-only" %>
-        <%= form.collection_select :category_id, @filter_categories, :id, :name,
-            { include_blank: "All categories", selected: @category_filter }, class: field_class %>
-      </div>
-
-      <div>
-        <%= label_tag :payment_location, "Account", class: "sr-only" %>
-        <%= form.select :payment_location, [ [ "Cash", "cash" ], [ "Bank", "bank" ] ],
-            { include_blank: "All accounts", selected: @payment_location_filter }, class: field_class %>
-      </div>
-
       <div class="flex gap-2">
-        <button type="submit" class="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-4 text-sm font-black text-white hover:bg-slate-800">
-          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-4 w-4" } %>
-          Filter
+        <%= label_tag :q, "Zawng rawh", class: "sr-only" %>
+        <%= form.search_field :q, value: @query, placeholder: "Category emaw note zawng rawh", class: "input flex-1" %>
+        <button type="submit" class="btn btn-primary" aria-label="Zawng rawh">
+          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-5 w-5" } %>
         </button>
-
-        <% if filtering %>
-          <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-              class: "inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-3 text-xs font-black text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100",
-              aria: { label: "Clear filters" } do %>
-            <%= heroicon "x-mark", variant: :outline, options: { class: "h-4 w-4" } %>
-          <% end %>
-        <% end %>
       </div>
+
+      <details class="mt-3" <%= "open" if @type_filter || @category_filter || @payment_location_filter %>>
+        <summary class="link inline-flex cursor-pointer list-none items-center gap-1 text-[15px]">
+          <%= heroicon "adjustments-horizontal", variant: :outline, options: { class: "h-5 w-5" } %> Filter dang
+        </summary>
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div>
+            <%= label_tag :transaction_type, "Type", class: "field-label" %>
+            <%= form.select :transaction_type, [ [ "Sum lut", "income" ], [ "Sum chhuak", "expense" ], [ "Transfer", "transfer" ] ],
+                { include_blank: "A vaiin", selected: @type_filter }, class: "input" %>
+          </div>
+          <div>
+            <%= label_tag :category_id, "Category", class: "field-label" %>
+            <%= form.collection_select :category_id, @filter_categories, :id, :name,
+                { include_blank: "A vaiin", selected: @category_filter }, class: "input" %>
+          </div>
+          <div>
+            <%= label_tag :payment_location, "Account", class: "field-label" %>
+            <%= form.select :payment_location, [ [ "Cash", "cash" ], [ "Bank", "bank" ] ],
+                { include_blank: "Cash & Bank", selected: @payment_location_filter }, class: "input" %>
+          </div>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button type="submit" class="btn btn-primary">Filter</button>
+          <% if filtering %>
+            <%= link_to "Clear", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary" %>
+          <% end %>
+        </div>
+      </details>
     <% end %>
 
+    <p class="border-b border-[var(--line)] px-5 py-2.5 text-sm text-[var(--ink-muted)] sm:px-6">
+      <%= pluralize(@transactions_count, "record") %><%= " a inmil" if filtering %>
+    </p>
+
     <% if @transactions.any? %>
-      <div class="divide-y divide-slate-100">
+      <div class="row-list">
         <%= render partial: "finance_transaction", collection: @transactions, locals: { closed_periods: @closed_periods } %>
       </div>
-
-      <%= render "pagination", pagy: @pagy %>
+      <%= render "admin/shared/pagination", pagy: @pagy %>
+    <% elsif filtering %>
+      <%= render "admin/shared/empty_state", icon: "magnifying-glass", title: "A inmil a awm lo", message: "Thu dang hmangin zawng la, emaw filter clear rawh." %>
     <% else %>
-      <div class="p-10 text-center">
-        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-          <%= heroicon filtering ? "magnifying-glass" : "banknotes", variant: :outline, options: { class: "h-7 w-7" } %>
-        </div>
-
-        <% if filtering %>
-          <p class="mt-4 font-black text-slate-700">No transactions match your search.</p>
-          <p class="mt-2 text-sm text-slate-500">Search thu dang hmang la, filter te clear rawh.</p>
-        <% else %>
-          <p class="mt-4 font-black text-slate-700">No transactions yet.</p>
-          <p class="mt-2 text-sm text-slate-500">Finance entry dah hnuah record te hetah a lang ang.</p>
-        <% end %>
-      </div>
+      <%= render "admin/shared/empty_state", icon: "banknotes", title: "Record a la awm lo",
+          message: "Sum lut emaw sum chhuak emaw dah hnuah hetah a lang ang.",
+          path: (new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id) if can_manage_finance?),
+          action: "Add transaction" %>
     <% end %>
   </section>
 </div>

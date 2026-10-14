@@ -36,24 +36,25 @@ module FinanceTransactionsHelper
   end
 
   TONE_CLASSES = {
-    income: { icon: "bg-emerald-50 text-emerald-600 ring-emerald-100", amount: "text-emerald-700" },
-    expense: { icon: "bg-rose-50 text-rose-600 ring-rose-100", amount: "text-rose-700" },
-    transfer: { icon: "bg-sky-50 text-sky-600 ring-sky-100", amount: "text-slate-700" }
+    income: { icon: "tone-in", amount: "money-in" },
+    expense: { icon: "tone-out", amount: "money-out" },
+    transfer: { icon: "tone-move", amount: "money-move" }
   }.freeze
 
   def tone_classes(tone, part)
     TONE_CLASSES.fetch(tone).fetch(part)
   end
 
+  # "↑12%" style chip; green when the change is good news, red otherwise.
+  # The arrow keeps the meaning readable without relying on colour.
   def percent_change_badge(percent, good_when: :up)
     return if percent.nil?
 
     good = percent.zero? || (good_when == :up ? percent.positive? : percent.negative?)
     arrow = percent.positive? ? "↑" : (percent.negative? ? "↓" : "")
-    classes = good ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
 
-    tag.span("#{arrow}#{percent.abs}%", class: "inline-flex rounded-full px-2 py-0.5 text-[11px] font-black #{classes}",
-             title: "Thla kal ta nen khaikhin")
+    tag.span("#{arrow}#{percent.abs}%", class: "chip #{good ? "chip-in" : "chip-out"}",
+             title: "Thla kal ta nen khaikhinna")
   end
 
   def audit_action_label(audit)

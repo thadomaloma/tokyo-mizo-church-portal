@@ -1,13 +1,12 @@
-<div class="relative min-h-screen overflow-hidden bg-[#f4f7fa]">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(14,116,144,0.11),transparent_28rem),radial-gradient(circle_at_85%_80%,rgba(15,23,42,0.08),transparent_32rem)]"></div>
-  <div class="relative flex min-h-screen items-center justify-center p-6">
+<div>
+  <div class="flex min-h-screen items-center justify-center px-4 py-10">
     <div class="w-full max-w-md">
       <div class="mb-8 text-center">
         <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0b1f33] text-white shadow-[0_12px_30px_rgba(15,23,42,0.2)]">
           <%= heroicon "key", variant: :outline, options: { class: "h-7 w-7" } %>
         </div>
 
-        <h1 class="text-3xl font-black text-slate-900">
+        <h1 class="text-3xl font-bold text-slate-900">
           Forgot Password?
         </h1>
 
@@ -16,7 +15,7 @@
         </p>
       </div>
 
-      <div class="rounded-[1.5rem] border border-slate-200 bg-white p-8 shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+      <div class="card card-pad">
         <%= form_for(resource,
             as: resource_name,
             url: password_path(resource_name),
@@ -28,29 +27,29 @@
             <div>
               <%= f.label :email,
                   "Email Address",
-                  class: "mb-2 block text-sm font-bold text-slate-700" %>
+                  class: "field-label" %>
 
               <%= f.email_field :email,
                   autofocus: true,
                   autocomplete: "email",
                   placeholder: "I email address ziak rawh",
-                  class: "w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" %>
+                  class: "input" %>
             </div>
 
             <%= f.submit "Send Reset Instructions",
-                class: "w-full rounded-xl bg-[#0b1f33] py-3 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-sky-900" %>
+                class: "btn btn-primary w-full" %>
           </div>
         <% end %>
 
         <div class="mt-6 text-center">
           <%= link_to "Back to Sign In",
               new_session_path(resource_name),
-              class: "text-sm font-bold text-sky-600 hover:text-sky-700" %>
+              class: "link text-[15px]" %>
         </div>
       </div>
 
       <p class="mt-6 text-center text-xs text-slate-400">
-        Tokyo Mizo Church Portal · Account siamthatna him
+        Tokyo Mizo Church Finance
       </p>
     </div>
   </div>

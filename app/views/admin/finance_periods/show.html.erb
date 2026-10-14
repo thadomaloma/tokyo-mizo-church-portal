@@ -1,149 +1,143 @@
 <%
   previous_month = @period_start.prev_month
   next_month = @period_start.next_month
+  closed = @finance_period.closed?
+  actions = capture do
+    concat render("admin/shared/unit_switcher", url: admin_finance_period_path(@year, @month))
+    concat(button_tag(type: "button", class: "btn btn-secondary", onclick: "window.print()", data: { print_hide: true }) do
+      heroicon("printer", variant: :outline, options: { class: "h-5 w-5" }) + "Print"
+    end)
+    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id), class: "btn btn-secondary", data: { print_hide: true }) do
+      heroicon("arrow-down-tray", variant: :outline, options: { class: "h-5 w-5" }) + "PDF / Excel"
+    end)
+  end
 %>
 
-<div class="space-y-6 lg:space-y-8">
-  <section class="premium-hero rounded-[1.5rem] text-white">
-    <div class="p-6 sm:p-8 lg:p-10">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs font-black uppercase tracking-[0.24em] text-white/50">
-          <%= @finance_unit.name %> · Monthly Review
-        </p>
+<%= render "admin/shared/page_header",
+    eyebrow: "#{@finance_unit.name} · Treasurer report",
+    title: @period_label,
+    actions: actions %>
 
-        <span class="rounded-full px-3 py-1.5 text-xs font-black <%= @finance_period.closed? ? "bg-rose-500/20 text-rose-100" : "bg-emerald-500/20 text-emerald-100" %>">
-          <%= @finance_period.closed? ? "Closed" : "Open" %>
-        </span>
-      </div>
-
-      <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-        <%= @period_label %>
-      </h1>
-
-      <div class="mt-6 flex items-center gap-3">
-        <%= link_to admin_finance_period_path(previous_month.year, previous_month.month, finance_unit_id: @finance_unit.id),
-            class: "inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/20" do %>
-          <%= heroicon "chevron-left", variant: :outline, options: { class: "h-4 w-4" } %>
-          <%= previous_month.strftime("%b %Y") %>
-        <% end %>
-
-        <%= link_to admin_finance_period_path(next_month.year, next_month.month, finance_unit_id: @finance_unit.id),
-            class: "inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/20" do %>
-          <%= next_month.strftime("%b %Y") %>
-          <%= heroicon "chevron-right", variant: :outline, options: { class: "h-4 w-4" } %>
-        <% end %>
-      </div>
-    </div>
-  </section>
+<div class="space-y-5">
+  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Thla thlanna" data-print-hide>
+    <%= link_to admin_finance_period_path(previous_month.year, previous_month.month, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
+      <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= previous_month.strftime("%b %Y") %>
+    <% end %>
+    <span class="chip <%= closed ? "chip-muted" : "chip-in" %>">
+      <%= heroicon (closed ? "lock-closed" : "lock-open"), variant: :outline, options: { class: "h-4 w-4" } %>
+      <%= closed ? "Closed" : "Open" %>
+    </span>
+    <%= link_to admin_finance_period_path(next_month.year, next_month.month, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
+      <%= next_month.strftime("%b %Y") %><%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5" } %>
+    <% end %>
+  </nav>
 
   <% if @closing_issues.any? %>
-    <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-      <p class="font-black text-amber-800">Before this month can be closed</p>
-      <ul class="mt-2 list-inside list-disc text-sm text-amber-700">
-        <% @closing_issues.each do |issue| %>
-          <li><%= issue %></li>
-        <% end %>
-      </ul>
-    </section>
+    <div class="notice notice-warn">
+      <p class="font-semibold">Close hmain heng hi siam that rawh:</p>
+      <ul class="mt-1 list-inside list-disc"><% @closing_issues.each do |issue| %><li><%= issue %></li><% end %></ul>
+    </div>
   <% end %>
 
-  <section class="grid grid-cols-2 gap-3 lg:grid-cols-5">
-    <%= render "summary_card", title: "Opening Balance", value: "¥#{number_with_delimiter(@opening_balance)}", icon: "banknotes", color: "sky" %>
-    <%= render "summary_card", title: "Income", value: "¥#{number_with_delimiter(@income)}", icon: "arrow-trending-up", color: "emerald" %>
-    <%= render "summary_card", title: "Expense", value: "¥#{number_with_delimiter(@expense)}", icon: "arrow-trending-down", color: "rose" %>
-    <%= render "summary_card",
-        title: "Net Change",
-        value: "#{@net_change.negative? ? "-" : "+"}¥#{number_with_delimiter(@net_change.abs)}",
-        icon: "scale",
-        color: @net_change.negative? ? "rose" : "emerald" %>
-    <%= render "summary_card", title: "Closing Balance", value: "¥#{number_with_delimiter(@closing_balance)}", icon: "lock-closed", color: "blue" %>
-  </section>
+  <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
+    <section class="card card-pad" data-statement>
+      <h2 class="card-title">Sum lut leh chhuak</h2>
+      <p class="card-note">Committee hnena hlan tur thla report.</p>
 
-  <% if can_manage_finance? %>
-    <section class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <% if @finance_period.closed? %>
-        <div class="min-w-0 flex-1">
-          <p class="font-black text-slate-900">This month is closed.</p>
-          <p class="mt-1 text-sm text-slate-500">
-            Closed by <%= @finance_period.closed_by&.name || "—" %>
-            on <%= @finance_period.closed_at&.strftime("%b %d, %Y") %>.
-            <%= @period_label %> transaction dah belh emaw edit emaw turin reopen rawh.
-          </p>
-        </div>
+      <table class="statement mt-3">
+        <tbody>
+          <tr class="font-semibold"><td>Balance hmasa (<%= (@period_start - 1).strftime("%-d %b") %>)</td><td><%= yen(@opening_balance) %></td></tr>
+        </tbody>
 
-        <%= button_to admin_reopen_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
-            method: :patch,
-            form: { data: { turbo_confirm: "#{@period_label} hi edit theih turin reopen i duh em?" } },
-            class: "inline-flex shrink-0 items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white hover:bg-slate-800" do %>
-          <%= heroicon "lock-open", variant: :outline, options: { class: "h-5 w-5" } %>
-          Reopen Month
-        <% end %>
-      <% else %>
-        <div class="min-w-0 flex-1">
-          <p class="font-black text-slate-900">This month is open.</p>
-          <p class="mt-1 text-sm text-slate-500">A chunga figure te en nawn la, a dik vek hnuah month close rawh.</p>
-        </div>
+        <tbody>
+          <tr class="statement-section"><th colspan="2">Sum lut</th></tr>
+          <% if @income_by_category.any? %>
+            <% @income_by_category.each do |name, amount| %>
+              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= yen(amount) %></td></tr>
+            <% end %>
+          <% else %>
+            <tr><td class="text-[var(--ink-muted)]">A awm lo</td><td>¥0</td></tr>
+          <% end %>
+          <tr class="font-semibold"><td>Sum lut belhkhawm</td><td class="money-in">+<%= yen(@income) %></td></tr>
+        </tbody>
 
-        <%= button_to admin_close_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
-            method: :patch,
-            form: { data: { turbo_confirm: "#{@period_label} close i duh em? Reopen leh hma chu he thla transaction te lock a ni ang." } },
-            class: "inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300",
-            disabled: @closing_issues.any? do %>
-          <%= heroicon "lock-closed", variant: :outline, options: { class: "h-5 w-5" } %>
-          Close Month
-        <% end %>
-      <% end %>
+        <tbody>
+          <tr class="statement-section"><th colspan="2">Sum chhuak</th></tr>
+          <% if @expense_by_category.any? %>
+            <% @expense_by_category.each do |name, amount| %>
+              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= yen(amount) %></td></tr>
+            <% end %>
+          <% else %>
+            <tr><td class="text-[var(--ink-muted)]">A awm lo</td><td>¥0</td></tr>
+          <% end %>
+          <tr class="font-semibold"><td>Sum chhuak belhkhawm</td><td class="money-out">−<%= yen(@expense) %></td></tr>
+        </tbody>
+
+        <tbody>
+          <tr class="statement-total"><td>Balance tawp (<%= @period_end.strftime("%-d %b") %>)</td><td><%= yen(@closing_balance) %></td></tr>
+          <tr><td class="pl-4 text-[var(--ink-soft)]">Cash</td><td><%= yen(@closing_accounts["cash"]) %></td></tr>
+          <tr><td class="pl-4 text-[var(--ink-soft)]">Bank</td><td><%= yen(@closing_accounts["bank"]) %></td></tr>
+        </tbody>
+      </table>
     </section>
-  <% end %>
 
-  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="font-black text-slate-900">Income by Category</h2>
-      <% if @income_by_category.any? %>
-        <ul class="mt-3 divide-y divide-slate-100">
-          <% @income_by_category.sort_by { |_, amount| -amount }.each do |name, amount| %>
-            <li class="flex items-center justify-between py-2 text-sm">
-              <span class="text-slate-600"><%= name %></span>
-              <span class="font-black text-emerald-700">¥<%= number_with_delimiter(amount) %></span>
-            </li>
+    <div class="space-y-5">
+      <section class="card card-pad">
+        <h2 class="card-title">Thla hi tlangpui</h2>
+        <dl class="mt-3 space-y-3">
+          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Sum lut</dt><dd class="money font-semibold money-in">+<%= yen(@income) %></dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Sum chhuak</dt><dd class="money font-semibold money-out">−<%= yen(@expense) %></dd></div>
+          <div class="flex justify-between gap-3 border-t border-[var(--line)] pt-3">
+            <dt class="font-semibold text-[var(--ink)]">A bang (Net)</dt>
+            <dd class="money font-bold <%= @net_change.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= @net_change.negative? ? "−" : "+" %><%= yen(@net_change.abs) %></dd>
+          </div>
+        </dl>
+      </section>
+
+      <% if @budget_progress.planned? %>
+        <section class="card card-pad">
+          <h2 class="card-title"><%= @year %> Budget</h2>
+          <p class="mt-2 text-[15px] text-[var(--ink-soft)]"><span class="money text-xl font-bold text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> hman tawh</p>
+          <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
+          <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= yen(@budget_progress.spent_total) %> / <%= yen(@budget_progress.planned_total) %></p>
+        </section>
+      <% end %>
+
+      <% if can_manage_finance? %>
+        <section class="card card-pad" data-print-hide>
+          <% if closed %>
+            <h2 class="card-title">He thla hi close a ni</h2>
+            <p class="card-note mt-1">
+              <%= @finance_period.closed_by&.name || "—" %>-in <%= @finance_period.closed_at&.strftime("%-d %b %Y") %> khan a close.
+              Record thlak tur chuan reopen rawh.
+            </p>
+            <%= button_to admin_reopen_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
+                form: { data: { turbo_confirm: "#{@period_label} hi reopen i duh em?" } }, class: "btn btn-secondary mt-4 w-full" do %>
+              <%= heroicon "lock-open", variant: :outline, options: { class: "h-5 w-5" } %> Reopen
+            <% end %>
+          <% else %>
+            <h2 class="card-title">Thla close na</h2>
+            <p class="card-note mt-1">Report hi a dik vek tawh chuan close rawh. Close hnuah he thla record te thlak theih a ni lo.</p>
+            <%= button_to admin_close_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
+                form: { data: { turbo_confirm: "#{@period_label} close i duh em?" } }, class: "btn btn-primary mt-4 w-full",
+                disabled: @closing_issues.any? do %>
+              <%= heroicon "lock-closed", variant: :outline, options: { class: "h-5 w-5" } %> Close month
+            <% end %>
           <% end %>
-        </ul>
-      <% else %>
-        <p class="mt-3 text-sm text-slate-500">Sum lut record a awm lo.</p>
+        </section>
       <% end %>
     </div>
+  </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="font-black text-slate-900">Expense by Category</h2>
-      <% if @expense_by_category.any? %>
-        <ul class="mt-3 divide-y divide-slate-100">
-          <% @expense_by_category.sort_by { |_, amount| -amount }.each do |name, amount| %>
-            <li class="flex items-center justify-between py-2 text-sm">
-              <span class="text-slate-600"><%= name %></span>
-              <span class="font-black text-rose-700">¥<%= number_with_delimiter(amount) %></span>
-            </li>
-          <% end %>
-        </ul>
-      <% else %>
-        <p class="mt-3 text-sm text-slate-500">Sum chhuak record a awm lo.</p>
-      <% end %>
-    </div>
-  </section>
-
-  <section class="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-    <div class="p-5 lg:p-6">
-      <p class="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Transactions</p>
-      <h2 class="mt-2 text-2xl font-black text-slate-950"><%= @period_label %></h2>
-    </div>
-
+  <details class="card overflow-hidden" <%= "open" if @transactions.size <= 8 %>>
+    <summary class="card-head cursor-pointer list-none">
+      <span class="card-title">Record zawng zawng (<%= @transactions.size %>)</span>
+      <%= heroicon "chevron-down", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %>
+    </summary>
     <% if @transactions.any? %>
-      <div class="divide-y divide-slate-100">
-        <%= render @transactions %>
-      </div>
+      <div class="row-list"><%= render @transactions %></div>
     <% else %>
-      <div class="p-10 text-center">
-        <p class="font-black text-slate-700">He thla chhung transaction a awm lo.</p>
-      </div>
+      <p class="px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">He thla chhung record a awm lo.</p>
     <% end %>
-  </section>
+  </details>
 </div>

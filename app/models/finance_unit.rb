@@ -1,14 +1,12 @@
 class FinanceUnit < ApplicationRecord
   MAIN_SLUG = "main-church-finance"
   UNIT_TYPES = %w[church department fund].freeze
+  # A new install starts with the main church ledger only; departments and
+  # funds are added from Settings when the church actually needs them.
   DEFAULT_UNITS = [
-    { name: "Main Church Finance", slug: MAIN_SLUG, unit_type: "church", position: 0 },
-    { name: "Naupang Department", slug: "naupang-department", unit_type: "department", position: 10 },
-    { name: "Thalai Department", slug: "thalai-department", unit_type: "department", position: 20 },
-    { name: "Hmeichhe Department", slug: "hmeichhe-department", unit_type: "department", position: 30 },
-    { name: "Building Sum", slug: "building-sum", unit_type: "fund", position: 40 },
-    { name: "Mission Sum", slug: "mission-sum", unit_type: "fund", position: 50 }
+    { name: "Main Church Finance", slug: MAIN_SLUG, unit_type: "church", position: 0 }
   ].freeze
+  UNIT_TYPE_LABELS = { "church" => "Church", "department" => "Department", "fund" => "Fund" }.freeze
 
   has_many :finance_unit_memberships, dependent: :destroy
   has_many :users, through: :finance_unit_memberships
