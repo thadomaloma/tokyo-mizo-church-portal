@@ -52,7 +52,7 @@ class FinanceTransaction < ApplicationRecord
     return none if patterns.blank?
 
     joins(:finance_category)
-      .where(patterns.map { "finance_categories.name ILIKE ?" }.join(" OR "), *patterns)
+      .where(patterns.map { "finance_categories.name LIKE ?" }.join(" OR "), *patterns)
   end
 
   def income?

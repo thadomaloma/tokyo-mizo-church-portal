@@ -44,7 +44,6 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     assert_no_match(/This Month Giving/, response.body)
     assert_no_match(/Finance record thar ber te/, response.body)
     assert_match "Finance access pek i la ni lo", response.body
-    assert_match "Upcoming Events", response.body
   end
 
   private

@@ -21,28 +21,6 @@ class UserTest < ActiveSupport::TestCase
     assert User.exists?(user.id)
   end
 
-  test "deleting a notification actor keeps the notification and clears the actor" do
-    user = User.create!(
-      name: "Temporary President",
-      email: "temporary-president@example.com",
-      password: "secure-password",
-      role: :president
-    )
-    notification = Notification.create!(
-      actor: user,
-      title: "Test",
-      message: "Test notification",
-      notification_type: "member",
-      link: "/admin"
-    )
-
-    assert_no_difference -> { Notification.count } do
-      user.destroy!
-    end
-
-    assert_nil notification.reload.actor
-  end
-
   test "a finance title alone does not grant Main Church Finance access" do
     user = User.create!(
       name: "Unassigned Treasurer",

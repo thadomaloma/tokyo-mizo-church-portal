@@ -3,21 +3,7 @@ module Admin
     before_action :require_finance_access!, only: :finance
 
     def index
-      @finance_unit = current_finance_unit
-      transactions = @finance_unit&.finance_transactions || FinanceTransaction.none
-      @total_income = transactions.income.this_year.sum(:amount)
-      @total_expense = transactions.expense.this_year.sum(:amount)
-      @balance = @total_income - @total_expense
-
-      @monthly_income = transactions.income.this_month.sum(:amount)
-      @monthly_expense = transactions.expense.this_month.sum(:amount)
-
-      @total_members = User.count
-      @active_members = User.where(active: true).count
-
-      @pending_resolutions = ChurchResolution.where(status: 0).count
-      @completed_resolutions = ChurchResolution.where(status: 2).count
-      @overdue_resolutions = ChurchResolution.overdue.count
+      redirect_to finance_admin_reports_path(request.query_parameters)
     end
 
     def finance
@@ -82,20 +68,6 @@ module Admin
           ] = "attachment; filename=tokyo_mizo_church_#{finance_unit_filename}_finance_report_#{@ledger_type}_#{finance_period_filename}.xlsx"
         end
       end
-    end
-
-    def resolutions
-      @church_resolutions = ChurchResolution.includes(:assigned_to).latest
-      @pending_count = ChurchResolution.where(status: 0).count
-      @completed_count = ChurchResolution.where(status: 2).count
-      @overdue_count = ChurchResolution.overdue.count
-    end
-
-    def members
-      @users = User.order(:role, :name)
-      @total_members = User.count
-      @active_members = User.where(active: true).count
-      @inactive_members = User.where(active: false).count
     end
 
     private

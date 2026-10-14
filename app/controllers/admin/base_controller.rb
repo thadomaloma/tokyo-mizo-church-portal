@@ -8,20 +8,8 @@ module Admin
                   :finance_access?
 
     before_action :ensure_active_user
-    before_action :load_notifications
 
     private
-
-    def load_notifications
-      @notifications = Notification
-                        .visible_for(current_user)
-                        .latest
-                        .includes(:notification_reads)
-                        .limit(10)
-
-      @notifications_count =
-        Notification.unread_for(current_user).count
-    end
 
     def ensure_active_user
       return if current_user&.active?

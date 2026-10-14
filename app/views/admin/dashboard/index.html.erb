@@ -1,7 +1,5 @@
 <div class="space-y-6 lg:space-y-8">
-  <%= render "header",
-      notifications: @notifications,
-      notifications_count: @notifications_count %>
+  <%= render "header" %>
 
   <%= render "admin/shared/pwa_install_card" %>
 
@@ -38,44 +36,29 @@
 
         <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
           <p class="text-2xl font-black text-slate-950">
-            <%= @recent_minutes.count %>
+            ¥<%= number_with_delimiter(@cash_balance) %>
           </p>
 
           <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
-            Minutes
+            Cash Balance
           </p>
         </div>
 
         <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4 text-center shadow-sm lg:text-left">
           <p class="text-2xl font-black text-slate-950">
-            <%= @pending_resolutions %>
+            ¥<%= number_with_delimiter(@bank_balance) %>
           </p>
 
           <p class="mt-1 text-[11px] font-black uppercase tracking-wide text-slate-400">
-            Pending
+            Bank Balance
           </p>
         </div>
       </section>
     </div>
   <% end %>
 
-  <%
-    activity_block = capture do
-  %>
-    <section class="grid grid-cols-1 gap-4 <%= @finance_unit ? 'xl:grid-cols-2' : 'xl:grid-cols-1' %> xl:gap-6">
-      <% if @finance_unit %>
-        <%= render "transactions_panel",
-            transactions: @recent_transactions %>
-      <% end %>
-
-      <%= render "events_panel",
-          events: @upcoming_events,
-          today_events_count: @today_events_count,
-          events_this_month: @events_this_month %>
-    </section>
+  <% if @finance_unit %>
+    <%= render "transactions_panel",
+        transactions: @recent_transactions %>
   <% end %>
-
-  <%= activity_block %>
-
-  <%= render "member_overview" %>
 </div>

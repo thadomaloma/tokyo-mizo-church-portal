@@ -1,5 +1,3 @@
-<% content_for :hide_daily_verse, "true" %>
-
 <%
   voucher_number = @finance_transaction.expense_voucher_number
   paid_from = @finance_transaction.payment_location_bank? ? "Bank Account" : "Cash"

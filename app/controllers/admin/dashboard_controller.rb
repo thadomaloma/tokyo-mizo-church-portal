@@ -4,20 +4,11 @@ module Admin
       @finance_unit = current_finance_unit
       load_finance_dashboard if @finance_unit
 
-      @pending_resolutions = ChurchResolution.where(status: 0).count
       @recent_transactions = if @finance_unit
         finance_transactions.includes(:finance_category).latest.limit(5)
       else
         FinanceTransaction.none
       end
-
-      @upcoming_events = ChurchEvent.upcoming.limit(5)
-      @events_this_month = ChurchEvent.this_month.count
-      @today_events_count = ChurchEvent.today.count
-
-      @recent_minutes = MeetingMinute.latest.limit(5)
-
-      @member_overview = member_overview
     end
 
     private
@@ -25,18 +16,12 @@ module Admin
     def load_finance_dashboard
       @finance_summary = FinanceSummary.new(@finance_unit)
       @current_balance = @finance_summary.current_balance
+      @cash_balance = @finance_summary.cash_balance
+      @bank_balance = @finance_summary.bank_balance
       load_monthly_giving_totals
       @monthly_finance_overview = monthly_finance_overview
       @monthly_income_total = @monthly_finance_overview.sum { |month| month[:income] }
       @monthly_expense_total = @monthly_finance_overview.sum { |month| month[:expense] }
-    end
-
-    def member_overview
-      {
-        total: User.count,
-        active: User.where(active: true).count,
-        role_distribution: User.group(:role).count
-      }
     end
 
     def load_monthly_giving_totals

@@ -1,4 +1,4 @@
-const CACHE_NAME = "tmc-pwa-shell-v2"
+const CACHE_NAME = "tmc-pwa-shell-v3"
 const OFFLINE_URL = "/offline"
 const STATIC_ASSETS = [
   "/icon.png",
@@ -32,7 +32,7 @@ self.addEventListener("message", (event) => {
 })
 
 // Only the static app-shell assets above are ever cache-served; everything
-// else (finance, notifications, members, minutes, auth) stays network-only
+// else (finance, members, auth) stays network-only
 // so authenticated data is never served stale after logout or role changes.
 // The one exception is full-page navigation: if the network is unreachable,
 // fall back to the generic branded offline page rather than a browser error.
@@ -54,50 +54,4 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request).catch(() => caches.match(OFFLINE_URL))
     )
   }
-})
-
-// Web Push: payload shape is produced by PushNotificationService and is kept
-// intentionally minimal (title, body, url, icon) — never sensitive finance,
-// member, or minutes content.
-self.addEventListener("push", (event) => {
-  if (!event.data) return
-
-  let payload
-  try {
-    payload = event.data.json()
-  } catch (error) {
-    return
-  }
-
-  const title = payload.title || "TMC Portal"
-  const options = {
-    body: payload.body || "",
-    icon: payload.icon || "/icon-192.png",
-    badge: "/icon-192.png",
-    data: { url: payload.url || "/" }
-  }
-
-  event.waitUntil(self.registration.showNotification(title, options))
-})
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close()
-
-  const targetUrl = new URL(event.notification.data?.url || "/", self.location.origin).href
-
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      const exactMatch = clientList.find((client) => client.url === targetUrl)
-      if (exactMatch) return exactMatch.focus()
-
-      const anyClient = clientList[0]
-      if (anyClient) {
-        return anyClient.focus().then(() => {
-          if ("navigate" in anyClient) return anyClient.navigate(targetUrl)
-        })
-      }
-
-      if (self.clients.openWindow) return self.clients.openWindow(targetUrl)
-    })
-  )
 })

@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3"
 gem "propshaft"
-gem "pg", "~> 1.1"
+gem "sqlite3", ">= 2.1"
 gem "puma", ">= 5.0"
 gem "importmap-rails"
 gem "turbo-rails"
@@ -49,6 +49,8 @@ group :development, :test do
 end
 
 group :development do
+  # Only for lib/tasks/import_from_postgres.rake (one-off copy off Railway)
+  gem "pg", "~> 1.1", require: false
   gem "web-console"
   gem "letter_opener_web"
   gem "annotate"
@@ -67,5 +69,3 @@ gem "ruby_ui", "~> 1.4", group: :development, require: false
 
 gem "phlex-rails", "~> 2.4"
 gem "tailwind_merge", "~> 1.5"
-
-gem "webpush", "~> 1.1"

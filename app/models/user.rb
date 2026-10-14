@@ -1,34 +1,10 @@
 class User < ApplicationRecord
-  has_many :notification_reads, dependent: :destroy
-  has_many :push_subscriptions, dependent: :destroy
   has_many :finance_unit_memberships, dependent: :destroy
   has_many :finance_units, through: :finance_unit_memberships
-  has_many :authored_notifications,
-           class_name: "Notification",
-           foreign_key: :actor_id,
-           inverse_of: :actor,
-           dependent: :nullify
   has_many :finance_transactions,
            foreign_key: :recorded_by_id,
            inverse_of: :recorded_by,
            dependent: :restrict_with_error
-  has_many :meeting_minutes,
-           foreign_key: :uploaded_by_id,
-           inverse_of: :uploaded_by,
-           dependent: :restrict_with_error
-  has_many :church_events,
-           foreign_key: :created_by_id,
-           inverse_of: :created_by,
-           dependent: :restrict_with_error
-  has_many :official_letters,
-           foreign_key: :created_by_id,
-           inverse_of: :created_by,
-           dependent: :restrict_with_error
-  has_many :assigned_church_resolutions,
-           class_name: "ChurchResolution",
-           foreign_key: :assigned_to_id,
-           inverse_of: :assigned_to,
-           dependent: :nullify
 
   devise :database_authenticatable,
          :recoverable,
@@ -124,12 +100,6 @@ class User < ApplicationRecord
     role_executive_member?
   end
 
-  def notification_actor?
-    role_president? ||
-    role_secretary? ||
-    role_treasurer? ||
-    role_finance_secretary?
-  end
 
   private
 

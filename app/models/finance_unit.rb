@@ -16,7 +16,6 @@ class FinanceUnit < ApplicationRecord
   has_many :finance_transactions, dependent: :restrict_with_error
   has_many :finance_voucher_sequences, dependent: :destroy
   has_many :finance_periods, dependent: :destroy
-  has_many :notifications, dependent: :nullify
 
   validates :name, :slug, :unit_type, presence: true
   validates :slug, uniqueness: true, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }

@@ -22,14 +22,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
 
-    resources :notifications, only: %i[index show] do
-      collection do
-        patch :mark_all_as_read
-      end
-    end
-
     resource :profile, only: :show
-    resource :push_subscription, only: %i[create destroy]
 
     resources :users
     resources :finance_categories, only: :index
@@ -42,22 +35,9 @@ Rails.application.routes.draw do
     resources :finance_units, only: :index do
       resources :finance_unit_memberships, only: %i[create destroy]
     end
-    resources :meeting_minutes do
-      get :new_archive, on: :collection
-    end
-    resources :church_resolutions do
-      patch :mark_completed, on: :member
-    end
-    resources :official_letters
-    resources :church_events
-
-    resource :secretary_workspace, only: :show, controller: "secretary_workspace"
-
     resources :reports, only: [ :index ] do
       collection do
         get :finance
-        get :resolutions
-        get :members
       end
     end
   end

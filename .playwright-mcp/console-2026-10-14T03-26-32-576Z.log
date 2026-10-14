@@ -1,0 +1,12 @@
+[  155257ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3055/admin/finance_periods/2026/10?finance_unit_id=1:0
+[  155258ms] TypeError: Failed to fetch
+    at W (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:7238)
+    at z.perform (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:9017)
+[  155636ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3055/admin/finance_units:0
+[  155637ms] TypeError: Failed to fetch
+    at W (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:7238)
+    at z.perform (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:9017)
+[  159717ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3055/admin/finance_units:0
+[  159717ms] TypeError: Failed to fetch
+    at W (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:7238)
+    at z.perform (http://localhost:3055/assets/turbo.min-9fd88cd5.js:5:9017)

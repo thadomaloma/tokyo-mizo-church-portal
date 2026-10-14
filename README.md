@@ -1,20 +1,17 @@
 # Tokyo Mizo Church Portal
 
-Tokyo Mizo Church Portal is a modern church management system built with Ruby on Rails 8. It helps church leaders manage members, finances, meeting minutes, announcements, events, and notifications from a single platform.
+Tokyo Mizo Church Portal is a finance management app built with Ruby on Rails 8. It helps the church's finance team record income and expenses, print expense vouchers, close months, and export reports.
 
 ![Tokyo Mizo Church Portal dashboard preview](docs/dashboard-preview.png)
 
 ## Features
 
-* Member Management
-* Multi-Unit Finance Management (Income, Expenses, Reports)
-* Meeting Minutes & Resolution Tracking
-* Church Announcements
-* Event Management
-* Notifications System
-* Role-Based Access Control
+* Multi-Unit Finance Management (Income, Expenses, Cash & Bank balances)
+* Expense vouchers with printable receipts
+* Monthly closing
 * PDF & Excel Report Export
-* Mobile-Friendly Responsive Design
+* User accounts with per-unit finance access
+* Mobile-Friendly Responsive Design (installable as a PWA)
 
 ## User Roles
 
@@ -42,7 +39,7 @@ Church Finance automatically when the multi-unit migration runs.
 ## Technology Stack
 
 * Ruby on Rails 8
-* PostgreSQL
+* SQLite (single file, no database server)
 * Hotwire (Turbo & Stimulus)
 * Tailwind CSS
 * Devise Authentication
@@ -95,33 +92,35 @@ The seed password is applied only when the account is first created. To rotate i
 intentionally, set `RESET_SEED_ADMIN_PASSWORD=true` for one seed run and then
 remove that variable.
 
-## Railway Production Setup
+## Production Setup
 
-The checked-in `railway.json` uses the Dockerfile, runs `db:prepare` before a
-deployment, and checks `/up` before sending traffic to a new instance.
+Everything the app stores lives under `storage/`: the SQLite database
+(`storage/production.sqlite3`, or `DATABASE_PATH`) and uploaded receipts. Run
+the Docker image on any small server with that folder mounted as a persistent
+volume at `/rails/storage` (`config/deploy.yml` already does this for Kamal).
+The entrypoint runs `db:prepare` on boot.
 
-Required Railway variables:
+Required variables:
 
-* `DATABASE_URL` (normally supplied by the attached Railway PostgreSQL service)
 * `SECRET_KEY_BASE` or `RAILS_MASTER_KEY`
+* `APP_HOST` (the public host name, used in password reset emails)
 * `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`, and optionally `MAILER_FROM`
-* `SOLID_QUEUE_IN_PUMA=true` when jobs should run in the web service
+* `SOLID_QUEUE_IN_PUMA=true` so background jobs run inside the web process
 
-`APP_HOST` is optional; the app uses `RAILWAY_PUBLIC_DOMAIN` automatically.
+Back up the whole `storage/` folder: it holds both the database and receipts.
 
-Meeting PDFs and signature images must not be kept on Railway's ephemeral
-container filesystem. Attach a Railway volume to the web service, mount it at a
-dedicated path such as `/rails/storage`, and let Railway provide
-`RAILWAY_VOLUME_MOUNT_PATH`. If the container cannot write to a new volume,
-configure Railway's documented `RAILWAY_RUN_UID=0` volume permission setting.
-Back up the volume separately; a database backup does not include uploads.
+Do not keep `SEED_ADMIN_PASSWORD` set after the first successful seed.
 
-Do not keep `SEED_ADMIN_PASSWORD` in Railway after the first successful seed.
-Leaving it configured is unnecessary, even though normal deploys no longer reset
-the existing password.
+### Moving data off the old PostgreSQL database
+
+`bin/rails db:import_from_postgres` copies users, finance units, categories,
+transactions, periods, audits and receipt records from `SOURCE_DATABASE_URL`
+into an empty SQLite database. See `lib/tasks/import_from_postgres.rake` for the
+exact steps. Receipt files must be copied from the old volume into `storage/`
+separately.
 
 ## Purpose
 
-The portal is designed to improve church administration, record keeping, communication, and financial transparency while providing a secure and user-friendly experience for church leaders and members.
+The portal is designed to keep the church's finances accurate and transparent while staying simple and cheap to run.
 
 Developed for Tokyo Mizo Church, Japan.

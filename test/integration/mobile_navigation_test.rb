@@ -1,41 +1,26 @@
 require "test_helper"
 
 class MobileNavigationTest < ActionDispatch::IntegrationTest
-  test "president sees Reports as the mobile priority slot" do
+  test "a user with finance access sees Home, Finance and Reports in the dock" do
     sign_in(users(:one)) # president
 
     get admin_root_path
 
     assert_response :success
-    assert_select "nav.mobile-dock span", text: "Reports"
+    %w[Home Finance Reports].each do |label|
+      assert_select "nav.mobile-dock span", text: label
+    end
   end
 
-  test "secretary sees Minutes as the mobile priority slot" do
-    sign_in(users(:two)) # secretary
+  test "a user without finance access only sees Home in the dock" do
+    sign_in(users(:three)) # executive_member, no unit assignment
 
     get admin_root_path
 
     assert_response :success
-    assert_select "nav.mobile-dock span", text: "Minutes"
-  end
-
-  test "treasurer sees Reports as the mobile priority slot" do
-    treasurer = User.create!(name: "Global Treasurer", email: "global-treasurer@example.com", password: "secure-password", role: :treasurer)
-    sign_in(treasurer, password: "secure-password")
-
-    get admin_root_path
-
-    assert_response :success
-    assert_select "nav.mobile-dock span", text: "Reports"
-  end
-
-  test "an ordinary executive member sees Calendar as the mobile priority slot" do
-    sign_in(users(:three)) # executive_member
-
-    get admin_root_path
-
-    assert_response :success
-    assert_select "nav.mobile-dock span", text: "Calendar"
+    assert_select "nav.mobile-dock span", text: "Home"
+    assert_select "nav.mobile-dock span", text: "Finance", count: 0
+    assert_select "nav.mobile-dock span", text: "Reports", count: 0
   end
 
   test "the More menu offers Finance Access management to a super admin" do
@@ -54,32 +39,24 @@ class MobileNavigationTest < ActionDispatch::IntegrationTest
     assert_select "[role=dialog] a", text: /Finance Access/, count: 0
   end
 
-  test "the More menu always includes universally-viewable modules for every role" do
-    sign_in(users(:three)) # executive_member
+  test "navigation no longer links to removed secretary modules" do
+    sign_in(users(:one))
 
     get admin_root_path
 
     assert_response :success
-    %w[Minutes Resolutions Calendar Members Reports].each do |label|
-      assert_select "[role=dialog] a", text: /#{label}/
+    %w[Minutes Resolutions Letters Calendar Notification].each do |label|
+      assert_no_match(/>\s*#{label}/, response.body)
     end
   end
 
   test "mobile navigation never links to a route the signed-in user cannot actually load" do
-    sign_in(users(:three)) # executive_member — the least-privileged non-guest role
+    sign_in(users(:three)) # executive_member — the least-privileged role
 
     get admin_root_path
     assert_response :success
 
-    [
-      admin_meeting_minutes_path,
-      admin_church_resolutions_path,
-      admin_church_events_path,
-      admin_users_path,
-      admin_reports_path,
-      admin_notifications_path,
-      admin_profile_path
-    ].each do |path|
+    [ admin_users_path, admin_profile_path ].each do |path|
       get path
       assert_response :success, "expected #{path} to be reachable for an executive member, as the More menu links to it"
     end

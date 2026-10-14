@@ -1,12 +1,11 @@
 #!/bin/bash -e
 
-# Railway mounts persistent volumes as root. Prepare only the configured mount,
-# then immediately drop privileges before running Rails or any supplied command.
+# Volumes are often mounted as root. Hand the storage folder (SQLite database
+# and uploaded receipts) to the app user, then immediately drop privileges
+# before running Rails or any supplied command.
 if [ "$(id -u)" = "0" ]; then
-  if [ -n "$RAILWAY_VOLUME_MOUNT_PATH" ]; then
-    mkdir -p "$RAILWAY_VOLUME_MOUNT_PATH"
-    chown -R rails:rails "$RAILWAY_VOLUME_MOUNT_PATH"
-  fi
+  mkdir -p /rails/storage
+  chown -R rails:rails /rails/storage
 
   exec gosu rails "$0" "$@"
 fi

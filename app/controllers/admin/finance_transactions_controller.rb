@@ -54,7 +54,6 @@ module Admin
         flash.now[:alert] = closed_period_message(@finance_transaction.transaction_date)
         render :new, status: :unprocessable_entity
       elsif @finance_transaction.save
-        create_notification("New Finance Entry", "#{current_user.name} in #{@finance_transaction.transaction_type.humanize} record a dah.")
         redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry save fel a ni."
       else
         load_categories
@@ -78,7 +77,6 @@ module Admin
         flash.now[:alert] = closed_period_message(blocking_date)
         render :edit, status: :unprocessable_entity
       elsif @finance_transaction.update(new_attrs)
-        create_notification("Finance Entry Updated", "#{current_user.name} in finance record a siam tha.")
         redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry siamthat fel a ni."
       else
         load_categories
@@ -168,7 +166,7 @@ module Admin
       pattern = "%#{query}%"
 
       transactions.joins(:finance_category).where(
-        "finance_categories.name ILIKE :q OR finance_transactions.description ILIKE :q",
+        "finance_categories.name LIKE :q OR finance_transactions.description LIKE :q",
         q: pattern
       )
     end
@@ -179,16 +177,6 @@ module Admin
         params[:transaction_type].presence
     end
 
-    def create_notification(title, message)
-      NotificationCreator.call(
-        actor: current_user,
-        title: title,
-        message: "#{@finance_unit.name}: #{message}",
-        notification_type: "finance",
-        link: admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-        finance_unit: @finance_unit
-      )
-    end
 
     def finance_transactions
       @finance_unit.finance_transactions

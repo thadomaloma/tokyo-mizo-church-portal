@@ -18,7 +18,6 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && @user.save
-        notify("New Member Added", "#{current_user.name} in #{@user.name} chu #{@user.role.humanize} anga a dah.")
         redirect_to admin_users_path, notice: "Member siam fel a ni."
       else
         render :new, status: :unprocessable_entity
@@ -38,7 +37,6 @@ module Admin
       end
 
       if role_assigned && @user.save
-        notify("Member Updated", "#{current_user.name} in #{@user.name} chanchin a siam tha.")
         redirect_to admin_users_path, notice: "Member siamthat fel a ni."
       else
         render :edit, status: :unprocessable_entity
@@ -86,16 +84,6 @@ module Admin
 
     def self_lockout_attempt?
       @user == current_user && (!@user.active? || !@user.super_admin?)
-    end
-
-    def notify(title, message)
-      NotificationCreator.call(
-        actor: current_user,
-        title: title,
-        message: message,
-        notification_type: "member",
-        link: admin_users_path
-      )
     end
   end
 end
