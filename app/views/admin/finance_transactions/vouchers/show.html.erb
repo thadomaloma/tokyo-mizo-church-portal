@@ -1,307 +1,156 @@
 <%
-  voucher_number = @finance_transaction.expense_voucher_number
-  paid_from = @finance_transaction.payment_location_bank? ? "Bank Account" : "Cash"
-  category_name = @finance_transaction.finance_category&.name || "-"
-  prepared_by = @finance_transaction.recorded_by&.name || "-"
-  description = @finance_transaction.description.presence || "Expense"
-  formatted_amount = "¥#{number_with_delimiter(@finance_transaction.amount)}"
-  formatted_date = @finance_transaction.transaction_date.strftime("%d/%m/%Y")
+  transaction = @finance_transaction
+  voucher_number = transaction.expense_voucher_number
+  category_name = transaction.finance_category&.name || "—"
+  description = transaction.description.presence || category_name
+  paid_from = transaction.payment_location_bank? ? "Bank account" : "Cash"
+  signatures = [
+    [ "Prepared by", transaction.recorded_by&.name ],
+    ([ "Checked by", "Finance Secretary" ] unless @finance_unit.unit_type == "fund"),
+    [ "Approved by", "Treasurer" ],
+    [ "Received by", "Payee" ]
+  ].compact
 %>
+<% content_for :title, "#{voucher_number} · Expense receipt" %>
 
 <style>
-  @page {
-    size: A5 portrait;
-    margin: 8mm;
-  }
+  /* A5 portrait payment voucher: 148 × 210 mm, printed edge to edge. */
+  @page { size: A5 portrait; margin: 0; }
 
-  .thermal-receipt {
-    background-color: #fff;
-    background-image:
-      linear-gradient(rgb(15 23 42 / 0.018) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(15 23 42 / 0.012) 1px, transparent 1px);
-    background-size: 5px 5px;
+  .voucher {
+    box-sizing: border-box;
+    width: 148mm;
+    min-height: 210mm;
+    padding: 12mm 12mm 10mm;
+    background: #fff;
+    color: #23221e;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+  }
+  .voucher .serif { font-family: Newsreader, "Iowan Old Style", Georgia, serif; }
+  .voucher .label { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #7b766b; }
+  .voucher .rule { border-top: 0.6pt solid #23221e; }
+  .voucher .hair { border-top: 0.4pt solid #d8d3c7; }
+  .voucher .num { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+
+  /* On screen the sheet is shown at its real proportions, scaled to fit. */
+  .voucher-frame { width: 100%; max-width: 148mm; margin: 0 auto; }
+  @media screen {
+    .voucher { width: 100%; min-height: auto; aspect-ratio: 148 / 210; box-shadow: 0 1px 2px rgb(35 34 30 / 0.06), 0 18px 40px rgb(35 34 30 / 0.12); border: 1px solid #e6e2d8; border-radius: 4px; }
+  }
+  @media screen and (max-width: 560px) {
+    .voucher { aspect-ratio: auto; padding: 7mm 6mm; }
   }
 
   @media print {
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    body * {
-      visibility: hidden !important;
-    }
-
-    .receipt-card,
-    .receipt-card * {
-      visibility: visible !important;
-    }
-
-    html,
-    body {
-      width: 100% !important;
-      min-width: 0 !important;
-      height: auto !important;
-      min-height: 0 !important;
-      margin: 0 !important;
-      overflow: visible !important;
-      background: #fff !important;
-    }
-
-    .admin-shell,
-    .admin-content,
-    body > div,
-    body > div > div,
-    main {
-      display: block !important;
-      width: 100% !important;
-      min-height: 0 !important;
-      height: auto !important;
-      max-width: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: visible !important;
-      position: static !important;
-    }
-
-    .receipt-page {
-      display: block !important;
-      width: 100% !important;
-      max-width: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      position: static !important;
-      overflow: visible !important;
-    }
-
-    .receipt-card {
-      box-sizing: border-box !important;
-      display: block !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 132mm !important;
-      max-width: 132mm !important;
-      min-height: 0 !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 6mm 7mm !important;
-      overflow: visible !important;
-      border: 0 !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-
-    .receipt-heading {
-      display: grid !important;
-      grid-template-columns: 18mm minmax(0, 1fr) !important;
-      grid-template-rows: repeat(3, auto) !important;
-      column-gap: 4mm !important;
-      align-items: center !important;
-      text-align: left !important;
-    }
-
-    .receipt-heading > div {
-      grid-row: 1 / 4 !important;
-      margin: 0 !important;
-    }
-
-    .receipt-heading h1,
-    .receipt-heading p {
-      margin-top: 0 !important;
-    }
-
-    .receipt-meta {
-      display: grid !important;
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 4mm !important;
-    }
-
-    .receipt-meta > div {
-      display: block !important;
-    }
-
-    .receipt-meta span:last-child {
-      display: block !important;
-      max-width: none !important;
-      margin-top: 2mm !important;
-      text-align: left !important;
-    }
-
-    .receipt-finance-grid {
-      display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 6mm !important;
-      align-items: start !important;
-    }
-
-    .receipt-totals {
-      width: 100% !important;
-      margin: 0 !important;
-    }
-
-    .receipt-payment-section {
-      border-left: 1px dashed #0f172a !important;
-      padding-left: 6mm !important;
-    }
-
-    .receipt-payment-rule {
-      display: none !important;
-    }
-
-    .receipt-approval-grid {
-      display: grid !important;
-      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) !important;
-      gap: 6mm !important;
-      align-items: center !important;
-    }
-
-    .receipt-note {
-      margin: 0 !important;
-    }
-
-    .receipt-signatures {
-      padding-top: 0 !important;
-    }
-
-    .receipt-footer {
-      margin-top: 8mm !important;
-    }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body { width: 148mm !important; min-width: 0 !important; height: 210mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; }
+    body * { visibility: hidden !important; }
+    .voucher, .voucher * { visibility: visible !important; }
+    .voucher { position: fixed !important; inset: 0 !important; width: 148mm !important; height: 210mm !important; min-height: 0 !important; margin: 0 !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
   }
 </style>
 
-<div class="receipt-page mx-auto w-full max-w-[430px] space-y-4">
-  <div class="receipt-actions grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
-    <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-        class: "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" do %>
-      <%= heroicon "arrow-left", variant: :outline, options: { class: "h-5 w-5" } %>
-      Back
+<div class="mx-auto max-w-[148mm] space-y-4">
+  <div class="flex items-center justify-between gap-3">
+    <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
+      <%= heroicon "arrow-left", variant: :outline, options: { class: "h-5 w-5" } %> Back
     <% end %>
 
-    <button type="button"
-            data-controller="print"
-            data-action="click->print#print"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-3 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
-      <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %>
-      Print
-    </button>
+    <div class="flex items-center gap-2">
+      <span class="hidden text-sm text-[var(--ink-muted)] sm:inline">A5 · 148 × 210 mm</span>
+      <button type="button" data-controller="print" data-action="click->print#print" class="btn btn-primary">
+        <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %> Print
+      </button>
+    </div>
   </div>
 
-  <section class="receipt-card thermal-receipt overflow-hidden rounded-[1.5rem] border border-slate-200 px-5 py-8 font-mono text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.14)] sm:px-7 sm:py-9">
-    <div class="receipt-heading text-center">
-      <div class="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-slate-900 bg-white p-1.5">
-        <%= image_tag "tokyo_mizo_church_logo.png",
-            alt: "Tokyo Mizo Church logo",
-            class: "h-full w-full object-contain" %>
-      </div>
-
-      <h1 class="mt-4 text-lg font-black uppercase tracking-[0.08em]">Tokyo Mizo Church</h1>
-      <p class="mt-1 text-xs font-bold uppercase tracking-[0.18em]">Tokyo, Japan</p>
-      <p class="mt-2 text-xs font-black uppercase tracking-[0.12em]"><%= @finance_unit.name %></p>
-      <p class="mt-3 text-sm font-black uppercase tracking-[0.12em]">Expense Receipt</p>
-    </div>
-
-    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
-
-    <div class="receipt-meta space-y-2 text-xs font-bold sm:text-sm">
-      <div class="flex items-start justify-between gap-4">
-        <span>DATE</span>
-        <span class="text-right"><%= formatted_date %></span>
-      </div>
-      <div class="flex items-start justify-between gap-4">
-        <span>RECEIPT NO.</span>
-        <span class="text-right"><%= voucher_number %></span>
-      </div>
-      <div class="flex items-start justify-between gap-4">
-        <span>PREPARED BY</span>
-        <span class="max-w-[58%] text-right"><%= prepared_by %></span>
-      </div>
-    </div>
-
-    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
-
-    <div>
-      <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-4 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
-        <span>Expense Details</span>
-        <span>Amount</span>
-      </div>
-
-      <div class="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 text-sm font-black leading-6">
-        <div class="min-w-0">
-          <p class="break-words"><%= description %></p>
-          <p class="mt-1 break-words text-xs font-bold text-slate-500"><%= category_name %></p>
-        </div>
-        <p class="whitespace-nowrap text-right"><%= formatted_amount %></p>
-      </div>
-    </div>
-
-    <div class="my-6 border-t-2 border-dashed border-slate-900"></div>
-
-    <div class="receipt-finance-grid">
-      <div class="receipt-totals ml-auto w-[78%] space-y-2 text-sm font-bold">
-        <div class="flex items-center justify-between gap-4">
-          <span>SUBTOTAL</span>
-          <span><%= formatted_amount %></span>
-        </div>
-        <div class="flex items-center justify-between gap-4">
-          <span>TAX</span>
-          <span>¥0</span>
-        </div>
-        <div class="flex items-center justify-between gap-4 border-t border-slate-900 pt-2 text-base font-black">
-          <span>TOTAL</span>
-          <span><%= formatted_amount %></span>
-        </div>
-      </div>
-
-      <div class="receipt-payment-section">
-        <div class="receipt-payment-rule my-6 border-t-2 border-dashed border-slate-900"></div>
-
-        <div class="space-y-2 text-xs font-bold sm:text-sm">
-          <div class="flex items-start justify-between gap-4">
-            <span>PAID FROM</span>
-            <span class="text-right"><%= paid_from %></span>
-          </div>
-          <div class="flex items-start justify-between gap-4">
-            <span>CATEGORY</span>
-            <span class="max-w-[58%] break-words text-right"><%= category_name %></span>
-          </div>
-          <div class="flex items-start justify-between gap-4">
-            <span>STATUS</span>
-            <span class="text-right">RECORDED</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="receipt-approval-grid">
-      <div class="receipt-note my-6 border-y-2 border-dashed border-slate-900 py-5 text-center">
-        <p class="text-sm font-black uppercase tracking-[0.08em]">Official Finance Record</p>
-        <p class="mt-2 text-[11px] font-bold leading-5 text-slate-600">
-          This expense is recorded in the <%= @finance_unit.name %> ledger of Tokyo Mizo Church.
-        </p>
-      </div>
-
-      <div class="receipt-signatures grid <%= @finance_unit.unit_type == "fund" ? "grid-cols-1" : "grid-cols-2" %> gap-6 pt-3">
-        <% unless @finance_unit.unit_type == "fund" %>
+  <div class="voucher-frame">
+    <article class="voucher" data-voucher aria-label="Expense receipt <%= voucher_number %>">
+      <header style="display: flex; align-items: flex-start; justify-content: space-between; gap: 6mm;">
+        <div style="display: flex; align-items: center; gap: 3.5mm;">
+          <%= image_tag "tokyo_mizo_church_logo_print.png", alt: "", style: "width: 13mm; height: 13mm; object-fit: contain;" %>
           <div>
-            <div class="h-10 border-b border-dashed border-slate-700"></div>
-            <p class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.08em]">Finance Secretary</p>
+            <h1 class="serif" style="font-size: 15pt; line-height: 1.1; margin: 0;">Tokyo Mizo Church</h1>
+            <p style="margin: 1mm 0 0; font-size: 8pt; color: #7b766b;"><%= @finance_unit.name %> · Tokyo, Japan</p>
           </div>
-        <% end %>
-        <div>
-          <div class="h-10 border-b border-dashed border-slate-700"></div>
-          <p class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.08em]">Treasurer</p>
         </div>
-      </div>
-    </div>
+        <div style="text-align: right;">
+          <p class="label" style="margin: 0;">Expense Receipt</p>
+          <p class="serif num" style="margin: 1mm 0 0; font-size: 13pt;"><%= voucher_number %></p>
+          <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #46443d;"><%= transaction.transaction_date.strftime("%-d %B %Y") %></p>
+        </div>
+      </header>
 
-    <div class="receipt-footer mt-9 text-center">
-      <p class="text-xs font-black uppercase tracking-[0.12em]">Thank you</p>
-      <p class="mt-2 text-[10px] font-bold leading-4 text-slate-500">
-        Digitally generated · <%= voucher_number %>
-      </p>
-    </div>
-  </section>
+      <div class="rule" style="margin: 6mm 0 5mm;"></div>
+
+      <section>
+        <p class="label" style="margin: 0;">Amount paid</p>
+        <p class="serif num" style="margin: 1.5mm 0 0; font-size: 30pt; line-height: 1;">
+          <span style="font-size: 17pt; vertical-align: 0.5em; color: #7b766b; margin-right: 1mm;">¥</span><%= number_with_delimiter(transaction.amount) %>
+        </p>
+        <p style="margin: 2.5mm 0 0; font-size: 9pt; font-style: italic; color: #46443d;"><%= yen_in_words(transaction.amount) %></p>
+      </section>
+
+      <div class="hair" style="margin: 5mm 0 4mm;"></div>
+
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th class="label" style="text-align: left; padding: 0 0 2mm;">Description</th>
+            <th class="label" style="text-align: right; padding: 0 0 2mm;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 2.5mm 4mm 2.5mm 0; border-top: 0.4pt solid #d8d3c7; vertical-align: top;">
+              <p style="margin: 0; font-weight: 500;"><%= description %></p>
+              <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #7b766b;"><%= category_name %></p>
+            </td>
+            <td class="num" style="padding: 2.5mm 0; border-top: 0.4pt solid #d8d3c7; text-align: right; vertical-align: top;">¥<%= number_with_delimiter(transaction.amount) %></td>
+          </tr>
+          <tr>
+            <td style="padding: 2mm 0; border-top: 0.6pt solid #23221e; font-weight: 600;">Total</td>
+            <td class="num" style="padding: 2mm 0; border-top: 0.6pt solid #23221e; border-bottom: 1.6pt double #23221e; text-align: right; font-weight: 600;">¥<%= number_with_delimiter(transaction.amount) %></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <dl style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; margin: 6mm 0 0; padding: 3mm 3.5mm; background: #f7f5f0; border-radius: 1.5mm;">
+        <div>
+          <dt class="label">Paid from</dt>
+          <dd style="margin: 0.8mm 0 0;"><%= paid_from %></dd>
+        </div>
+        <div>
+          <dt class="label">Category</dt>
+          <dd style="margin: 0.8mm 0 0;"><%= category_name %></dd>
+        </div>
+        <div>
+          <dt class="label">Ledger</dt>
+          <dd style="margin: 0.8mm 0 0;"><%= @finance_unit.name %></dd>
+        </div>
+      </dl>
+
+      <section style="margin-top: auto; padding-top: 9mm;">
+        <div style="display: grid; grid-template-columns: repeat(<%= signatures.size %>, minmax(0, 1fr)); gap: 4mm;">
+          <% signatures.each do |label, name| %>
+            <div>
+              <div style="height: 12mm; border-bottom: 0.6pt solid #23221e;"></div>
+              <p class="label" style="margin: 1.5mm 0 0;"><%= label %></p>
+              <p style="margin: 0.3mm 0 0; font-size: 8pt; color: #46443d; min-height: 3.5mm;"><%= name %></p>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="hair" style="margin: 6mm 0 2.5mm;"></div>
+        <p style="margin: 0; display: flex; justify-content: space-between; gap: 4mm; font-size: 7pt; color: #7b766b;">
+          <span>Recorded in the <%= @finance_unit.name %> ledger, Tokyo Mizo Church.</span>
+          <span class="num">Printed <%= Date.current.strftime("%-d %b %Y") %></span>
+        </p>
+      </section>
+    </article>
+  </div>
 </div>

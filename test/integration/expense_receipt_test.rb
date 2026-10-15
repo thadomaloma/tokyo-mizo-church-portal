@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ExpenseReceiptTest < ActionDispatch::IntegrationTest
-  test "renders a compact branded expense receipt without sharing controls" do
+  test "renders an A5 payment voucher with the amount in words and signature lines" do
     sign_in_user
     category = FinanceCategory.create!(name: "Community Event", category_type: "expense")
     transaction = FinanceTransaction.create!(
@@ -27,8 +27,11 @@ class ExpenseReceiptTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "onclick=\"window.print()\""
     assert_select "[data-verse-of-the-day]", count: 0
     assert_match(/size:\s*A5 portrait/, response.body)
-    assert_match(/width:\s*132mm/, response.body)
-    assert_match(/\.receipt-finance-grid\s*\{[^}]*display:\s*grid/m, response.body)
+    assert_match(/width:\s*148mm/, response.body)
+    assert_select "[data-voucher]", text: /Twelve thousand five hundred yen only/
+    %w[Prepared Checked Approved Received].each do |label|
+      assert_select "[data-voucher] p.label", text: "#{label} by"
+    end
   end
 
   test "does not render a receipt for an income transaction" do

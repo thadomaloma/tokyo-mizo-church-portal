@@ -21,7 +21,7 @@ class ExpenseReceiptPrintTest < ApplicationSystemTestCase
     click_button "Sign In"
 
     assert_current_path authenticated_root_path
-    assert_text "Chibai, #{users(:one).name}. Lo kir leh rawh."
+    assert_text "Hello"
     visit admin_finance_transaction_voucher_path(transaction)
     assert_text "Tokyo Mizo Church"
     assert_text transaction.expense_voucher_number

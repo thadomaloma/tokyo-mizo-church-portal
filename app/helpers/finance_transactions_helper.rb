@@ -12,6 +12,26 @@ module FinanceTransactionsHelper
     "transfer_to_location" => "Transfer To"
   }.freeze
 
+  SMALL_NUMBERS = %w[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen
+                     fifteen sixteen seventeen eighteen nineteen].freeze
+  TENS = %w[_ _ twenty thirty forty fifty sixty seventy eighty ninety].freeze
+  SCALES = [ [ 1_000_000_000, "billion" ], [ 1_000_000, "million" ], [ 1_000, "thousand" ], [ 100, "hundred" ] ].freeze
+
+  # Amount written out, as on a cheque or payment voucher:
+  # 12_500 => "Twelve thousand five hundred yen only".
+  def yen_in_words(amount)
+    "#{number_in_words(amount.to_i.abs).capitalize} yen only"
+  end
+
+  def number_in_words(number)
+    return SMALL_NUMBERS[number] if number < 20
+    return [ TENS[number / 10], (SMALL_NUMBERS[number % 10] unless (number % 10).zero?) ].compact.join("-") if number < 100
+
+    scale, name = SCALES.find { |value, _| number >= value }
+    rest = number % scale
+    [ "#{number_in_words(number / scale)} #{name}", (number_in_words(rest) unless rest.zero?) ].compact.join(" ")
+  end
+
   def yen(amount)
     "¥#{number_with_delimiter(amount.to_i)}"
   end
