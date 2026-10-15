@@ -64,6 +64,18 @@
     <% end %>
   <% end %>
 
+  <section class="card card-pad" data-app-about>
+    <h2 class="card-title">About</h2>
+    <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
+      <dt class="text-[var(--ink-muted)]">App</dt>
+      <dd class="text-[var(--ink)]">Tokyo Mizo Church Finance</dd>
+      <dt class="text-[var(--ink-muted)]">Version</dt>
+      <dd class="text-[var(--ink)]"><%= Rails.configuration.x.app_version %></dd>
+      <dt class="text-[var(--ink-muted)]">Developer</dt>
+      <dd class="text-[var(--ink)]"><%= Rails.configuration.x.app_developer %></dd>
+    </dl>
+  </section>
+
   <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-danger w-full" do %>
     <%= heroicon "arrow-right-on-rectangle", variant: :outline, options: { class: "h-5 w-5" } %> Logout
   <% end %>

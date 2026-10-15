@@ -10,6 +10,7 @@ class SettingsWorkflowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, ordinary_member.name
     assert_select "[data-settings-users]", count: 0
+    assert_select "[data-app-about]", text: /Version\s*2\.0.*Developer\s*Maloma Thado/m
   end
 
   test "a super admin manages users from settings" do

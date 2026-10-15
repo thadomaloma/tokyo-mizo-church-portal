@@ -32,6 +32,10 @@ module TokyoMizoChurchPortal
     # in config/environments, which are processed later.
     #
     config.time_zone = "Tokyo"
+
+    # Shown on the Settings and sign-in pages.
+    config.x.app_version = "2.0"
+    config.x.app_developer = "Maloma Thado"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # The `audited` gem YAML-serializes changed attribute values into

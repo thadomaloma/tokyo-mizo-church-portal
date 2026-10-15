@@ -11,6 +11,7 @@ class SignInLocalizationTest < ActionDispatch::IntegrationTest
     assert_select "label", text: "Remember me"
     assert_select "input[type='submit'][value='Sign In']"
     assert_match(/Forgot your password\?/, response.body)
+    assert_select "[data-app-version]", text: /Version 2\.0 · Developed by Maloma Thado/
     assert_no_match(/Sign in to continue/, response.body)
   end
 

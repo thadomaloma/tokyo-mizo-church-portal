@@ -44,5 +44,8 @@
       <%= link_to "Forgot your password?", new_password_path(resource_name), class: "link text-[15px]" %>
     </p>
     <p class="mt-8 text-center text-sm text-[var(--ink-muted)]">© <%= Date.current.year %> Tokyo Mizo Church, Japan</p>
+    <p class="mt-1 text-center text-xs text-[var(--ink-muted)]" data-app-version>
+      Version <%= Rails.configuration.x.app_version %> · Developed by <%= Rails.configuration.x.app_developer %>
+    </p>
   </div>
 </div>
