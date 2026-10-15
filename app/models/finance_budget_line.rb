@@ -10,7 +10,7 @@ class FinanceBudgetLine < ApplicationRecord
 
   def category_is_an_expense_of_the_same_unit
     return if finance_category.blank? || finance_budget.blank?
-    return if finance_category.category_type == "expense" &&
+    return if finance_category.expense? &&
               finance_category.finance_unit_id == finance_budget.finance_unit_id
 
     errors.add(:finance_category, "must be an expense category of this finance unit")

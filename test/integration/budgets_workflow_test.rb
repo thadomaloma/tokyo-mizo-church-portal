@@ -69,14 +69,14 @@ class BudgetsWorkflowTest < ActionDispatch::IntegrationTest
   end
 
   test "viewers without manager rights cannot edit the budget" do
-    viewer = User.create!(name: "Viewer", email: "viewer@example.com", password: "secure-password", role: :executive_member)
+    viewer = User.create!(name: "Viewer", email: "viewer@example.com", password: "secure-password", role: :finance_secretary)
     FinanceUnitMembership.create!(finance_unit: @unit, user: viewer, role: "viewer")
     post user_session_path, params: { user: { email: viewer.email, password: "secure-password" } }
 
     get admin_budget_path(@year, finance_unit_id: @unit.id)
     assert_response :success
 
-    get admin_edit_budget_path(@year, finance_unit_id: @unit.id)
+    get edit_admin_budget_path(@year, finance_unit_id: @unit.id)
     assert_redirected_to admin_budget_path(@year, finance_unit_id: @unit.id)
   end
 

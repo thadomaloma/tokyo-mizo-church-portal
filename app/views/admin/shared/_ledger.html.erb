@@ -51,7 +51,7 @@
           <td>
             <span class="flex justify-end gap-0.5">
               <% if transaction.expense? %>
-                <%= link_to receipt_admin_finance_transaction_path(transaction), class: "btn btn-ghost btn-icon", title: "Voucher print", aria: { label: "Voucher print" } do %>
+                <%= link_to admin_finance_transaction_voucher_path(transaction), class: "btn btn-ghost btn-icon", title: "Voucher print", aria: { label: "Voucher print" } do %>
                   <%= heroicon "printer", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
                 <% end %>
               <% end %>

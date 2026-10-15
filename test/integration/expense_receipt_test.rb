@@ -14,7 +14,7 @@ class ExpenseReceiptTest < ActionDispatch::IntegrationTest
       description: "Venue deposit"
     )
 
-    get receipt_admin_finance_transaction_path(transaction)
+    get admin_finance_transaction_voucher_path(transaction)
 
     assert_response :success
     assert_select "h1", text: "Tokyo Mizo Church"
@@ -44,7 +44,7 @@ class ExpenseReceiptTest < ActionDispatch::IntegrationTest
       description: "Offering"
     )
 
-    get receipt_admin_finance_transaction_path(transaction)
+    get admin_finance_transaction_voucher_path(transaction)
 
     assert_redirected_to admin_finance_transactions_path(finance_unit_id: category.finance_unit_id)
   end

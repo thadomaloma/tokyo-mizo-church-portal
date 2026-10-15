@@ -61,7 +61,7 @@
             class: "field-label" %>
 
         <%= form.select :role,
-            User::ROLE_OPTIONS,
+            User.role_options,
             { prompt: "Select role" },
             class: "input" %>
 

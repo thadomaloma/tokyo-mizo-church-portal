@@ -100,8 +100,8 @@ remove that variable.
 
 ## Production Setup
 
-Everything the app stores lives under `storage/`: the SQLite database
-(`storage/production.sqlite3`, or `DATABASE_PATH`) and uploaded receipts. Run
+Everything the app stores is one SQLite database under `storage/`
+(`storage/production.sqlite3`, or `DATABASE_PATH`); nothing is uploaded. Run
 the Docker image on any small server with that folder mounted as a persistent
 volume at `/rails/storage` (`config/deploy.yml` already does this for Kamal).
 The entrypoint runs `db:prepare` on boot.
@@ -113,17 +113,15 @@ Required variables:
 * `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`, and optionally `MAILER_FROM`
 * `SOLID_QUEUE_IN_PUMA=true` so background jobs run inside the web process
 
-Back up the whole `storage/` folder: it holds both the database and receipts.
+Back up the `storage/` folder every day; it holds the whole database.
 
 Do not keep `SEED_ADMIN_PASSWORD` set after the first successful seed.
 
 ### Moving data off the old PostgreSQL database
 
 `bin/rails db:import_from_postgres` copies users, finance units, categories,
-transactions, periods, audits and receipt records from `SOURCE_DATABASE_URL`
-into an empty SQLite database. See `lib/tasks/import_from_postgres.rake` for the
-exact steps. Receipt files must be copied from the old volume into `storage/`
-separately.
+transactions, periods and audits from `SOURCE_DATABASE_URL` into an empty
+SQLite database. See `lib/tasks/import_from_postgres.rake` for the exact steps.
 
 ## Purpose
 

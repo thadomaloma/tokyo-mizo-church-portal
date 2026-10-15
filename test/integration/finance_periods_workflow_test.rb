@@ -18,7 +18,7 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "button", text: /Close month/i
 
-    patch admin_close_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
+    post admin_finance_period_closure_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert_redirected_to admin_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert FinancePeriod.find_by(finance_unit: finance_units(:main), year: 2026, month: 4).closed?
 
@@ -33,7 +33,7 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_finance_transactions_path(finance_unit_id: finance_units(:main).id)
     assert FinanceTransaction.exists?(transaction.id)
 
-    patch admin_reopen_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
+    delete admin_finance_period_closure_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert FinancePeriod.find_by(finance_unit: finance_units(:main), year: 2026, month: 4).open?
 
     patch admin_finance_transaction_path(transaction), params: {
@@ -68,7 +68,7 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
   test "read-only role cannot close or reopen a month" do
     sign_in(users(:three))
 
-    patch admin_close_finance_period_path(2026, 4, finance_unit_id: finance_units(:main).id)
+    post admin_finance_period_closure_path(2026, 4, finance_unit_id: finance_units(:main).id)
     assert_redirected_to admin_root_path
     assert_not FinancePeriod.exists?(finance_unit: finance_units(:main), year: 2026, month: 4)
   end
@@ -87,7 +87,7 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
     )
     transaction.update_column(:voucher_number, nil)
 
-    patch admin_close_finance_period_path(2026, 6, finance_unit_id: finance_units(:main).id)
+    post admin_finance_period_closure_path(2026, 6, finance_unit_id: finance_units(:main).id)
 
     assert_redirected_to admin_finance_period_path(2026, 6, finance_unit_id: finance_units(:main).id)
     assert_not FinancePeriod.find_by(finance_unit: finance_units(:main), year: 2026, month: 6)&.closed?

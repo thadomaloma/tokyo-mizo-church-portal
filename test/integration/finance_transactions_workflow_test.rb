@@ -141,6 +141,17 @@ class FinanceTransactionsWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal original_date, transaction.reload.transaction_date
   end
 
+
+  test "the ledger paginates" do
+    sign_in(users(:one))
+    16.times { |index| create_transaction(category: finance_categories(:two), description: "page-test-#{index}") }
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:main).id, page: 2)
+
+    assert_response :success
+    assert_select "a[rel=prev]"
+  end
+
   private
 
   def create_transaction(category:, description:)

@@ -5,7 +5,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
   test "finance export links bypass turbo for browser download compatibility" do
     sign_in_user
 
-    get finance_admin_reports_path(year: 2026, start_month: 2, end_month: 4, ledger_type: "expense")
+    get admin_finance_report_path(year: 2026, start_month: 2, end_month: 4, ledger_type: "expense")
 
     assert_response :success
     assert_select "a[data-turbo='false'][href*='.pdf'][href*='ledger_type=expense'][href*='start_month=2'][href*='end_month=4']", text: /Export PDF/
@@ -15,7 +15,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
   test "finance report shows selected period as an up-to month summary" do
     sign_in_user
 
-    get finance_admin_reports_path(year: 2026, start_month: 1, end_month: 5)
+    get admin_finance_report_path(year: 2026, start_month: 1, end_month: 5)
 
     assert_response :success
     assert_includes response.body, "January - May 2026, up to May"
@@ -47,7 +47,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
       payment_location: "cash",
       description: "May expense"
     )
-    get finance_admin_reports_path(year: 2026, start_month: 4, end_month: 5, ledger_type: "income")
+    get admin_finance_report_path(year: 2026, start_month: 4, end_month: 5, ledger_type: "income")
 
     assert_response :success
     assert_includes response.body, "Ledger View"
@@ -61,7 +61,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
 
   test "ledger type links retain year and month range" do
     sign_in_user
-    get finance_admin_reports_path(year: 2025, start_month: 3, end_month: 8, ledger_type: "expense")
+    get admin_finance_report_path(year: 2025, start_month: 3, end_month: 8, ledger_type: "expense")
 
     assert_response :success
     assert_select "a[href*='year=2025'][href*='start_month=3'][href*='end_month=8'][href*='ledger_type=all']", text: "All"
@@ -72,7 +72,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
   test "finance pdf export returns an attachment pdf response" do
     sign_in_user
 
-    get finance_admin_reports_path(year: 2026, start_month: 1, end_month: 5, ledger_type: "income", format: :pdf)
+    get admin_finance_report_path(year: 2026, start_month: 1, end_month: 5, ledger_type: "income", format: :pdf)
 
     assert_response :success
     assert_equal "application/pdf", response.media_type
@@ -95,7 +95,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
       description: "東京ミゾ教会 tithe â"
     )
 
-    get finance_admin_reports_path(
+    get admin_finance_report_path(
       year: 2026,
       start_month: 1,
       end_month: 7,
@@ -110,7 +110,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
   test "finance excel export has a summary sheet and a transactions sheet without chart objects" do
     sign_in_user
 
-    get finance_admin_reports_path(format: :xlsx)
+    get admin_finance_report_path(format: :xlsx)
 
     assert_response :success
     assert_includes response.headers["Content-Disposition"], "attachment"
@@ -151,7 +151,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
       description: "EXPENSE-ONLY-EXPORT-MARKER"
     )
 
-    get finance_admin_reports_path(
+    get admin_finance_report_path(
       year: 2026,
       start_month: 6,
       end_month: 6,

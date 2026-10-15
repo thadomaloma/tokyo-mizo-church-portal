@@ -1,7 +1,7 @@
 require "application_system_test_case"
 
 class FinanceAccessTest < ApplicationSystemTestCase
-  test "president can understand and use finance assignments on desktop and mobile" do
+  test "chairman can understand and use finance assignments on desktop and mobile" do
     sign_in(users(:one))
 
     visit admin_finance_units_path

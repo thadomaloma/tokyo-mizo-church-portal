@@ -1,13 +1,14 @@
 <%
-  previous_month = @period_start.prev_month
-  next_month = @period_start.next_month
+  period = @finance_period
+  previous_month = period.start_date.prev_month
+  next_month = period.start_date.next_month
   closed = @finance_period.closed?
   actions = capture do
-    concat render("admin/shared/unit_switcher", url: admin_finance_period_path(@year, @month))
-    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id, ledger_type: "all", format: :pdf), class: "btn btn-primary", data: { turbo: false }) do
+    concat render("admin/shared/unit_switcher", url: admin_finance_period_path(period.year, period.month))
+    concat(link_to(admin_finance_report_path(year: period.year, start_month: period.month, end_month: period.month, finance_unit_id: @finance_unit.id, ledger_type: "all", format: :pdf), class: "btn btn-primary", data: { turbo: false }) do
       heroicon("document-arrow-down", variant: :outline, options: { class: "h-5 w-5" }) + "Download PDF"
     end)
-    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id), class: "btn btn-secondary") do
+    concat(link_to(admin_finance_report_path(year: period.year, start_month: period.month, end_month: period.month, finance_unit_id: @finance_unit.id), class: "btn btn-secondary") do
       heroicon("table-cells", variant: :outline, options: { class: "h-5 w-5" }) + "Excel & other periods"
     end)
   end
@@ -15,7 +16,7 @@
 
 <%= render "admin/shared/page_header",
     eyebrow: "#{@finance_unit.name} · Monthly report",
-    title: @period_label,
+    title: period.label,
     actions: actions %>
 
 <div class="space-y-5">
@@ -46,7 +47,7 @@
 
       <table class="statement mt-3">
         <tbody>
-          <tr class="font-semibold"><td>Opening balance (<%= (@period_start - 1).strftime("%-d %b") %>)</td><td><%= money(@opening_balance) %></td></tr>
+          <tr class="font-semibold"><td>Opening balance (<%= (period.start_date - 1).strftime("%-d %b") %>)</td><td><%= money(@opening_balance) %></td></tr>
         </tbody>
 
         <tbody>
@@ -74,7 +75,7 @@
         </tbody>
 
         <tbody>
-          <tr class="statement-total"><td>Closing balance (<%= @period_end.strftime("%-d %b") %>)</td><td><%= money(@closing_balance) %></td></tr>
+          <tr class="statement-total"><td>Closing balance (<%= period.end_date.strftime("%-d %b") %>)</td><td><%= money(@closing_balance) %></td></tr>
           <tr><td class="pl-4 text-[var(--ink-soft)]">Cash</td><td><%= money(@closing_accounts["cash"]) %></td></tr>
           <tr><td class="pl-4 text-[var(--ink-soft)]">Bank</td><td><%= money(@closing_accounts["bank"]) %></td></tr>
         </tbody>
@@ -96,7 +97,7 @@
 
       <% if @budget_progress.planned? %>
         <section class="card card-pad">
-          <h2 class="card-title"><%= @year %> Budget</h2>
+          <h2 class="card-title"><%= period.year %> Budget</h2>
           <p class="mt-2 text-[15px] text-[var(--ink-soft)]"><span class="figure-lg !text-2xl text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> used</p>
           <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
           <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= money(@budget_progress.spent_total) %> / <%= money(@budget_progress.planned_total) %></p>
@@ -111,15 +112,15 @@
               Closed by <%= @finance_period.closed_by&.name || "—" %> on <%= @finance_period.closed_at&.strftime("%-d %b %Y") %>.
               Reopen it to make changes.
             </p>
-            <%= button_to admin_reopen_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
-                form: { data: { turbo_confirm: "Reopen #{@period_label}?" } }, class: "btn btn-secondary mt-4 w-full" do %>
+            <%= button_to admin_finance_period_closure_path(period.year, period.month, finance_unit_id: @finance_unit.id), method: :delete,
+                form: { data: { turbo_confirm: "Reopen #{period.label}?" } }, class: "btn btn-secondary mt-4 w-full" do %>
               <%= heroicon "lock-open", variant: :outline, options: { class: "h-5 w-5" } %> Reopen
             <% end %>
           <% else %>
             <h2 class="card-title">Close the month</h2>
             <p class="card-note mt-1">When the report is correct, close the month. Its transactions are then locked.</p>
-            <%= button_to admin_close_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
-                form: { data: { turbo_confirm: "Close #{@period_label}?" } }, class: "btn btn-primary mt-4 w-full",
+            <%= button_to admin_finance_period_closure_path(period.year, period.month, finance_unit_id: @finance_unit.id), method: :post,
+                form: { data: { turbo_confirm: "Close #{period.label}?" } }, class: "btn btn-primary mt-4 w-full",
                 disabled: @closing_issues.any? do %>
               <%= heroicon "lock-closed", variant: :outline, options: { class: "h-5 w-5" } %> Close month
             <% end %>

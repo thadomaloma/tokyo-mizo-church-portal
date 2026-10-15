@@ -9,10 +9,7 @@ gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem "tailwindcss-rails"
-gem "jbuilder"
 gem "devise"
-gem "pundit"
-gem "ransack"
 gem "prawn"
 gem "prawn-table"
 gem "caxlsx"
@@ -24,10 +21,9 @@ gem "dotenv-rails", groups: [ :development, :test ]
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
+# Use the database-backed adapters for Rails.cache and Active Job
 gem "solid_cache"
 gem "solid_queue"
-gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -35,8 +31,6 @@ gem "bootsnap", require: false
 gem "kamal", require: false
 
 gem "thruster", require: false
-
-gem "image_processing", "~> 1.2"
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -51,7 +45,6 @@ group :development do
   gem "pg", "~> 1.1", require: false
   gem "web-console"
   gem "letter_opener_web"
-  gem "annotate"
   gem "bullet"
 end
 
@@ -61,8 +54,3 @@ group :test do
 end
 
 gem "heroicon", "~> 1.0"
-
-gem "ruby_ui", "~> 1.4", group: :development, require: false
-
-gem "phlex-rails", "~> 2.4"
-gem "tailwind_merge", "~> 1.5"

@@ -22,7 +22,7 @@
     <%= link_to admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
       <%= heroicon "document-text", variant: :outline, options: { class: "h-4 w-4" } %> Monthly report
     <% end %>
-    <%= link_to finance_admin_reports_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
+    <%= link_to admin_finance_report_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
       <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "h-4 w-4" } %> PDF / Excel
     <% end %>
     <%= link_to admin_finance_categories_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>

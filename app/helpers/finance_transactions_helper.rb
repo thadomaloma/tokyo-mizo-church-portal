@@ -44,10 +44,6 @@ module FinanceTransactionsHelper
     transaction.transfer_to_location == location ? :income : :expense
   end
 
-  def signed_yen(transaction, location: nil)
-    sign = { income: "+", expense: "−", transfer: "" }.fetch(transaction_tone(transaction, location: location))
-    "#{sign}#{yen(transaction.amount)}"
-  end
 
   def transaction_icon(transaction)
     return "arrows-right-left" if transaction.transfer?

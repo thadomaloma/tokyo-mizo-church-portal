@@ -5,6 +5,9 @@
 
 <%= form_with url: admin_budget_path(@year), method: :patch, class: "card mx-auto max-w-3xl overflow-hidden" do |form| %>
   <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
+  <% if @budget.errors.any? %>
+    <div class="card-pad !pb-0"><%= render "admin/shared/form_errors", object: @budget %></div>
+  <% end %>
 
   <div class="hidden border-b border-[var(--line)] bg-[var(--app-bg)] px-6 py-2.5 text-sm font-semibold text-[var(--ink-muted)] sm:grid sm:grid-cols-[minmax(0,1fr)_9rem_11rem] sm:gap-4">
     <span>Category</span>
@@ -19,7 +22,8 @@
         <span class="money order-3 col-span-2 text-sm text-[var(--ink-muted)] sm:order-none sm:col-span-1 sm:text-right">
           <span class="sm:hidden"><%= @year - 1 %>: </span><%= money(@last_year_spent.fetch(category.id, 0)) %>
         </span>
-        <%= number_field_tag "amounts[#{category.id}]", (@amounts[category.id] if @amounts[category.id].to_i.positive?),
+        <% amount = @amounts[category.id] %>
+        <%= number_field_tag "amounts[#{category.id}]", (amount if amount.is_a?(Integer) && amount.positive?),
             id: "amounts_#{category.id}", min: 0, step: 1, inputmode: "numeric", placeholder: "0", class: "input input-money" %>
       </li>
     <% end %>

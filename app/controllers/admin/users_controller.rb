@@ -9,9 +9,8 @@ module Admin
 
     def create
       @user = User.new(user_params)
-      role_assigned = assign_requested_role(@user)
 
-      if role_assigned && @user.save
+      if @user.save
         redirect_to admin_settings_path, notice: "User created."
       else
         render :new, status: :unprocessable_entity
@@ -22,15 +21,14 @@ module Admin
 
     def update
       @user.assign_attributes(user_params)
-      role_assigned = assign_requested_role(@user)
 
-      if role_assigned && self_lockout_attempt?
+      if self_lockout_attempt?
         @user.errors.add(:base, "You can't deactivate your own account or remove your own admin access.")
         render :edit, status: :unprocessable_entity
         return
       end
 
-      if role_assigned && @user.save
+      if @user.save
         redirect_to admin_settings_path, notice: "User updated."
       else
         render :edit, status: :unprocessable_entity
@@ -55,25 +53,7 @@ module Admin
     end
 
     def user_params
-      params.require(:user).permit(
-        :name,
-        :email,
-        :phone,
-        :active,
-        :password,
-        :password_confirmation
-      )
-    end
-
-    def assign_requested_role(user)
-      role = params.dig(:user, :role).to_s
-      unless User.roles.key?(role)
-        user.errors.add(:role, "is not included in the approved roles")
-        return false
-      end
-
-      user.role = role
-      true
+      params.expect(user: %i[name email phone role active password password_confirmation])
     end
 
     def self_lockout_attempt?

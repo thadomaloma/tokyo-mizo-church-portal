@@ -11,43 +11,22 @@ class User < ApplicationRecord
          :rememberable,
          :validatable
 
-  # audited
+  # Church office of the person. Chairman and Secretary administer the app;
+  # everyone else gets finance access per unit (FinanceUnitMembership).
+  enum :role, { chairman: 0, secretary: 2, treasurer: 4, finance_secretary: 5 }, prefix: true, validate: true
 
-  enum :role, {
-    president: 0,
-    vice_president: 1,
-    secretary: 2,
-    assistant_secretary: 3,
-    treasurer: 4,
-    finance_secretary: 5,
-    journal_secretary: 6,
-    executive_member: 7,
-    pastor: 8,
-    adviser: 9
-  }, prefix: true
-
-  ROLE_OPTIONS = [
-    [ "President", "president" ],
-    [ "Vice President", "vice_president" ],
-    [ "Secretary", "secretary" ],
-    [ "Assistant Secretary", "assistant_secretary" ],
-    [ "Treasurer", "treasurer" ],
-    [ "Finance Secretary", "finance_secretary" ],
-    [ "Journal Secretary", "journal_secretary" ],
-    [ "Executive Member", "executive_member" ],
-    [ "Pastor", "pastor" ],
-    [ "Adviser", "adviser" ]
-  ].freeze
+  attribute :active, default: true
 
   scope :active, -> { where(active: true) }
 
   validates :name, presence: true
-  validates :role, presence: true
 
-  before_validation :set_default_values, on: :create
+  def self.role_options
+    roles.keys.map { |role| [ role.titleize, role ] }
+  end
 
   def super_admin?
-    role_president? || role_secretary?
+    role_chairman? || role_secretary?
   end
 
   def accessible_finance_units
@@ -76,35 +55,7 @@ class User < ApplicationRecord
     finance_unit_memberships.managers.exists?(finance_unit_id: finance_unit.id)
   end
 
-  def finance_role_for(finance_unit)
-    return "oversight" if super_admin?
-
-    finance_unit_memberships.find_by(finance_unit: finance_unit)&.role
-  end
-
   def finance_access?
     super_admin? || finance_unit_memberships.joins(:finance_unit).merge(FinanceUnit.active).exists?
-  end
-
-  def office_bearer?
-    role_president? ||
-      role_vice_president? ||
-      role_secretary? ||
-      role_assistant_secretary? ||
-      role_treasurer? ||
-      role_finance_secretary? ||
-      role_journal_secretary?
-  end
-
-  def executive_committee?
-    role_executive_member?
-  end
-
-
-  private
-
-  def set_default_values
-    self.role ||= :executive_member
-    self.active = true if active.nil?
   end
 end

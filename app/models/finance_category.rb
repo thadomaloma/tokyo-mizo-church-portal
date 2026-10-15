@@ -36,13 +36,14 @@ class FinanceCategory < ApplicationRecord
 
   audited
 
+  enum :category_type, { income: "income", expense: "expense" }, validate: true
+
   has_many :finance_transactions, dependent: :restrict_with_error
   has_many :finance_budget_lines, dependent: :restrict_with_error
   belongs_to :finance_unit
 
   validates :name, presence: true
   validates :name, uniqueness: { scope: %i[finance_unit_id category_type], case_sensitive: false }
-  validates :category_type, presence: true, inclusion: { in: %w[income expense] }
   validates :code, :description, presence: true, if: :system_defined?
   validates :code, uniqueness: { scope: %i[finance_unit_id category_type] }, allow_nil: true
   validate :category_type_cannot_change_when_used, on: :update
@@ -52,8 +53,6 @@ class FinanceCategory < ApplicationRecord
   before_validation :assign_default_finance_unit, on: :create
   before_destroy :prevent_system_category_removal
 
-  scope :income, -> { where(category_type: "income") }
-  scope :expense, -> { where(category_type: "expense") }
   scope :system_defined, -> { where(system_defined: true) }
   scope :for_transaction_type, ->(transaction_type) {
     normalized_type = transaction_type.to_s

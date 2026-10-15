@@ -1,7 +1,6 @@
 class FinanceTransaction < ApplicationRecord
   audited
 
-  TYPES = %w[income expense transfer].freeze
   LOCATIONS = %w[cash bank].freeze
   LOCATION_LABELS = { "cash" => "Cash", "bank" => "Bank" }.freeze
 
@@ -14,17 +13,13 @@ class FinanceTransaction < ApplicationRecord
   before_validation :clear_transfer_fields, if: :transfer?
   before_save :assign_voucher_number, if: :expense?
 
-  enum :payment_location, {
-    cash: "cash",
-    bank: "bank"
-  }, prefix: true
+  enum :transaction_type, { income: "income", expense: "expense", transfer: "transfer" }, validate: true
+  enum :payment_location, { cash: "cash", bank: "bank" }, prefix: true, validate: true
 
   normalizes :transfer_to_location, with: ->(value) { value.presence }
 
-  validates :transaction_type, presence: true, inclusion: { in: TYPES }
   validates :amount, numericality: { greater_than: 0 }
   validates :transaction_date, presence: true
-  validates :payment_location, presence: true
   validates :voucher_number,
             uniqueness: {
               scope: %i[finance_unit_id voucher_year],
@@ -36,49 +31,13 @@ class FinanceTransaction < ApplicationRecord
   validates :transfer_to_location, absence: true, unless: :transfer?
   validate :finance_category_type_matches_transaction_type
   validate :transfer_moves_between_accounts, if: :transfer?
+  validate :month_is_open
+
+  before_destroy :ensure_month_is_open
 
   scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
-  scope :income, -> { where(transaction_type: "income") }
-  scope :expense, -> { where(transaction_type: "expense") }
-  scope :transfers, -> { where(transaction_type: "transfer") }
   scope :income_or_expense, -> { where(transaction_type: %w[income expense]) }
-  scope :this_month, -> { where(transaction_date: Date.current.beginning_of_month..Date.current.end_of_month) }
-  scope :cash_records, -> { where(payment_location: "cash") }
-  scope :bank_records, -> { where(payment_location: "bank") }
-
-  scope :this_year, -> {
-    where(transaction_date: Date.current.beginning_of_year..Date.current.end_of_year)
-  }
-
-  scope :for_category, ->(category_name) {
-    joins(:finance_category).where(finance_categories: { name: category_name })
-  }
-
-  def self.for_category_keywords(*keywords)
-    patterns = keywords
-      .flatten
-      .compact
-      .map { |keyword| keyword.to_s.strip }
-      .reject(&:blank?)
-      .map { |keyword| "%#{sanitize_sql_like(keyword)}%" }
-
-    return none if patterns.blank?
-
-    joins(:finance_category)
-      .where(patterns.map { "finance_categories.name LIKE ?" }.join(" OR "), *patterns)
-  end
-
-  def income?
-    transaction_type == "income"
-  end
-
-  def expense?
-    transaction_type == "expense"
-  end
-
-  def transfer?
-    transaction_type == "transfer"
-  end
+  scope :this_month, -> { where(transaction_date: Date.current.all_month) }
 
   def location_label
     LOCATION_LABELS.fetch(payment_location, payment_location.to_s.humanize)
@@ -115,8 +74,8 @@ class FinanceTransaction < ApplicationRecord
   # query would let a deleted latest voucher's number be reissued, and a
   # single running counter column on finance_unit can't handle backdated/
   # out-of-order transaction_date values without colliding across years.
-  # The sequence row itself is locked (SELECT ... FOR UPDATE) to make the
-  # read-increment-write atomic under concurrent assignment.
+  # with_lock wraps the read-increment-write in a transaction; SQLite
+  # serialises writers, so two vouchers can never get the same number.
   def assign_voucher_number
     return if voucher_number.present?
     return unless finance_unit
@@ -137,6 +96,23 @@ class FinanceTransaction < ApplicationRecord
       FinanceVoucherSequence.create!(finance_unit: finance_unit, year: year, next_number: 0)
   rescue ActiveRecord::RecordNotUnique
     FinanceVoucherSequence.find_by!(finance_unit: finance_unit, year: year)
+  end
+
+  # A closed month is locked: nothing may be added to it, moved into or out
+  # of it, edited or deleted until it is reopened.
+  def month_is_open
+    locked = [ transaction_date, (attribute_in_database(:transaction_date) if persisted?) ]
+               .compact.uniq.find { |date| FinancePeriod.closed_on?(finance_unit, date) }
+    return unless locked
+
+    errors.add(:base, "#{locked.strftime("%B %Y")} is closed. Reopen it from the monthly report before making changes.")
+  end
+
+  def ensure_month_is_open
+    return unless FinancePeriod.closed_on?(finance_unit, attribute_in_database(:transaction_date))
+
+    errors.add(:base, "#{transaction_date.strftime("%B %Y")} is closed. Reopen it from the monthly report before deleting.")
+    throw :abort
   end
 
   def clear_transfer_fields

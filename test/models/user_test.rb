@@ -6,7 +6,7 @@ class UserTest < ActiveSupport::TestCase
       name: "Short Password",
       email: "short-password@example.com",
       password: "too-short",
-      role: :executive_member
+      role: :finance_secretary
     )
 
     assert_not user.valid?
@@ -32,5 +32,14 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.finance_access?
     assert_not user.can_view_finance_unit?(finance_units(:main))
     assert_not user.can_manage_finance_unit?(finance_units(:main))
+  end
+
+  test "only four church offices exist and the chairman and secretary administer" do
+    assert_equal [ [ "Chairman", "chairman" ], [ "Secretary", "secretary" ], [ "Treasurer", "treasurer" ], [ "Finance Secretary", "finance_secretary" ] ],
+                 User.role_options
+    assert User.new(role: :chairman).super_admin?
+    assert User.new(role: :secretary).super_admin?
+    assert_not User.new(role: :treasurer).super_admin?
+    assert_not User.new(role: "president", name: "Old", email: "old@example.com", password: "secure-password").valid?
   end
 end

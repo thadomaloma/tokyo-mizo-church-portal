@@ -2,10 +2,7 @@ module Admin
   class BaseController < ApplicationController
     layout "admin"
 
-    helper_method :available_finance_units,
-                  :current_finance_unit,
-                  :can_manage_current_finance_unit?,
-                  :finance_access?
+    helper_method :available_finance_units, :current_finance_unit, :finance_access?
 
     before_action :ensure_active_user
 
@@ -22,7 +19,7 @@ module Admin
       return if current_user.super_admin?
 
       redirect_to admin_root_path,
-                  alert: "Only the President or Secretary can open this page."
+                  alert: "Only the Chairman or Secretary can open this page."
     end
 
     def available_finance_units
@@ -47,6 +44,11 @@ module Admin
         requested_id = nil if requested_id == "all"
         requested_id ? available_finance_units.find(requested_id) : preferred_accessible_finance_unit
       end
+    end
+
+    # before_action for pages that work on one finance unit.
+    def set_finance_unit
+      @finance_unit = current_finance_unit
     end
 
     def preferred_accessible_finance_unit

@@ -1,0 +1,138 @@
+<%
+  multi_unit = available_finance_units.many?
+  period_params = { year: @period_year, start_month: @start_month, end_month: @end_month, finance_unit_id: @finance_unit_selector }
+  actions = capture do
+    concat(link_to(admin_finance_report_path(period_params.merge(ledger_type: @ledger_type, format: :pdf)), data: { turbo: false }, class: "btn btn-primary") do
+      heroicon("document-arrow-down", variant: :outline, options: { class: "h-5 w-5" }) + "Export PDF"
+    end)
+    concat(link_to(admin_finance_report_path(period_params.merge(ledger_type: @ledger_type, format: :xlsx)), data: { turbo: false }, class: "btn btn-secondary") do
+      heroicon("table-cells", variant: :outline, options: { class: "h-5 w-5" }) + "Export Excel"
+    end)
+  end
+%>
+
+<%= render "admin/shared/page_header",
+    eyebrow: @finance_unit_label,
+    title: "Report & export",
+    subtitle: "#{@period_caption}. Pick any range of months and export it as PDF or Excel.",
+    actions: actions %>
+
+<div class="space-y-5">
+  <section class="card card-pad">
+    <%= form_with url: admin_finance_report_path, method: :get, data: { turbo: false } do |form| %>
+      <%= form.hidden_field :ledger_type, value: @ledger_type %>
+
+      <div class="grid grid-cols-2 gap-3 sm:items-end <%= multi_unit ? "lg:grid-cols-[minmax(0,1.4fr)_7rem_9rem_9rem_auto]" : "sm:grid-cols-[7rem_9rem_9rem_auto]" %>">
+        <% if multi_unit %>
+          <div class="col-span-2 lg:col-span-1">
+            <label class="field-label" for="finance_report_unit">Finance unit</label>
+            <% unit_options = available_finance_units.map { |unit| [ unit.name, unit.id ] } %>
+            <% unit_options.unshift([ "All Units (Consolidated)", "all" ]) if current_user.super_admin? %>
+            <%= form.select :finance_unit_id, options_for_select(unit_options, @finance_unit_selector), {}, id: "finance_report_unit", class: "input" %>
+          </div>
+        <% else %>
+          <%= form.hidden_field :finance_unit_id, value: @finance_unit_selector %>
+        <% end %>
+        <div class="col-span-2 sm:col-span-1">
+          <label class="field-label" for="finance_report_year">Year</label>
+          <%= form.select :year, options_for_select(@year_options, @period_year), {}, id: "finance_report_year", class: "input" %>
+        </div>
+        <div>
+          <label class="field-label" for="finance_report_start_month">From</label>
+          <%= form.select :start_month, options_for_select(@month_options, @start_month), {}, id: "finance_report_start_month", class: "input" %>
+        </div>
+        <div>
+          <label class="field-label" for="finance_report_end_month">To</label>
+          <%= form.select :end_month, options_for_select(@month_options, @end_month), {}, id: "finance_report_end_month", class: "input" %>
+        </div>
+        <button type="submit" class="btn btn-primary col-span-2 sm:col-span-1">Show</button>
+      </div>
+    <% end %>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-4">
+      <%= link_to "Whole year (Jan–Dec)", admin_finance_report_path(period_params.merge(start_month: 1, end_month: 12, ledger_type: @ledger_type)), data: { turbo: false }, class: "link text-[15px]" %>
+
+      <div>
+        <p class="sr-only">Ledger View</p>
+        <nav class="segmented" aria-label="Ledger type">
+          <% [ [ "all", "All" ], [ "income", "Income" ], [ "expense", "Expense" ] ].each do |type, label| %>
+            <%= link_to label, admin_finance_report_path(period_params.merge(ledger_type: type)),
+                class: "!min-h-10 px-4", aria: { current: ("page" if @ledger_type == type) } %>
+          <% end %>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="card card-pad">
+      <p class="stat-label">Income</p>
+      <p class="stat-value money-in"><%= money(@income, sign: :plus) %></p>
+      <% if @ledger_type == "all" %>
+        <div class="mt-2"><%= percent_change_badge(FinanceSummary.change_percent(@income, @previous_income), good_when: :up) %></div>
+      <% end %>
+    </div>
+    <div class="card card-pad">
+      <p class="stat-label">Expense</p>
+      <p class="stat-value money-out"><%= money(@expense, sign: :minus) %></p>
+      <% if @ledger_type == "all" %>
+        <div class="mt-2"><%= percent_change_badge(FinanceSummary.change_percent(@expense, @previous_expense), good_when: :down) %></div>
+      <% end %>
+    </div>
+    <div class="card card-pad">
+      <p class="stat-label">Balance</p>
+      <p class="stat-value <%= @balance.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(@balance) %></p>
+    </div>
+  </div>
+  <% if @ledger_type == "all" %>
+    <p class="-mt-2 text-sm text-[var(--ink-muted)]">Percentages compare with <%= @previous_period_label %>.</p>
+  <% end %>
+
+  <% if @monthly_cash_flow.size > 1 && @ledger_type == "all" %>
+    <%= render "admin/shared/chart",
+        title: "Cash flow",
+        subtitle: "Income and expenses by month, #{@period_label}.",
+        type: "bar",
+        labels: @monthly_cash_flow.map { |month| month[:label] },
+        series: [
+          { label: "Income", color: chart_color(:income), values: @monthly_cash_flow.map { |month| month[:income] } },
+          { label: "Expenses", color: chart_color(:expense), values: @monthly_cash_flow.map { |month| month[:expense] } }
+        ],
+        table_label: "Month",
+        html: { data: { report_cash_flow_chart: true } } %>
+  <% end %>
+
+  <% if @expense_by_category.any? %>
+    <% top_amount = @expense_by_category.first.last %>
+    <section class="card card-pad" data-spending-by-category>
+      <h2 class="card-title">Expenses by category</h2>
+      <ul class="mt-4 space-y-3.5">
+        <% @expense_by_category.each do |name, amount| %>
+          <li>
+            <div class="flex justify-between gap-3 text-[15px]">
+              <span class="truncate text-[var(--ink-soft)]"><%= name %></span>
+              <span class="money shrink-0 font-semibold text-[var(--ink)]"><%= money(amount) %>
+                <span class="font-normal text-[var(--ink-muted)]">· <%= @expense.zero? ? 0 : (amount * 100.0 / @expense).round %>%</span>
+              </span>
+            </div>
+            <div class="bar mt-1.5"><span style="background: <%= chart_color(:expense) %>; width: <%= (amount * 100.0 / top_amount).round %>%"></span></div>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <section class="card overflow-hidden">
+    <div class="card-head">
+      <h2 class="card-title"><%= @period_label %> <%= @ledger_type_label %></h2>
+      <span class="text-sm text-[var(--ink-muted)]"><%= pluralize(@pagy.count, "record") %></span>
+    </div>
+
+    <% if @ledger_transactions.any? %>
+      <%= render "admin/shared/ledger", transactions: @ledger_transactions, show_unit: multi_unit %>
+      <%= render "admin/shared/pagination", pagy: @pagy %>
+    <% else %>
+      <p class="px-6 py-10 text-center text-[15px] text-[var(--ink-muted)]">No transactions for <%= @period_label %>.</p>
+    <% end %>
+  </section>
+</div>

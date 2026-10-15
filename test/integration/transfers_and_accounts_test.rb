@@ -10,7 +10,7 @@ class TransfersAndAccountsTest < ActionDispatch::IntegrationTest
   end
 
   test "a transfer moves money between accounts without changing totals" do
-    assert_difference -> { @unit.finance_transactions.transfers.count }, 1 do
+    assert_difference -> { @unit.finance_transactions.transfer.count }, 1 do
       post admin_finance_transactions_path, params: {
         finance_transaction: {
           finance_unit_id: @unit.id,
@@ -24,7 +24,7 @@ class TransfersAndAccountsTest < ActionDispatch::IntegrationTest
       }
     end
 
-    transfer = @unit.finance_transactions.transfers.last
+    transfer = @unit.finance_transactions.transfer.last
     assert_nil transfer.finance_category
     assert_nil transfer.voucher_number
 
@@ -90,7 +90,7 @@ class TransfersAndAccountsTest < ActionDispatch::IntegrationTest
   test "finance reports leave transfers out of the ledger and totals" do
     record("transfer", 30_000, "cash", to: "bank", description: "Bank deposit")
 
-    get finance_admin_reports_path(finance_unit_id: @unit.id)
+    get admin_finance_report_path(finance_unit_id: @unit.id)
 
     assert_response :success
     assert_no_match "Bank deposit", response.body

@@ -22,7 +22,7 @@ class ExpenseReceiptPrintTest < ApplicationSystemTestCase
 
     assert_current_path authenticated_root_path
     assert_text "Chibai, #{users(:one).name}. Lo kir leh rawh."
-    visit receipt_admin_finance_transaction_path(transaction)
+    visit admin_finance_transaction_voucher_path(transaction)
     assert_text "Tokyo Mizo Church"
     assert_text transaction.expense_voucher_number
 

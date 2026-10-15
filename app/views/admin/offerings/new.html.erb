@@ -1,53 +1,59 @@
 <%= render "admin/shared/page_header",
-    eyebrow: @finance_unit.name,
+    eyebrow: current_finance_unit.name,
     title: "Sunday offering",
     subtitle: "After counting, enter the amount for each category. Leave a box empty to skip it." %>
 
-<%= form_with url: admin_offerings_path, method: :post, class: "card mx-auto max-w-2xl", data: { controller: "offering-total" } do |form| %>
-  <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
+<%= form_with model: @offering, url: admin_offerings_path(finance_unit_id: current_finance_unit.id),
+    class: "card mx-auto max-w-2xl", data: { controller: "offering-total" } do |form| %>
+  <div class="card-pad">
+    <%= render "admin/shared/form_errors", object: @offering %>
 
-  <div class="card-pad grid grid-cols-1 gap-5 sm:grid-cols-2">
-    <div>
-      <%= label_tag :transaction_date, "Date", class: "field-label" %>
-      <%= date_field_tag :transaction_date, @date, class: "input", required: true %>
-    </div>
-    <div>
-      <%= label_tag :payment_location, "Deposit to", class: "field-label" %>
-      <%= select_tag :payment_location, options_for_select([ [ "Cash", "cash" ], [ "Bank", "bank" ] ], @payment_location), class: "input" %>
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div>
+        <%= form.label :transaction_date, "Date", class: "field-label" %>
+        <%= form.date_field :transaction_date, class: "input", required: true %>
+      </div>
+      <div>
+        <%= form.label :payment_location, "Deposit to", class: "field-label" %>
+        <%= form.select :payment_location, [ [ "Cash", "cash" ], [ "Bank", "bank" ] ], {}, class: "input" %>
+      </div>
     </div>
   </div>
 
   <ul class="row-list border-y border-[var(--line)]">
-    <% @categories.each do |category| %>
-      <li class="grid grid-cols-[minmax(0,1fr)_9.5rem] items-center gap-4 px-5 py-3 sm:px-6">
-        <label for="amounts_<%= category.id %>" class="text-[15px] font-medium text-[var(--ink)]"><%= category.name %></label>
-        <%= number_field_tag "amounts[#{category.id}]", @amounts[category.id],
-            id: "amounts_#{category.id}", min: 0, step: 1, inputmode: "numeric", placeholder: "0",
-            data: { offering_total_target: "amount", action: "input->offering-total#update" },
-            class: "input input-money" %>
-      </li>
+    <%= form.fields_for :amounts do |amounts| %>
+      <% @offering.categories.each do |category| %>
+        <% amount = @offering.amounts[category.id] %>
+        <li class="grid grid-cols-[minmax(0,1fr)_9.5rem] items-center gap-4 px-5 py-3 sm:px-6">
+          <%= amounts.label category.id, category.name, class: "text-[15px] font-medium text-[var(--ink)]" %>
+          <%= amounts.number_field category.id, value: (amount if amount.is_a?(Integer)),
+              min: 0, step: 1, inputmode: "numeric", placeholder: "0",
+              data: { offering_total_target: "amount", action: "input->offering-total#update" },
+              class: "input input-money" %>
+        </li>
+      <% end %>
     <% end %>
   </ul>
 
   <div class="flex items-center justify-between bg-[var(--app-bg)] px-5 py-4 sm:px-6">
     <span class="text-[15px] font-semibold text-[var(--ink)]">Total</span>
-    <span class="figure-lg money money-in" data-offering-total-target="total">¥<%= @amounts.values.select(&:positive?).sum.to_fs(:delimited) %></span>
+    <span class="figure-lg money money-in" data-offering-total-target="total"><%= yen(@offering.total) %></span>
   </div>
 
   <div class="card-pad grid grid-cols-1 gap-5 border-t border-[var(--line)] sm:grid-cols-2">
     <div>
-      <%= label_tag :counted_by, "Counted by", class: "field-label" %>
-      <%= text_field_tag :counted_by, @counted_by, class: "input", placeholder: "e.g. two names" %>
+      <%= form.label :counted_by, "Counted by", class: "field-label" %>
+      <%= form.text_field :counted_by, class: "input", placeholder: "e.g. two names" %>
       <p class="field-hint">Two people counting together is safest.</p>
     </div>
     <div>
-      <%= label_tag :note, "Note", class: "field-label" %>
-      <%= text_field_tag :note, @note, class: "input", placeholder: "Optional" %>
+      <%= form.label :note, "Note", class: "field-label" %>
+      <%= form.text_field :note, class: "input", placeholder: "Optional" %>
     </div>
   </div>
 
   <div class="flex flex-col gap-3 border-t border-[var(--line)] p-5 sm:flex-row sm:px-6">
-    <%= submit_tag "Save offering", class: "btn btn-primary" %>
-    <%= link_to "Cancel", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary" %>
+    <%= form.submit "Save offering", class: "btn btn-primary" %>
+    <%= link_to "Cancel", admin_finance_transactions_path(finance_unit_id: current_finance_unit.id), class: "btn btn-secondary" %>
   </div>
 <% end %>

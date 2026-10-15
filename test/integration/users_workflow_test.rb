@@ -41,7 +41,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_includes response.body, "Role is not included in the approved roles"
+    assert_includes page_text, "Role is not included in the list"
   end
 
   test "a member cannot delete their own signed in account" do
@@ -85,7 +85,7 @@ class UsersWorkflowTest < ActionDispatch::IntegrationTest
       user: {
         name: @current_user.name,
         email: @current_user.email,
-        role: "executive_member",
+        role: "treasurer",
         active: true
       }
     }

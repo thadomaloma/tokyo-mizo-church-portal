@@ -158,6 +158,23 @@ class FinanceTransactionTest < ActiveSupport::TestCase
     assert_not_equal second.voucher_number, first.voucher_number
   end
 
+
+  test "a closed month locks its transactions" do
+    category = finance_categories(:two)
+    record = FinanceTransaction.create!(transaction_type: "expense", finance_category: category, amount: 1_000,
+                                        transaction_date: Date.new(2026, 4, 10), payment_location: "cash", recorded_by: users(:one))
+    FinancePeriod.create!(finance_unit: finance_units(:main), year: 2026, month: 4, status: :closed)
+
+    assert_not record.update(amount: 2_000)
+    assert_not record.update(transaction_date: Date.new(2026, 5, 1)), "moving out of a closed month is blocked"
+    assert_not record.destroy
+    assert_match "April 2026 is closed", record.errors.full_messages.to_sentence
+
+    late = FinanceTransaction.new(transaction_type: "expense", finance_category: category, amount: 500,
+                                  transaction_date: Date.new(2026, 4, 30), payment_location: "cash", recorded_by: users(:one))
+    assert_not late.valid?
+  end
+
   private
 
   def create_expense(category, amount, transaction_date: Date.current)

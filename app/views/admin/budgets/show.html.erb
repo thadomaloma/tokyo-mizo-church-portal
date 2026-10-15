@@ -5,7 +5,7 @@
   actions = capture do
     concat render("admin/shared/unit_switcher", url: admin_budget_path(@year))
     if can_manage_finance?
-      concat link_to((@progress.planned? ? "Edit budget" : "Create budget"), admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id), class: "btn btn-primary")
+      concat link_to((@progress.planned? ? "Edit budget" : "Create budget"), edit_admin_budget_path(@year, finance_unit_id: @finance_unit.id), class: "btn btn-primary")
     end
   end
 %>
@@ -74,7 +74,7 @@
     <section class="card">
       <%= render "admin/shared/empty_state", icon: "chart-pie", title: "No budget for #{@year} yet",
           message: "Plan how much to spend in each category this year, then track spending and what is left here.",
-          path: (admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id) if can_manage_finance?),
+          path: (edit_admin_budget_path(@year, finance_unit_id: @finance_unit.id) if can_manage_finance?),
           action: "Create budget" %>
     </section>
   <% end %>

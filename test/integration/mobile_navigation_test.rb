@@ -2,7 +2,7 @@ require "test_helper"
 
 class MobileNavigationTest < ActionDispatch::IntegrationTest
   test "a finance user gets Sumvon-style navigation with an Add button" do
-    sign_in(users(:one)) # president
+    sign_in(users(:one)) # chairman
 
     get admin_root_path
 
@@ -17,7 +17,7 @@ class MobileNavigationTest < ActionDispatch::IntegrationTest
   end
 
   test "a user without finance access only sees Home and Settings" do
-    sign_in(users(:three)) # executive_member, no unit assignment
+    sign_in(users(:three)) # finance secretary title, no unit assignment
 
     get admin_root_path
 
@@ -42,7 +42,7 @@ class MobileNavigationTest < ActionDispatch::IntegrationTest
   test "every navigation destination loads for a finance user" do
     sign_in(users(:one))
 
-    [ admin_finance_transactions_path, admin_budget_path, admin_reports_path, admin_accounts_path, admin_settings_path ].each do |path|
+    [ admin_finance_transactions_path, admin_budgets_path, admin_finance_period_path(Date.current.year, Date.current.month), admin_finance_report_path, admin_accounts_path, admin_settings_path ].each do |path|
       get path
       follow_redirect! if response.redirect?
       assert_response :success, "expected #{path} to load"

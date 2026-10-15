@@ -110,17 +110,17 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     get admin_finance_transactions_path(finance_unit_id: @naupang.id)
 
     assert_response :success
-    assert_select "a[href='#{receipt_admin_finance_transaction_path(expense)}']", minimum: 1
+    assert_select "a[href='#{admin_finance_transaction_voucher_path(expense)}']", minimum: 1
     assert_select "a[href='#{edit_admin_finance_transaction_path(expense)}']", count: 0
     assert_select "form[action='#{admin_finance_transaction_path(expense)}']", count: 0
 
-    get receipt_admin_finance_transaction_path(expense)
+    get admin_finance_transaction_voucher_path(expense)
 
     assert_response :success
     assert_includes response.body, expense.expense_voucher_number
   end
 
-  test "president can view a consolidated report across finance units" do
+  test "chairman can view a consolidated report across finance units" do
     FinanceTransaction.create!(
       transaction_type: "income",
       finance_category: @naupang_income,
@@ -143,7 +143,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     )
     sign_in(users(:one))
 
-    get finance_admin_reports_path(
+    get admin_finance_report_path(
       finance_unit_id: "all",
       year: 2026,
       start_month: 8,
@@ -179,7 +179,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     )
     sign_in(@department_user)
 
-    get finance_admin_reports_path(
+    get admin_finance_report_path(
       finance_unit_id: @naupang.id,
       year: 2026,
       start_month: 8,
@@ -199,7 +199,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "president clears an old assignment before moving a member to another role" do
+  test "chairman clears an old assignment before moving a member to another role" do
     sign_in(users(:one))
 
     post admin_finance_unit_finance_unit_memberships_path(@thalai), params: {
@@ -234,7 +234,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal "treasurer", @thalai.finance_unit_memberships.find_by!(user: @department_user).role
   end
 
-  test "president can open finance unit administration" do
+  test "chairman can open finance unit administration" do
     sign_in(users(:one))
 
     get admin_finance_units_path
@@ -279,7 +279,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     get admin_finance_transactions_path
     assert_redirected_to admin_root_path
 
-    get finance_admin_reports_path(format: :xlsx)
+    get admin_finance_report_path(format: :xlsx)
     assert_redirected_to admin_root_path
   end
 
@@ -287,7 +287,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal [ FinanceUnit::MAIN_SLUG ], FinanceUnit::DEFAULT_UNITS.map { |unit| unit[:slug] }
   end
 
-  test "president adds a finance unit from settings with its categories" do
+  test "chairman adds a finance unit from settings with its categories" do
     sign_in(users(:one))
 
     assert_difference -> { FinanceUnit.count }, 1 do
@@ -301,7 +301,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     assert_not unit.finance_categories.exists?(code: "tithe")
   end
 
-  test "president renames or deactivates a unit but cannot change its type" do
+  test "chairman renames or deactivates a unit but cannot change its type" do
     sign_in(users(:one))
 
     patch admin_finance_unit_path(@thalai), params: { finance_unit: { name: "Thalai Pawl", active: "0", unit_type: "fund" } }

@@ -22,7 +22,7 @@ admin = User.find_or_initialize_by(email: admin_email)
 if admin.new_record?
   admin.name = ENV.fetch("SEED_ADMIN_NAME", "Super Admin")
   admin.phone = ENV.fetch("SEED_ADMIN_PHONE", "")
-  admin.role = :president
+  admin.role = :chairman
   admin.active = true
   admin.password = admin_password
   admin.password_confirmation = admin_password

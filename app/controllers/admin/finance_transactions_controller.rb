@@ -1,13 +1,13 @@
 module Admin
   class FinanceTransactionsController < BaseController
     before_action :require_finance_access!
-    before_action :set_finance_transaction, only: %i[edit update destroy receipt]
+    before_action :set_finance_transaction, only: %i[edit update destroy]
     before_action :set_finance_unit, only: %i[index new create]
-    before_action :require_finance_unit_manager!, except: %i[index receipt]
+    before_action :require_finance_unit_manager!, except: :index
 
     def index
       @query = params[:q].presence
-      @type_filter = params[:transaction_type].presence_in(FinanceTransaction::TYPES)
+      @type_filter = params[:transaction_type].presence_in(FinanceTransaction.transaction_types.keys)
       @category_filter = params[:category_id].presence
       @payment_location_filter = params[:payment_location].presence_in(FinanceTransaction::LOCATIONS)
       @filter_categories = @finance_unit.finance_categories.system_defined.order(:category_type, :position, :name)
@@ -17,15 +17,9 @@ module Admin
       @closed_periods = @finance_unit.finance_periods.closed.pluck(:year, :month).to_set
     end
 
-    def receipt
-      return if @finance_transaction.expense?
-
-      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-                  alert: "Vouchers are only available for expenses."
-    end
 
     def new
-      transaction_type = params[:transaction_type].presence_in(FinanceTransaction::TYPES) || "expense"
+      transaction_type = params[:transaction_type].presence_in(FinanceTransaction.transaction_types.keys) || "expense"
       @finance_transaction = FinanceTransaction.new(
         transaction_type: transaction_type,
         transaction_date: Date.current,
@@ -38,15 +32,10 @@ module Admin
     end
 
     def create
-      @finance_transaction = FinanceTransaction.new(finance_transaction_attributes)
+      @finance_transaction = @finance_unit.finance_transactions.new(finance_transaction_params)
       @finance_transaction.recorded_by = current_user
-      @finance_transaction.finance_unit = @finance_unit
 
-      if closed_period_for(@finance_transaction.transaction_date)
-        load_categories
-        flash.now[:alert] = closed_period_message(@finance_transaction.transaction_date)
-        render :new, status: :unprocessable_entity
-      elsif @finance_transaction.save
+      if @finance_transaction.save
         redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction saved."
       else
         load_categories
@@ -59,17 +48,7 @@ module Admin
     end
 
     def update
-      new_attrs = finance_transaction_attributes
-      submitted_date = FinanceTransaction.type_for_attribute("transaction_date").cast(new_attrs[:transaction_date])
-      new_date = submitted_date || @finance_transaction.transaction_date
-      blocking_date = closed_period_for(@finance_transaction.transaction_date) ? @finance_transaction.transaction_date : nil
-      blocking_date ||= new_date if closed_period_for(new_date)
-
-      if blocking_date
-        load_categories
-        flash.now[:alert] = closed_period_message(blocking_date)
-        render :edit, status: :unprocessable_entity
-      elsif @finance_transaction.update(new_attrs)
+      if @finance_transaction.update(finance_transaction_params)
         redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction updated."
       else
         load_categories
@@ -78,14 +57,12 @@ module Admin
     end
 
     def destroy
-      if closed_period_for(@finance_transaction.transaction_date)
+      if @finance_transaction.destroy
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction deleted."
+      else
         redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-                    alert: closed_period_message(@finance_transaction.transaction_date)
-        return
+                    alert: @finance_transaction.errors.full_messages.to_sentence
       end
-
-      @finance_transaction.destroy
-      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction deleted."
     end
 
     private
@@ -98,6 +75,7 @@ module Admin
       @current_finance_unit = @finance_unit
     end
 
+    # The transaction form also sends the unit inside finance_transaction[...].
     def set_finance_unit
       requested_id = params[:finance_unit_id].presence ||
                      params.dig(:finance_transaction, :finance_unit_id).presence
@@ -112,36 +90,16 @@ module Admin
           .order(:position, :name)
     end
 
+    # Only this unit's fixed (system) categories can be chosen from the form;
+    # anything else becomes nil and fails the model's category validation.
     def finance_transaction_params
-      params.require(:finance_transaction).permit(
-        :transaction_type,
-        :finance_category_id,
-        :amount,
-        :transaction_date,
-        :payment_location,
-        :transfer_to_location,
-        :description
-      )
-    end
+      params.expect(finance_transaction: %i[transaction_type finance_category_id amount transaction_date
+                                            payment_location transfer_to_location description]).tap do |attributes|
+        next unless attributes.key?(:finance_category_id)
 
-    def finance_transaction_attributes
-      attrs = finance_transaction_params.to_h.symbolize_keys
-      if attrs.key?(:finance_category_id)
-        category_id = attrs.delete(:finance_category_id)
-        attrs[:finance_category] = @finance_unit.finance_categories.system_defined.find_by(id: category_id)
+        attributes[:finance_category_id] = @finance_unit.finance_categories.system_defined
+                                                        .find_by(id: attributes[:finance_category_id])&.id
       end
-
-      attrs
-    end
-
-    def closed_period_for(date)
-      return nil unless date
-
-      FinancePeriod.find_by(finance_unit: @finance_unit, year: date.year, month: date.month, status: :closed)
-    end
-
-    def closed_period_message(date)
-      "#{date.strftime("%B %Y")} is closed. Reopen it from the monthly report before making changes."
     end
 
     def finance_ledger_transactions
@@ -174,7 +132,6 @@ module Admin
         params.dig(:finance_transaction, :transaction_type).presence ||
         params[:transaction_type].presence
     end
-
 
     def finance_transactions
       @finance_unit.finance_transactions

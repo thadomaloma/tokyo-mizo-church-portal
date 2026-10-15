@@ -9,10 +9,9 @@
 #     DATABASE_PATH=storage/production.sqlite3 SECRET_KEY_BASE_DUMMY=1 \
 #     bin/rails db:import_from_postgres
 #
-# Only the finance tables (plus users, audits and receipt attachment records)
-# are copied; the removed secretary modules are left behind in PostgreSQL.
-# Receipt *files* live on the old disk volume, not in the database — copy that
-# folder into storage/ separately (same layout, e.g. storage/ab/cd/<key>).
+# Only the finance tables (plus users and audits) are copied; the removed
+# secretary modules and their uploaded files are left behind. Expense
+# vouchers are generated pages, so there are no files to move.
 namespace :db do
   desc "Copy finance data from SOURCE_DATABASE_URL (PostgreSQL) into the SQLite database"
   task import_from_postgres: :environment do
@@ -30,9 +29,6 @@ namespace :db do
       finance_voucher_sequences
       finance_periods
       finance_transactions
-      active_storage_blobs
-      active_storage_attachments
-      active_storage_variant_records
       audits
     ]
 
@@ -75,6 +71,8 @@ namespace :db do
 
         source_model.in_batches(of: 500) do |batch|
           rows = batch.pluck(*columns).map { |values| columns.zip(values).to_h }
+          # Retired church titles become finance secretary (see ReduceUserRoles).
+          rows.each { |row| row["role"] = 5 unless [ 0, 2, 4, 5 ].include?(row["role"]) } if table == "users"
           target_model.insert_all!(rows, record_timestamps: false)
           copied += rows.size
         end
@@ -86,7 +84,7 @@ namespace :db do
       end
     end
 
-    puts "Done. Now copy the receipt files from the old volume into #{ActiveStorage::Blob.service.root}."
+    puts "Done."
   ensure
     source_base&.remove_connection
   end

@@ -1,6 +1,16 @@
 require_relative "boot"
 
-require "rails/all"
+require "rails"
+# Only the frameworks this app uses: no Active Storage (vouchers are
+# generated pages, nothing is uploaded), Action Cable, Action Text or
+# Action Mailbox. Turbo works without Action Cable.
+require "active_model/railtie"
+require "active_job/railtie"
+require "active_record/railtie"
+require "action_controller/railtie"
+require "action_mailer/railtie"
+require "action_view/railtie"
+require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.

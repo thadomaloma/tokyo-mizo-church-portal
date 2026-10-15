@@ -15,4 +15,32 @@ class FinanceBudget < ApplicationRecord
   def planned_total
     lines.sum(&:amount)
   end
+
+  # Replaces the plan with `amounts` ({ category_id => yen }). Categories
+  # left blank drop out of the budget. Returns false (with errors) when an
+  # amount is not a whole number or a line fails validation.
+  def update_amounts(amounts, categories)
+    if YenAmounts.invalid?(amounts)
+      errors.add(:base, "Amounts must be whole numbers (yen).")
+      return false
+    end
+
+    transaction do
+      save!
+      categories.each do |category|
+        line = lines.find_or_initialize_by(finance_category: category)
+        amount = amounts[category.id].to_i
+
+        if amount.positive?
+          line.update!(amount: amount)
+        elsif line.persisted?
+          line.destroy!
+        end
+      end
+    end
+    true
+  rescue ActiveRecord::RecordInvalid => error
+    errors.add(:base, error.record.errors.full_messages.to_sentence)
+    false
+  end
 end
