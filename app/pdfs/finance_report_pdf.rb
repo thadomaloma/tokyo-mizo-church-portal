@@ -1,14 +1,20 @@
+# Finance report PDF in the same editorial style as the app: warm neutrals,
+# hairline rules, Newsreader for headline figures and Inter for everything
+# else. Colour only marks money in (green) and out (red); amounts also carry
+# +/− signs so the report still reads correctly when printed in black & white.
 class FinanceReportPdf
-  NAVY = "0F2942".freeze
-  BLUE = "0369A1".freeze
-  SLATE = "334155".freeze
-  MUTED = "64748B".freeze
-  BORDER = "CBD5E1".freeze
-  PANEL = "F8FAFC".freeze
-  INCOME = "047857".freeze
-  INCOME_LIGHT = "ECFDF5".freeze
-  EXPENSE = "BE123C".freeze
-  EXPENSE_LIGHT = "FFF1F2".freeze
+  INK = "23221E".freeze
+  SOFT = "46443D".freeze
+  MUTED = "7B766B".freeze
+  LINE = "E6E2D8".freeze
+  SUNKEN = "F7F5F0".freeze
+  BRAND = "16305A".freeze
+  MONEY_IN = "2F7552".freeze
+  MONEY_OUT = "A8432F".freeze
+
+  FONT_DIR = Rails.root.join("vendor/fonts")
+  LOGO_PATH = Rails.root.join("vendor/images/pdf-logo.png")
+  CATEGORY_LIMIT = 8
 
   def initialize(
     transactions:,
@@ -20,13 +26,15 @@ class FinanceReportPdf
     start_month: 1,
     end_month: Date.current.month,
     ledger_type_label: "All Transactions",
-    finance_unit_label: "Main Church Finance"
+    finance_unit_label: "Main Church Finance",
+    account_balances: nil
   )
     @transactions = transactions
     @income = income
     @expense = expense
     @balance = balance
-    @period_label = period_label
+    @period_label = period_label.to_s.sub(" - ", " – ")
+    @period_end = Date.new(period_year, end_month, -1)
     @ledger_type_label = ledger_type_label
     @finance_unit_label = finance_unit_label
     @report_data = FinanceReportData.new(
@@ -36,371 +44,347 @@ class FinanceReportPdf
       balance: balance,
       period_year: period_year,
       start_month: start_month,
-      end_month: end_month
+      end_month: end_month,
+      account_balances: account_balances
     )
   end
 
   def render
-    pdf = Prawn::Document.new(page_size: "A4", margin: 36)
+    pdf = Prawn::Document.new(page_size: "A4", margin: [ 54, 48, 64, 48 ], info: document_info)
     register_fonts(pdf)
 
-    build_header(pdf)
-    build_summary_and_chart(pdf)
-    build_transactions(pdf)
-
-    pdf.number_pages(
-      "<page> / <total>",
-      {
-        at: [ pdf.bounds.right - 50, 0 ],
-        align: :right,
-        size: 8
-      }
-    )
+    draw_cover(pdf)
+    draw_summary(pdf)
+    draw_balances(pdf)
+    draw_categories(pdf)
+    draw_monthly(pdf)
+    draw_transactions(pdf)
+    draw_page_furniture(pdf)
 
     pdf.render
   end
 
   private
 
-  attr_reader :transactions,
-              :income,
-              :expense,
-              :balance,
-              :period_label,
-              :report_data,
-              :ledger_type_label,
-              :finance_unit_label
+  attr_reader :transactions, :income, :expense, :balance, :period_label, :period_end,
+              :report_data, :ledger_type_label, :finance_unit_label
+
+  def document_info
+    { Title: "Tokyo Mizo Church finance report — #{period_label}", Author: "Tokyo Mizo Church", Creator: "Tokyo Mizo Church Finance" }
+  end
+
+  # --- Fonts -------------------------------------------------------------
 
   def register_fonts(pdf)
-    font_path = unicode_font_path
-    return unless font_path
-
     pdf.font_families.update(
-      "FinanceReportFont" => {
-        normal: font_path,
-        bold: existing_font_path(bold_font_path(font_path)) || font_path,
-        italic: font_path,
-        bold_italic: existing_font_path(bold_font_path(font_path)) || font_path
+      "Inter" => {
+        normal: FONT_DIR.join("Inter-Regular.ttf").to_s,
+        medium: FONT_DIR.join("Inter-Medium.ttf").to_s,
+        bold: FONT_DIR.join("Inter-SemiBold.ttf").to_s
+      },
+      "Newsreader" => {
+        normal: FONT_DIR.join("Newsreader-Regular.ttf").to_s,
+        bold: FONT_DIR.join("Newsreader-Medium.ttf").to_s
       }
     )
-
-    pdf.font "FinanceReportFont"
-    @unicode_font_registered = true
-  rescue StandardError => error
-    @unicode_font_registered = false
-    Rails.logger.warn("Finance PDF font registration failed: #{error.class} - #{error.message}")
+    pdf.font "Inter"
+    register_cjk_fallback(pdf)
   end
 
-  def unicode_font_path
-    [
-      "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
-      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-      "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-      "/System/Library/Fonts/Supplemental/Arial.ttf",
-      "/System/Library/Fonts/Hiragino Sans GB.ttc",
-      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf"
-    ].find { |path| File.exist?(path) }
+  # Descriptions may contain Japanese, so glyphs missing from Inter fall
+  # back to the bundled Noto Sans JP (only the glyphs used get embedded).
+  def register_cjk_fallback(pdf)
+    path = FONT_DIR.join("NotoSansJP-Regular.ttf").to_s
+    pdf.font_families.update("NotoSansJP" => { normal: path, medium: path, bold: path })
+    pdf.fallback_fonts([ "NotoSansJP" ])
   end
 
-  def bold_font_path(font_path)
-    font_path
-      .sub("Regular", "Bold")
-      .sub("Sans.ttf", "Sans-Bold.ttf")
-      .sub("Sans-Regular.ttf", "Sans-Bold.ttf")
-      .sub("LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf")
-      .sub("Arial Unicode.ttf", "Arial Bold.ttf")
-      .sub("Arial.ttf", "Arial Bold.ttf")
-  end
+  # --- Sections ----------------------------------------------------------
 
-  def existing_font_path(path)
-    path if path && File.exist?(path)
-  end
-
-  def build_header(pdf)
-    header_height = 96
-
-    pdf.bounding_box([ 0, pdf.cursor ], width: pdf.bounds.width, height: header_height) do
-      pdf.fill_color NAVY
-      pdf.fill_rectangle [ 0, header_height ], pdf.bounds.width, header_height
-
-      pdf.fill_color "FFFFFF"
-      pdf.move_down 16
-      pdf.text "TOKYO MIZO CHURCH", size: 9, style: :bold, character_spacing: 1.4
-      pdf.move_down 8
-      pdf.text "Finance Report", size: 23, style: :bold
-      pdf.move_down 5
-      pdf.fill_color "BAE6FD"
-      pdf.text "#{finance_unit_label}  |  #{ledger_type_label}  |  #{period_label}", size: 9, style: :bold
-
-      pdf.fill_color "CBD5E1"
-      pdf.text_box "Generated #{Date.current.strftime('%B %d, %Y')}",
-                   at: [ pdf.bounds.width - 180, header_height - 20 ],
-                   width: 180,
-                   size: 8,
-                   align: :right
-    end
-
-    pdf.fill_color "000000"
-    pdf.move_down 18
-  end
-
-  def build_summary_and_chart(pdf)
-    pdf.fill_color NAVY
-    pdf.text "PERIOD OVERVIEW", size: 9, style: :bold, character_spacing: 1.1
-    pdf.move_down 8
-
+  def draw_cover(pdf)
     top = pdf.cursor
-    summary_width = 252
-    chart_gap = 18
-    chart_width = pdf.bounds.width - summary_width - chart_gap
-    summary_table = build_summary_table(pdf, summary_width)
-    section_height = [ summary_table.height + 38, 164 ].max.ceil
+    pdf.image LOGO_PATH.to_s, at: [ 0, top ], width: 30 if File.exist?(LOGO_PATH)
 
-    pdf.bounding_box([ 0, top ], width: summary_width, height: section_height) do
-      draw_panel_background(pdf, summary_width, section_height)
-      pdf.move_down 12
-      pdf.indent(12) do
-        pdf.fill_color SLATE
-        pdf.text "Period Summary", size: 11, style: :bold
-        pdf.move_down 8
-
-        summary_table.draw
-      end
+    pdf.bounding_box([ 40, top + 1 ], width: 260) do
+      pdf.font("Newsreader") { pdf.text "Tokyo Mizo Church", size: 15, color: INK }
+      pdf.text "FINANCE REPORT", size: 7, color: MUTED, character_spacing: 1.2
     end
 
-    pdf.bounding_box([ summary_width + chart_gap, top ], width: chart_width, height: section_height) do
-      draw_panel_background(pdf, chart_width, section_height)
-      pdf.move_down 12
-      pdf.indent(12) do
-        build_income_expense_chart(pdf, chart_width - 24)
-      end
+    pdf.bounding_box([ pdf.bounds.width - 220, top ], width: 220) do
+      pdf.text finance_unit_label, size: 9, color: INK, align: :right, style: :medium
+      pdf.text "Generated #{Date.current.strftime('%-d %B %Y')}", size: 7.5, color: MUTED, align: :right
     end
 
-    pdf.move_cursor_to(top - section_height)
-    pdf.move_down 18
+    pdf.move_cursor_to(top - 44)
+    hairline(pdf)
+    pdf.move_down 26
 
-    pdf.fill_color NAVY
-    pdf.text "MONTHLY GIVING", size: 9, style: :bold, character_spacing: 1.1
-    pdf.move_down 6
-    pdf.fill_color SLATE
-    pdf.text "Monthly Tithe and Offering", size: 13, style: :bold
-    pdf.move_down 7
-
-    build_monthly_tithe_offering_table(pdf, pdf.bounds.width).draw
-    pdf.fill_color "000000"
+    pdf.text ledger_type_label.upcase, size: 7.5, color: MUTED, character_spacing: 1.2
+    pdf.move_down 4
+    pdf.font("Newsreader") { pdf.text period_label, size: 30, color: INK, leading: 2 }
+    pdf.move_down 22
   end
 
-  def build_income_expense_chart(pdf, width)
-    pdf.fill_color SLATE
-    pdf.text "Income vs Expense", size: 11, style: :bold
-    pdf.move_down 6
-    pdf.fill_color MUTED
-    pdf.text "Movement during the selected period", size: 7.5
-    pdf.move_down 14
-
-    max_amount = report_data.chart_rows.map(&:last).max.to_f
-    max_amount = 1 if max_amount.zero?
-    amount_width = 80
-    bar_width = width - amount_width
-    bar_height = 9
-
-    report_data.chart_rows.each do |label, amount|
-      color = label == "Income" ? INCOME : EXPENSE
-      pdf.fill_color SLATE
-      pdf.text label, size: 8, style: :bold
-      pdf.move_down 5
-
-      pdf.fill_color "E2E8F0"
-      pdf.fill_rounded_rectangle [ 0, pdf.cursor ], bar_width - 8, bar_height, 3
-      fill_width = amount.zero? ? 0 : [ (amount.to_f / max_amount) * (bar_width - 8), 4 ].max
-      if fill_width.positive?
-        pdf.fill_color color
-        pdf.fill_rounded_rectangle [ 0, pdf.cursor ], fill_width, bar_height, 3
-      end
-
-      pdf.fill_color color
-      pdf.text_box yen(amount),
-                   at: [ bar_width, pdf.cursor + 1 ],
-                   width: amount_width,
-                   height: 12,
-                   size: 8.5,
-                   style: :bold,
-                   align: :right
-
-      pdf.move_down 24
-    end
-
-    pdf.fill_color "000000"
-  end
-
-  def build_transactions(pdf)
-    if transactions.size > 12
-      pdf.start_new_page
-    else
-      pdf.move_down 18
-    end
-    pdf.fill_color NAVY
-    pdf.text "TRANSACTION DETAIL", size: 9, style: :bold, character_spacing: 1.1
-    pdf.move_down 6
-    pdf.fill_color SLATE
-    pdf.text "Transactions", size: 13, style: :bold
-    pdf.fill_color MUTED
-    pdf.text_box "#{transactions.size} records",
-                 at: [ pdf.bounds.width - 100, pdf.cursor + 14 ],
-                 width: 100,
-                 size: 8,
-                 align: :right
-    pdf.move_down 8
-
-    pdf.table(
-      transaction_rows,
-      header: true,
-      column_widths: {
-        0 => 68,
-        1 => 52,
-        2 => 82,
-        3 => 58,
-        4 => 180,
-        5 => 80
-      }
-    ) do
-      row(0).font_style = :bold
-      row(0).background_color = NAVY
-      row(0).text_color = "FFFFFF"
-
-      cells.size = 7.5
-      cells.padding = 5
-      cells.border_width = 0
-
-      rows(1..-1).each_with_index do |table_row, index|
-        table_row.background_color = index.even? ? "FFFFFF" : PANEL
-        table_row.border_bottom_width = 0.5
-        table_row.border_bottom_color = "E2E8F0"
-      end
-
-      columns(0).nowrap = true
-      columns(1).nowrap = true
-
-      columns(1).align = :center
-      columns(3).align = :center
-      columns(5).align = :right
-    end
-
-    pdf.fill_color "000000"
-  end
-
-  def summary_rows
-    report_data.summary_rows.map { |label, amount| [ label, yen(amount) ] }
-  end
-
-  def build_summary_table(pdf, width)
-    pdf.make_table(summary_rows, width: width - 24, column_widths: [ 128, width - 152 ]) do
-      cells.padding = [ 6, 7 ]
-      cells.size = 7.5
-      cells.border_width = 0
-      cells.border_bottom_width = 0.5
-      cells.border_bottom_color = "E2E8F0"
-
-      row(0).background_color = INCOME_LIGHT
-      row(0).text_color = INCOME
-      row(1).background_color = EXPENSE_LIGHT
-      row(1).text_color = EXPENSE
-      row(2).background_color = "E0F2FE"
-      row(2).text_color = BLUE
-      rows(0..2).font_style = :bold
-      columns(1).align = :right
-    end
-  end
-
-  def monthly_tithe_offering_rows
-    rows = [ [ "Month", "Tithe", "Offering" ] ]
-    report_data.monthly_tithe_offering_rows.each do |month, tithe, offering|
-      rows << [ month, yen(tithe), yen(offering) ]
-    end
-    totals = report_data.monthly_tithe_offering_rows.transpose
-    rows << [ "Total", yen(totals[1]&.sum || 0), yen(totals[2]&.sum || 0) ]
-    rows
-  end
-
-  def build_monthly_tithe_offering_table(pdf, width)
-    rows = monthly_tithe_offering_rows
-
-    pdf.make_table(rows, header: true, width: width, column_widths: [ width * 0.40, width * 0.30, width * 0.30 ]) do
-      row(0).font_style = :bold
-      row(0).background_color = NAVY
-      row(0).text_color = "FFFFFF"
-
-      cells.size = 7.5
-      cells.padding = 5
-      cells.border_width = 0
-      rows(1..-2).each_with_index do |table_row, index|
-        table_row.background_color = index.even? ? "FFFFFF" : PANEL
-        table_row.border_bottom_width = 0.5
-        table_row.border_bottom_color = "E2E8F0"
-      end
-
-      row(-1).font_style = :bold
-      row(-1).background_color = "E0F2FE"
-      row(-1).text_color = BLUE
-      columns(1..2).align = :right
-    end
-  end
-
-  def draw_panel_background(pdf, width, height)
-    pdf.fill_color PANEL
-    pdf.stroke_color "E2E8F0"
-    pdf.fill_and_stroke_rounded_rectangle [ 0, height ], width, height, 8
-    pdf.fill_color "000000"
-    pdf.stroke_color "000000"
-  end
-
-  def transaction_rows
-    rows = [
-      [ "Date", "Type", "Unit / Category", "Location", "Description", "Amount" ]
+  def draw_summary(pdf)
+    columns = [
+      [ "Income", money(income, sign: :plus), MONEY_IN ],
+      [ "Expenses", money(expense, sign: :minus), MONEY_OUT ],
+      [ "Net", money(balance, sign: balance.negative? ? :minus : :plus), INK ]
     ]
+    width = pdf.bounds.width / columns.size
+    top = pdf.cursor
+    height = 62
 
-    pdf_transactions.each do |transaction|
-      rows << [
-        transaction.transaction_date.strftime("%Y-%m-%d"),
-        type_cell(transaction),
-        safe_pdf_text("#{transaction.finance_unit&.name || '-'} / #{transaction.finance_category&.name || '-'}"),
+    hairline(pdf, color: INK, width: 0.8)
+    columns.each_with_index do |(label, value, color), index|
+      x = index * width
+      pdf.bounding_box([ x + (index.zero? ? 0 : 14), top - 12 ], width: width - 14, height: height - 12) do
+        pdf.text label, size: 8, color: MUTED
+        pdf.move_down 6
+        pdf.font("Newsreader") { pdf.text value, size: 21, color: color }
+      end
+      next if index.zero?
+
+      pdf.stroke_color LINE
+      pdf.line_width 0.5
+      pdf.stroke_line [ x, top - 10 ], [ x, top - height + 6 ]
+    end
+    pdf.move_cursor_to(top - height)
+    hairline(pdf)
+    pdf.move_down 18
+  end
+
+  def draw_balances(pdf)
+    title = report_data.closing_balances? ? "Balances at #{period_end.strftime('%-d %B %Y')}" : "Movement by account"
+    items = [
+      [ "Cash", report_data.closing_cash ],
+      [ "Bank", report_data.closing_bank ],
+      [ "Total", report_data.closing_cash + report_data.closing_bank ]
+    ]
+    height = 46
+    top = pdf.cursor
+
+    pdf.fill_color SUNKEN
+    pdf.fill_rounded_rectangle [ 0, top ], pdf.bounds.width, height, 6
+    pdf.fill_color INK
+
+    pdf.bounding_box([ 14, top - 10 ], width: 160, height: height - 10) do
+      pdf.text title, size: 8, color: MUTED
+      pdf.move_down 3
+      pdf.text "Cash and bank, transfers included", size: 7, color: MUTED
+    end
+
+    column = (pdf.bounds.width - 190) / items.size
+    items.each_with_index do |(label, amount), index|
+      pdf.bounding_box([ 190 + index * column, top - 10 ], width: column - 14, height: height - 10) do
+        pdf.text label, size: 7.5, color: MUTED, align: :right
+        pdf.move_down 2
+        pdf.text money(amount), size: 11, color: amount.negative? ? MONEY_OUT : INK, align: :right, style: (label == "Total" ? :bold : :normal)
+      end
+    end
+
+    pdf.move_cursor_to(top - height)
+    pdf.move_down 26
+  end
+
+  def draw_categories(pdf)
+    gap = 28
+    width = (pdf.bounds.width - gap) / 2
+    top = pdf.cursor
+    left_bottom = category_column(pdf, [ 0, top ], width, "Where the money came from", report_data.income_by_category, income, MONEY_IN)
+    right_bottom = category_column(pdf, [ width + gap, top ], width, "Where the money went", report_data.expense_by_category, expense, MONEY_OUT)
+    pdf.move_cursor_to([ left_bottom, right_bottom ].min)
+    pdf.move_down 26
+  end
+
+  # Returns the cursor position below the column.
+  def category_column(pdf, at, width, title, rows, total, color)
+    rows = collapse_categories(rows)
+
+    pdf.bounding_box(at, width: width) do
+      section_title(pdf, title)
+
+      if rows.empty?
+        pdf.text "No records in this period.", size: 8.5, color: MUTED
+      else
+        top_amount = rows.first.last.to_f
+        rows.each do |name, amount|
+          share = total.to_i.zero? ? 0 : ((amount * 100.0) / total).round
+          row_top = pdf.cursor
+          pdf.text_box name, at: [ 0, row_top ], width: width - 96, height: 11, size: 8.5, color: SOFT, overflow: :ellipses
+          pdf.text_box "#{money(amount)}  ", at: [ width - 96, row_top ], width: 70, height: 11, size: 8.5, color: INK, align: :right
+          pdf.text_box "#{share}%", at: [ width - 26, row_top ], width: 26, height: 11, size: 7.5, color: MUTED, align: :right
+          pdf.move_down 13
+
+          pdf.fill_color LINE
+          pdf.fill_rounded_rectangle [ 0, pdf.cursor ], width, 2.2, 1.1
+          pdf.fill_color color
+          pdf.fill_rounded_rectangle [ 0, pdf.cursor ], [ (amount / top_amount) * width, 2.2 ].max, 2.2, 1.1
+          pdf.fill_color INK
+          pdf.move_down 9
+        end
+      end
+    end
+
+    pdf.cursor
+  end
+
+  def collapse_categories(rows)
+    return rows if rows.size <= CATEGORY_LIMIT
+
+    rows.first(CATEGORY_LIMIT - 1) + [ [ "Other", rows.drop(CATEGORY_LIMIT - 1).sum(&:last) ] ]
+  end
+
+  def draw_monthly(pdf)
+    rows = report_data.monthly_rows
+    return if rows.empty?
+
+    ensure_space(pdf, 60 + rows.size * 18)
+    section_title(pdf, "Month by month")
+
+    data = [ [ "Month", "Income", "Expenses", "Net", "Tithe", "Offering" ] ]
+    rows.each do |month, month_income, month_expense, net, tithe, offering|
+      data << [ month, money(month_income), money(month_expense), signed(net), money(tithe), money(offering) ]
+    end
+    totals = rows.transpose
+    net_total = totals[3].sum
+    data << [ "Total", money(totals[1].sum), money(totals[2].sum), signed(net_total), money(totals[4].sum), money(totals[5].sum) ]
+
+    pdf.table(data, header: true, width: pdf.bounds.width, column_widths: { 0 => 95 }) do |table|
+      style_table(table)
+      table.columns(1..5).align = :right
+      table.row(-1).font_style = :bold
+      table.row(-1).text_color = INK
+      table.row(-1).borders = [ :top, :bottom ]
+      table.row(-1).border_top_color = INK
+      table.row(-1).border_top_width = 0.8
+      table.row(-1).border_bottom_color = INK
+      table.row(-1).border_bottom_width = 0.8
+      net_column = table.column(3)
+      net_column.rows(1..-2).each { |cell| cell.text_color = cell.content.start_with?("−") ? MONEY_OUT : SOFT }
+      table.rows(1..-2).each { |cell| cell.text_color = MUTED if cell.content == "¥0" }
+    end
+    pdf.move_down 28
+  end
+
+  def draw_transactions(pdf)
+    ensure_space(pdf, 140)
+    top = pdf.cursor
+    section_title(pdf, "Transactions")
+    pdf.text_box "#{transactions.size} #{transactions.size == 1 ? 'record' : 'records'}",
+                 at: [ pdf.bounds.width - 120, top ], width: 120, size: 8, color: MUTED, align: :right
+
+    if transactions.empty?
+      pdf.text "No transactions in this period.", size: 9, color: MUTED
+      return
+    end
+
+    data = [ [ "Date", "Description", "Account", "Amount" ] ]
+    sorted_transactions.each do |transaction|
+      title = clean(transaction.description.presence || transaction.finance_category&.name || "—")
+      category = clean(transaction.finance_category&.name.to_s)
+      details = [ category, transaction.expense_voucher_number ].compact_blank.join("  ·  ")
+      data << [
+        transaction.transaction_date.strftime("%-d %b %Y"),
+        { content: "#{escape(title)}#{details.present? ? "\n<font size='7'><color rgb='#{MUTED}'>#{escape(details)}</color></font>" : ''}", inline_format: true },
         transaction.payment_location_bank? ? "Bank" : "Cash",
-        safe_pdf_text(transaction.description.presence || "-"),
-        yen(transaction.amount)
+        signed_transaction(transaction)
       ]
     end
 
-    rows
+    pdf.table(data, header: true, width: pdf.bounds.width, column_widths: { 0 => 72, 2 => 52, 3 => 84 }) do |table|
+      style_table(table)
+      table.column(3).align = :right
+      table.column(0).rows(1..-1).text_color = MUTED
+      table.column(3).rows(1..-1).each { |cell| cell.text_color = cell.content.start_with?("+") ? MONEY_IN : MONEY_OUT }
+    end
   end
 
-  def safe_pdf_text(value)
-    text = value.to_s
-    return text if @unicode_font_registered
+  def draw_page_furniture(pdf)
+    footer = "Tokyo Mizo Church  ·  #{finance_unit_label}  ·  #{period_label}"
 
-    text.encode("Windows-1252", invalid: :replace, undef: :replace, replace: "?")
+    pdf.repeat(:all) do
+      pdf.bounding_box([ 0, -18 ], width: pdf.bounds.width, height: 20) do
+        hairline(pdf)
+        pdf.move_down 7
+        pdf.text clean(footer), size: 7, color: MUTED
+      end
+    end
+
+    pdf.number_pages "Page <page> of <total>", at: [ pdf.bounds.width - 120, -25 ], width: 120, align: :right, size: 7, color: MUTED
   end
 
-  def pdf_transactions
+  # --- Building blocks -----------------------------------------------------
+
+  def style_table(table)
+    table.cells.size = 8.5
+    table.cells.padding = [ 6.5, 6, 6.5, 6 ]
+    table.cells.borders = [ :bottom ]
+    table.cells.border_width = 0.5
+    table.cells.border_color = LINE
+    table.cells.text_color = SOFT
+    table.cells.valign = :center
+
+    table.row(0).size = 7
+    table.row(0).text_color = MUTED
+    table.row(0).character_spacing = 0.8
+    table.row(0).font_style = :medium
+    table.row(0).background_color = SUNKEN
+    table.row(0).border_color = LINE
+    table.row(0).padding = [ 6, 6, 6, 6 ]
+    table.row(0).each { |cell| cell.content = cell.content.upcase }
+
+    table.columns(0).padding_left = 0
+    table.row(0).columns(0).padding_left = 6
+  end
+
+  def section_title(pdf, title)
+    pdf.font("Newsreader") { pdf.text title, size: 13, color: INK }
+    pdf.move_down 9
+  end
+
+  def hairline(pdf, color: LINE, width: 0.5)
+    pdf.stroke_color color
+    pdf.line_width width
+    pdf.stroke_horizontal_line 0, pdf.bounds.width
+    pdf.stroke_color INK
+  end
+
+  def ensure_space(pdf, needed)
+    pdf.start_new_page if pdf.cursor < needed
+  end
+
+  def sorted_transactions
     transactions.sort_by do |transaction|
-      [
-        transaction.transaction_date,
-        transaction.created_at || Time.zone.at(0),
-        transaction.id || 0
-      ]
+      [ transaction.transaction_date, transaction.created_at || Time.zone.at(0), transaction.id || 0 ]
     end.reverse
   end
 
-  def type_cell(transaction)
-    if transaction.income?
-      { content: "Income", text_color: "047857" }
-    else
-      { content: "Expense", text_color: "BE123C" }
+  def money(amount, sign: :auto)
+    amount = amount.to_i
+    prefix = case sign
+    when :plus then "+"
+    when :minus then "−"
+    else amount.negative? ? "−" : ""
     end
+    "#{prefix}¥#{amount.abs.to_fs(:delimited)}"
   end
 
-  def yen(amount)
-    "JPY #{amount.to_i.to_fs(:delimited)}"
+  def signed(amount)
+    return money(0) if amount.to_i.zero?
+
+    money(amount, sign: amount.negative? ? :minus : :plus)
+  end
+
+  def signed_transaction(transaction)
+    money(transaction.amount, sign: transaction.income? ? :plus : :minus)
+  end
+
+  def clean(text)
+    text.to_s.gsub(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/, "")
+  end
+
+  def escape(text)
+    ERB::Util.html_escape(text)
   end
 end

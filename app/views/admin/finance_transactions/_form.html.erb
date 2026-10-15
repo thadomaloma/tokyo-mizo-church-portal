@@ -1,9 +1,9 @@
 <%
   transaction_type = finance_transaction.transaction_type.presence || "expense"
   transfer = transaction_type == "transfer"
-  tabs = [ [ "income", "Sum lut", "arrow-trending-up" ], [ "expense", "Sum chhuak", "arrow-trending-down" ], [ "transfer", "Transfer", "arrows-right-left" ] ]
+  tabs = [ [ "income", "Income", "arrow-trending-up" ], [ "expense", "Expense", "arrow-trending-down" ], [ "transfer", "Transfer", "arrows-right-left" ] ]
   account_options = [ [ "Cash", "cash" ], [ "Bank", "bank" ] ]
-  type_labels = { "income" => "Sum lut", "expense" => "Sum chhuak", "transfer" => "Transfer" }
+  type_labels = { "income" => "Income", "expense" => "Expense", "transfer" => "Transfer" }
 %>
 
 <%= form_with model: [:admin, finance_transaction], class: "card mx-auto max-w-2xl" do |form| %>
@@ -21,7 +21,7 @@
         <% end %>
       </nav>
       <% if transaction_type == "income" %>
-        <p class="notice notice-info">Pathianni thawhlawm category tam tak a nih chuan <%= link_to "Pathianni thawhlawm form", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "link" %> hmang rawh.</p>
+        <p class="notice notice-info">Recording a Sunday collection with several categories? Use the <%= link_to "Sunday offering form", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "link" %>.</p>
       <% end %>
     <% else %>
       <p><span class="chip chip-muted"><%= type_labels[transaction_type] %></span></p>
@@ -38,25 +38,25 @@
     <% if transfer %>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <%= form.label :payment_location, "A lakna", class: "field-label" %>
+          <%= form.label :payment_location, "From", class: "field-label" %>
           <%= form.select :payment_location, account_options, {}, class: "input" %>
         </div>
         <div>
-          <%= form.label :transfer_to_location, "A dahna", class: "field-label" %>
+          <%= form.label :transfer_to_location, "To", class: "field-label" %>
           <%= form.select :transfer_to_location, account_options, {}, class: "input" %>
         </div>
       </div>
-      <p class="field-hint !mt-0">Entirnan: cash bank-a dah luh, emaw bank atanga cash lak chhuah. Transfer hi sum lut emaw sum chhuak-ah a tel lo.</p>
+      <p class="field-hint !mt-0">For example, depositing cash in the bank or withdrawing cash. Transfers are not counted as income or expense.</p>
     <% else %>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <%= form.label :finance_category_id, "Category", class: "field-label" %>
           <%= form.select :finance_category_id,
               options_for_select(@finance_categories.map { |category| [ category.option_label, category.id ] }, finance_transaction.finance_category_id),
-              { prompt: "Thlang rawh" }, class: "input" %>
+              { prompt: "Choose a category" }, class: "input" %>
         </div>
         <div>
-          <%= form.label :payment_location, (transaction_type == "income" ? "Sum dahna" : "Sum lakna"), class: "field-label" %>
+          <%= form.label :payment_location, (transaction_type == "income" ? "Deposit to" : "Paid from"), class: "field-label" %>
           <%= form.select :payment_location, account_options, {}, class: "input" %>
         </div>
       </div>
@@ -64,17 +64,17 @@
 
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <div>
-        <%= form.label :transaction_date, "Ni", class: "field-label" %>
+        <%= form.label :transaction_date, "Date", class: "field-label" %>
         <%= form.date_field :transaction_date, class: "input" %>
       </div>
       <div>
         <%= form.label :description, "Note", class: "field-label" %>
-        <%= form.text_field :description, placeholder: "Duh chuan", class: "input" %>
+        <%= form.text_field :description, placeholder: "Optional", class: "input" %>
       </div>
     </div>
 
     <% if transaction_type == "expense" && finance_transaction.new_record? %>
-      <p class="field-hint !mt-0">Sum chhuak tin hian voucher number (EXP-<%= Date.current.year %>-0001 ang) a nei ang a, save hnuah print theih a ni.</p>
+      <p class="field-hint !mt-0">Each expense gets a voucher number (like EXP-<%= Date.current.year %>-0001) that you can print after saving.</p>
     <% end %>
   </div>
 

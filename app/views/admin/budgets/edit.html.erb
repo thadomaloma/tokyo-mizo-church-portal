@@ -1,14 +1,14 @@
 <%= render "admin/shared/page_header",
     eyebrow: @finance_unit.name,
     title: "#{@year} Budget",
-    subtitle: "Category tin atan kum chhunga hman tur zat ziak rawh. A ruak chu budget-ah a tel lo vang." %>
+    subtitle: "Enter the amount planned for each category this year. Leave a box empty to skip it." %>
 
 <%= form_with url: admin_budget_path(@year), method: :patch, class: "card mx-auto max-w-3xl overflow-hidden" do |form| %>
   <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
 
   <div class="hidden border-b border-[var(--line)] bg-[var(--app-bg)] px-6 py-2.5 text-sm font-semibold text-[var(--ink-muted)] sm:grid sm:grid-cols-[minmax(0,1fr)_9rem_11rem] sm:gap-4">
     <span>Category</span>
-    <span class="text-right"><%= @year - 1 %> hman zat</span>
+    <span class="text-right"><%= @year - 1 %> spent</span>
     <span class="text-right">Budget (¥)</span>
   </div>
 
@@ -17,7 +17,7 @@
       <li class="grid grid-cols-[minmax(0,1fr)_9.5rem] items-center gap-x-4 gap-y-1 px-5 py-3 sm:grid-cols-[minmax(0,1fr)_9rem_11rem] sm:px-6">
         <label for="amounts_<%= category.id %>" class="text-[15px] font-medium text-[var(--ink)]"><%= category.name %></label>
         <span class="money order-3 col-span-2 text-sm text-[var(--ink-muted)] sm:order-none sm:col-span-1 sm:text-right">
-          <span class="sm:hidden"><%= @year - 1 %>: </span><%= yen(@last_year_spent.fetch(category.id, 0)) %>
+          <span class="sm:hidden"><%= @year - 1 %>: </span><%= money(@last_year_spent.fetch(category.id, 0)) %>
         </span>
         <%= number_field_tag "amounts[#{category.id}]", (@amounts[category.id] if @amounts[category.id].to_i.positive?),
             id: "amounts_#{category.id}", min: 0, step: 1, inputmode: "numeric", placeholder: "0", class: "input input-money" %>

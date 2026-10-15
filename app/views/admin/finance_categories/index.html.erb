@@ -1,11 +1,11 @@
 <%= render "admin/shared/page_header",
     eyebrow: @finance_unit.name,
     title: "Category Guide",
-    subtitle: "Sum lut leh sum chhuak dah nan category hman theih te.",
+    subtitle: "Categories you can use for income and expenses.",
     actions: link_to("Transactions", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary") %>
 
 <div class="grid gap-5 lg:grid-cols-2">
-  <% [ [ "income", "Sum lut (Income)", "tone-in", "arrow-trending-up" ], [ "expense", "Sum chhuak (Expense)", "tone-out", "arrow-trending-down" ] ].each do |type, title, tone, icon| %>
+  <% [ [ "income", "Income", "tone-in", "arrow-trending-up" ], [ "expense", "Expenses", "tone-out", "arrow-trending-down" ] ].each do |type, title, tone, icon| %>
     <% categories = @finance_categories.select { |category| category.category_type == type } %>
     <section class="card overflow-hidden">
       <div class="card-head justify-start">

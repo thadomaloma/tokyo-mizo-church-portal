@@ -15,3 +15,13 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
+
+module ActionDispatch
+  class IntegrationTest
+    # Visible text of the last response. Amounts render the currency symbol in
+    # its own span, so "¥12,000" only appears in the text, not the raw HTML.
+    def page_text
+      Nokogiri::HTML(response.body).text.squish
+    end
+  end
+end

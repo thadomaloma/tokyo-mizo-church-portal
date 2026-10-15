@@ -2,7 +2,6 @@
   location = local_assigns[:location]
   tone = transaction_tone(transaction, location: location)
   tone_class = transaction.transfer? ? "tone-move" : { income: "tone-in", expense: "tone-out" }.fetch(tone)
-  money_class = { income: "money-in", expense: "money-out", transfer: "money-move" }.fetch(tone)
   title = transaction.description.presence || (transaction.transfer? ? "Transfer" : transaction.finance_category&.name)
   meta = []
   meta << transaction.title if transaction.transfer?
@@ -20,5 +19,5 @@
     <span class="row-title block truncate"><%= title %></span>
     <span class="row-meta block truncate"><%= meta.join(" · ") %></span>
   </span>
-  <span class="money shrink-0 text-[15px] font-semibold <%= money_class %>"><%= signed_yen(transaction, location: location) %></span>
+  <span class="shrink-0 text-[15px] font-medium"><%= transaction_money(transaction, location: location) %></span>
 </li>

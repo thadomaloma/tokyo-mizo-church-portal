@@ -4,22 +4,22 @@
   closed = @finance_period.closed?
   actions = capture do
     concat render("admin/shared/unit_switcher", url: admin_finance_period_path(@year, @month))
-    concat(button_tag(type: "button", class: "btn btn-secondary", onclick: "window.print()", data: { print_hide: true }) do
-      heroicon("printer", variant: :outline, options: { class: "h-5 w-5" }) + "Print"
+    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id, ledger_type: "all", format: :pdf), class: "btn btn-primary", data: { turbo: false }) do
+      heroicon("document-arrow-down", variant: :outline, options: { class: "h-5 w-5" }) + "Download PDF"
     end)
-    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id), class: "btn btn-secondary", data: { print_hide: true }) do
-      heroicon("arrow-down-tray", variant: :outline, options: { class: "h-5 w-5" }) + "PDF / Excel"
+    concat(link_to(finance_admin_reports_path(year: @year, start_month: @month, end_month: @month, finance_unit_id: @finance_unit.id), class: "btn btn-secondary") do
+      heroicon("table-cells", variant: :outline, options: { class: "h-5 w-5" }) + "Excel & other periods"
     end)
   end
 %>
 
 <%= render "admin/shared/page_header",
-    eyebrow: "#{@finance_unit.name} · Treasurer report",
+    eyebrow: "#{@finance_unit.name} · Monthly report",
     title: @period_label,
     actions: actions %>
 
 <div class="space-y-5">
-  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Thla thlanna" data-print-hide>
+  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Choose month">
     <%= link_to admin_finance_period_path(previous_month.year, previous_month.month, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
       <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= previous_month.strftime("%b %Y") %>
     <% end %>
@@ -34,62 +34,62 @@
 
   <% if @closing_issues.any? %>
     <div class="notice notice-warn">
-      <p class="font-semibold">Close hmain heng hi siam that rawh:</p>
+      <p class="font-semibold">Fix these before closing the month:</p>
       <ul class="mt-1 list-inside list-disc"><% @closing_issues.each do |issue| %><li><%= issue %></li><% end %></ul>
     </div>
   <% end %>
 
   <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
     <section class="card card-pad" data-statement>
-      <h2 class="card-title">Sum lut leh chhuak</h2>
-      <p class="card-note">Committee hnena hlan tur thla report.</p>
+      <h2 class="font-display text-2xl text-[var(--ink)]">Income and expenses</h2>
+      <p class="card-note">Monthly report for the church committee.</p>
 
       <table class="statement mt-3">
         <tbody>
-          <tr class="font-semibold"><td>Balance hmasa (<%= (@period_start - 1).strftime("%-d %b") %>)</td><td><%= yen(@opening_balance) %></td></tr>
+          <tr class="font-semibold"><td>Opening balance (<%= (@period_start - 1).strftime("%-d %b") %>)</td><td><%= money(@opening_balance) %></td></tr>
         </tbody>
 
         <tbody>
-          <tr class="statement-section"><th colspan="2">Sum lut</th></tr>
+          <tr class="statement-section"><th colspan="2">Income</th></tr>
           <% if @income_by_category.any? %>
             <% @income_by_category.each do |name, amount| %>
-              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= yen(amount) %></td></tr>
+              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= money(amount) %></td></tr>
             <% end %>
           <% else %>
-            <tr><td class="text-[var(--ink-muted)]">A awm lo</td><td>¥0</td></tr>
+            <tr><td class="text-[var(--ink-muted)]">None</td><td>¥0</td></tr>
           <% end %>
-          <tr class="font-semibold"><td>Sum lut belhkhawm</td><td class="money-in">+<%= yen(@income) %></td></tr>
+          <tr class="font-semibold"><td>Total income</td><td class="money-in"><%= money(@income, sign: :plus) %></td></tr>
         </tbody>
 
         <tbody>
-          <tr class="statement-section"><th colspan="2">Sum chhuak</th></tr>
+          <tr class="statement-section"><th colspan="2">Expenses</th></tr>
           <% if @expense_by_category.any? %>
             <% @expense_by_category.each do |name, amount| %>
-              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= yen(amount) %></td></tr>
+              <tr><td class="text-[var(--ink-soft)]"><%= name %></td><td><%= money(amount) %></td></tr>
             <% end %>
           <% else %>
-            <tr><td class="text-[var(--ink-muted)]">A awm lo</td><td>¥0</td></tr>
+            <tr><td class="text-[var(--ink-muted)]">None</td><td>¥0</td></tr>
           <% end %>
-          <tr class="font-semibold"><td>Sum chhuak belhkhawm</td><td class="money-out">−<%= yen(@expense) %></td></tr>
+          <tr class="font-semibold"><td>Total expenses</td><td class="money-out"><%= money(@expense, sign: :minus) %></td></tr>
         </tbody>
 
         <tbody>
-          <tr class="statement-total"><td>Balance tawp (<%= @period_end.strftime("%-d %b") %>)</td><td><%= yen(@closing_balance) %></td></tr>
-          <tr><td class="pl-4 text-[var(--ink-soft)]">Cash</td><td><%= yen(@closing_accounts["cash"]) %></td></tr>
-          <tr><td class="pl-4 text-[var(--ink-soft)]">Bank</td><td><%= yen(@closing_accounts["bank"]) %></td></tr>
+          <tr class="statement-total"><td>Closing balance (<%= @period_end.strftime("%-d %b") %>)</td><td><%= money(@closing_balance) %></td></tr>
+          <tr><td class="pl-4 text-[var(--ink-soft)]">Cash</td><td><%= money(@closing_accounts["cash"]) %></td></tr>
+          <tr><td class="pl-4 text-[var(--ink-soft)]">Bank</td><td><%= money(@closing_accounts["bank"]) %></td></tr>
         </tbody>
       </table>
     </section>
 
     <div class="space-y-5">
       <section class="card card-pad">
-        <h2 class="card-title">Thla hi tlangpui</h2>
+        <h2 class="card-title">Month summary</h2>
         <dl class="mt-3 space-y-3">
-          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Sum lut</dt><dd class="money font-semibold money-in">+<%= yen(@income) %></dd></div>
-          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Sum chhuak</dt><dd class="money font-semibold money-out">−<%= yen(@expense) %></dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Income</dt><dd class="font-medium money-in"><%= money(@income, sign: :plus) %></dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-[var(--ink-soft)]">Expenses</dt><dd class="font-medium money-out"><%= money(@expense, sign: :minus) %></dd></div>
           <div class="flex justify-between gap-3 border-t border-[var(--line)] pt-3">
-            <dt class="font-semibold text-[var(--ink)]">A bang (Net)</dt>
-            <dd class="money font-bold <%= @net_change.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= @net_change.negative? ? "−" : "+" %><%= yen(@net_change.abs) %></dd>
+            <dt class="font-semibold text-[var(--ink)]">Net</dt>
+            <dd class="font-semibold <%= @net_change.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(@net_change, sign: (@net_change.negative? ? :minus : :plus)) %></dd>
           </div>
         </dl>
       </section>
@@ -97,29 +97,29 @@
       <% if @budget_progress.planned? %>
         <section class="card card-pad">
           <h2 class="card-title"><%= @year %> Budget</h2>
-          <p class="mt-2 text-[15px] text-[var(--ink-soft)]"><span class="money text-xl font-bold text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> hman tawh</p>
-          <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
-          <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= yen(@budget_progress.spent_total) %> / <%= yen(@budget_progress.planned_total) %></p>
+          <p class="mt-2 text-[15px] text-[var(--ink-soft)]"><span class="figure-lg !text-2xl text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> used</p>
+          <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
+          <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= money(@budget_progress.spent_total) %> / <%= money(@budget_progress.planned_total) %></p>
         </section>
       <% end %>
 
       <% if can_manage_finance? %>
-        <section class="card card-pad" data-print-hide>
+        <section class="card card-pad">
           <% if closed %>
-            <h2 class="card-title">He thla hi close a ni</h2>
+            <h2 class="card-title">This month is closed</h2>
             <p class="card-note mt-1">
-              <%= @finance_period.closed_by&.name || "—" %>-in <%= @finance_period.closed_at&.strftime("%-d %b %Y") %> khan a close.
-              Record thlak tur chuan reopen rawh.
+              Closed by <%= @finance_period.closed_by&.name || "—" %> on <%= @finance_period.closed_at&.strftime("%-d %b %Y") %>.
+              Reopen it to make changes.
             </p>
             <%= button_to admin_reopen_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
-                form: { data: { turbo_confirm: "#{@period_label} hi reopen i duh em?" } }, class: "btn btn-secondary mt-4 w-full" do %>
+                form: { data: { turbo_confirm: "Reopen #{@period_label}?" } }, class: "btn btn-secondary mt-4 w-full" do %>
               <%= heroicon "lock-open", variant: :outline, options: { class: "h-5 w-5" } %> Reopen
             <% end %>
           <% else %>
-            <h2 class="card-title">Thla close na</h2>
-            <p class="card-note mt-1">Report hi a dik vek tawh chuan close rawh. Close hnuah he thla record te thlak theih a ni lo.</p>
+            <h2 class="card-title">Close the month</h2>
+            <p class="card-note mt-1">When the report is correct, close the month. Its transactions are then locked.</p>
             <%= button_to admin_close_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id), method: :patch,
-                form: { data: { turbo_confirm: "#{@period_label} close i duh em?" } }, class: "btn btn-primary mt-4 w-full",
+                form: { data: { turbo_confirm: "Close #{@period_label}?" } }, class: "btn btn-primary mt-4 w-full",
                 disabled: @closing_issues.any? do %>
               <%= heroicon "lock-closed", variant: :outline, options: { class: "h-5 w-5" } %> Close month
             <% end %>
@@ -131,13 +131,13 @@
 
   <details class="card overflow-hidden" <%= "open" if @transactions.size <= 8 %>>
     <summary class="card-head cursor-pointer list-none">
-      <span class="card-title">Record zawng zawng (<%= @transactions.size %>)</span>
+      <span class="card-title">All transactions (<%= @transactions.size %>)</span>
       <%= heroicon "chevron-down", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %>
     </summary>
     <% if @transactions.any? %>
-      <div class="row-list"><%= render @transactions %></div>
+      <%= render "admin/shared/ledger", transactions: @transactions, actions: true %>
     <% else %>
-      <p class="px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">He thla chhung record a awm lo.</p>
+      <p class="px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">No transactions this month.</p>
     <% end %>
   </details>
 </div>

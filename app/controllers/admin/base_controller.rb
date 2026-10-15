@@ -15,14 +15,14 @@ module Admin
       return if current_user&.active?
 
       sign_out current_user
-      redirect_to new_user_session_path, alert: "I account hi hman theih lohva dah a ni."
+      redirect_to new_user_session_path, alert: "Your account has been deactivated."
     end
 
     def require_super_admin!
       return if current_user.super_admin?
 
       redirect_to admin_root_path,
-                  alert: "President emaw Secretary chauhin he page hi an hmang thei."
+                  alert: "Only the President or Secretary can open this page."
     end
 
     def available_finance_units
@@ -37,7 +37,7 @@ module Admin
       return if finance_access?
 
       redirect_to admin_root_path,
-                  alert: "I account-ah finance access pek a la ni lo."
+                  alert: "Your account doesn't have finance access yet."
     end
 
     def current_finance_unit
@@ -64,7 +64,7 @@ module Admin
       return if can_manage_current_finance_unit?
 
       redirect_to admin_finance_transactions_path(finance_unit_id: current_finance_unit&.id),
-                  alert: "He finance unit enkawl phalna i nei lo."
+                  alert: "You don't have permission to manage this finance unit."
     end
   end
 end

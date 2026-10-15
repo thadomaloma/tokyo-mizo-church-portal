@@ -117,13 +117,13 @@
       </div>
 
       <h1>You're Offline</h1>
-      <p>TMC Portal data thar ber en turin internet connection a ngai.</p>
+      <p>You need an internet connection to see the latest finance data.</p>
 
       <div class="actions">
         <button type="button" class="retry" onclick="location.reload()">Retry</button>
       </div>
 
-      <p class="status" data-status>Internet connection nghah mek&hellip;</p>
+      <p class="status" data-status>Waiting for an internet connection&hellip;</p>
     </div>
 
     <script>
@@ -132,7 +132,7 @@
 
         function render() {
           var online = navigator.onLine;
-          status.textContent = online ? "Internet a awm leh ta" : "Internet connection nghah mek…";
+          status.textContent = online ? "Back online" : "Waiting for an internet connection…";
           status.setAttribute("data-online", String(online));
         }
 

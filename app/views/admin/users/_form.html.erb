@@ -16,7 +16,7 @@
           </p>
 
           <p class="break-words text-sm text-slate-500">
-            <%= user.email.presence || "Email dah hnuah hetah a lang ang" %>
+            <%= user.email.presence || "Email will show here" %>
           </p>
         </div>
       </div>
@@ -29,7 +29,7 @@
             class: "field-label" %>
 
         <%= form.text_field :name,
-            placeholder: "Hming pum pui ziak rawh",
+            placeholder: "Full name",
             class: "input" %>
       </div>
 
@@ -39,7 +39,7 @@
             class: "field-label" %>
 
         <%= form.email_field :email,
-            placeholder: "Email address ziak rawh",
+            placeholder: "name@example.com",
             class: "input" %>
       </div>
     </div>
@@ -51,7 +51,7 @@
             class: "field-label" %>
 
         <%= form.text_field :phone,
-            placeholder: "Phone number ziak rawh",
+            placeholder: "Phone number",
             class: "input" %>
       </div>
 
@@ -66,7 +66,7 @@
             class: "input" %>
 
         <p class="mt-2 text-xs leading-5 text-slate-500">
-          Hei hi kohhran post/title a ni. Finance permission chu Finance Access page-ah unit hranpaa assign tur a ni.
+          This is the person's church role. Finance permissions are set per unit on the Finance units & access page.
         </p>
       </div>
     </div>
@@ -82,7 +82,7 @@
               class: "font-bold text-slate-800" %>
 
           <p class="mt-1 text-sm text-slate-500">
-            Active user chu app-ah a lut thei; inactive user chu a lut thei lo.
+            Active users can sign in. Inactive users cannot.
           </p>
         </div>
       </div>
@@ -95,11 +95,11 @@
 
       <% if user.persisted? %>
         <p class="mt-1 text-sm text-slate-500">
-          Password thlak i duh loh chuan password field te hi dah ruak rawh.
+          Leave the password fields empty to keep the current password.
         </p>
       <% else %>
         <p class="mt-1 text-sm text-slate-500">
-          He user tan temporary password siam rawh.
+          Set a temporary password for this user.
         </p>
       <% end %>
 
@@ -111,7 +111,7 @@
 
           <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
             <%= form.password_field :password,
-                placeholder: user.persisted? ? "Password ngai hman tur chuan dah ruak rawh" : "Character 12 aia tlem lo",
+                placeholder: user.persisted? ? "Leave empty to keep the current password" : "At least 12 characters",
                 data: { password_input: true },
                 class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
 
@@ -143,7 +143,7 @@
 
           <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
             <%= form.password_field :password_confirmation,
-                placeholder: "Password ziak nawn rawh",
+                placeholder: "Type the password again",
                 data: { password_input: true },
                 class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
 

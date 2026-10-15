@@ -1,6 +1,4 @@
-<%= link_to path,
-    aria: { current: (active ? "page" : nil) },
-    class: "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium transition #{active ? "bg-white/12 text-white" : "text-slate-300 hover:bg-white/[0.06] hover:text-white"}" do %>
-  <%= heroicon icon, variant: (active ? :solid : :outline), options: { class: "h-5 w-5 shrink-0 #{active ? "text-sky-300" : "text-slate-400"}" } %>
+<%= link_to path, class: "side-link", aria: { current: (active ? "page" : nil) } do %>
+  <%= heroicon icon, variant: :outline, options: { class: "h-5 w-5 shrink-0" } %>
   <span class="truncate"><%= name %></span>
 <% end %>

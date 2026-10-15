@@ -12,15 +12,25 @@
 <%= render "admin/shared/page_header",
     eyebrow: @finance_unit.name,
     title: "Accounts",
-    subtitle: "Cash-a kawl leh Bank-a dah zat.",
+    subtitle: "How much is held in cash and in the bank.",
     actions: actions %>
 
 <div class="space-y-5">
-  <section class="hero-card p-5 sm:p-7">
-    <p class="text-[15px] text-white/75">Sum awm zawng zawng</p>
-    <p class="money mt-1 text-4xl font-bold sm:text-5xl"><%= yen(@finance_summary.current_balance) %></p>
-    <p class="mt-2 text-sm text-white/65">Cash leh Bank belhkhawm. Transfer chuan he zat hi a thlak lo.</p>
+  <section class="hero-card p-6 sm:p-8">
+    <p class="eyebrow">Total balance</p>
+    <p class="figure-xl mt-3 text-[var(--ink)]"><%= money(@finance_summary.current_balance) %></p>
+    <p class="mt-3 text-sm text-[var(--ink-muted)]">Cash and bank combined. Transfers do not change this total.</p>
   </section>
+
+  <%= render "admin/shared/chart",
+      title: "Balance over time",
+      subtitle: "Total balance at the end of each month (this month: today).",
+      type: "line",
+      labels: @balance_history.map { |point| point[:label] },
+      series: [ { label: "Total balance", color: chart_color(:income), values: @balance_history.map { |point| point[:balance] }, area: true } ],
+      end_labels: true,
+      table_label: "Month",
+      html: { data: { balance_chart: true } } %>
 
   <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
     <% @accounts.each do |account| %>
@@ -33,16 +43,16 @@
             <h2 class="card-title"><%= account[:name] %></h2>
           </div>
 
-          <p class="money mt-4 text-3xl font-bold <%= account[:balance].negative? ? "money-out" : "text-[var(--ink)]" %>"><%= yen(account[:balance]) %></p>
+          <p class="figure-lg mt-4 <%= account[:balance].negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(account[:balance]) %></p>
 
           <dl class="mt-4 grid grid-cols-2 gap-3">
-            <div class="rounded-xl bg-[var(--money-in-bg)] px-3.5 py-2.5">
-              <dt class="text-sm text-[#065f46]">Lut (thla hi)</dt>
-              <dd class="money font-semibold money-in">+<%= yen(account[:month_in]) %></dd>
+            <div class="rounded-lg bg-[var(--surface-sunken)] px-3.5 py-2.5 ring-1 ring-inset ring-[var(--line)]">
+              <dt class="text-[13px] text-[var(--ink-muted)]">In this month</dt>
+              <dd class="font-medium money-in"><%= money(account[:month_in], sign: :plus) %></dd>
             </div>
-            <div class="rounded-xl bg-[var(--money-out-bg)] px-3.5 py-2.5">
-              <dt class="text-sm text-[#9f1239]">Chhuak (thla hi)</dt>
-              <dd class="money font-semibold money-out">−<%= yen(account[:month_out]) %></dd>
+            <div class="rounded-lg bg-[var(--surface-sunken)] px-3.5 py-2.5 ring-1 ring-inset ring-[var(--line)]">
+              <dt class="text-[13px] text-[var(--ink-muted)]">Out this month</dt>
+              <dd class="font-medium money-out"><%= money(account[:month_out], sign: :minus) %></dd>
             </div>
           </dl>
         </div>
@@ -52,12 +62,12 @@
             <%= render partial: "admin/shared/activity_row", collection: account[:recent], as: :transaction, locals: { location: account[:location] } %>
           </ul>
         <% else %>
-          <p class="border-t border-[var(--line)] px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">He account-ah record a la awm lo.</p>
+          <p class="border-t border-[var(--line)] px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">No transactions in this account yet.</p>
         <% end %>
 
         <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id, payment_location: account[:location]),
             class: "flex min-h-12 items-center justify-center gap-1.5 border-t border-[var(--line)] text-[15px] font-semibold text-[var(--brand-soft)] hover:bg-[var(--brand-bg)]" do %>
-          <%= account[:name] %> record zawng zawng <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
+          All <%= account[:name].downcase %> transactions <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
         <% end %>
       </section>
     <% end %>

@@ -34,19 +34,19 @@ module Admin
     def close
       if closing_issues(period_transactions).any?
         redirect_to admin_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
-                    alert: "He thla hi close theih a la ni lo — a hnuaia issue te siam tha hmasa rawh."
+                    alert: "This month can't be closed yet — fix the issues below first."
         return
       end
 
       @finance_period.close!(current_user)
       redirect_to admin_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
-                  notice: "#{@period_label} close fel a ni."
+                  notice: "#{@period_label} closed."
     end
 
     def reopen
       @finance_period.reopen!(current_user)
       redirect_to admin_finance_period_path(@year, @month, finance_unit_id: @finance_unit.id),
-                  notice: "#{@period_label} edit theih turin reopen a ni."
+                  notice: "#{@period_label} reopened for changes."
     end
 
     private
@@ -62,7 +62,7 @@ module Admin
       @month = params[:month].to_i
 
       unless @month.between?(1, 12)
-        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), alert: "Thla thlan a dik lo."
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), alert: "That month is not valid."
         return
       end
 
@@ -94,7 +94,7 @@ module Admin
 
       missing_vouchers = transactions.where(transaction_type: "expense", voucher_number: nil).count
       if missing_vouchers.positive?
-        issues << "Expense transaction #{missing_vouchers} ah voucher number a awm lo."
+        issues << "#{missing_vouchers} expense transaction(s) have no voucher number."
       end
 
       issues

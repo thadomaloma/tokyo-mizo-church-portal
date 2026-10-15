@@ -43,7 +43,7 @@ module Admin
       end
 
       redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-                  notice: "#{@date.strftime("%-d %B")} thawhlawm ¥#{@amounts.values.sum.to_fs(:delimited)} save a ni."
+                  notice: "Offering of ¥#{@amounts.values.sum.to_fs(:delimited)} for #{@date.strftime("%-d %B")} saved."
     end
 
     private
@@ -70,12 +70,12 @@ module Admin
     end
 
     def validation_error
-      return "Ni (date) thlang rawh." if @date.blank?
-      return "Amount chu number (yen) chauh ziak rawh." if @amounts.values.any?(&:negative?)
-      return "Category pakhat tal amount ziak rawh." unless @amounts.values.any?(&:positive?)
+      return "Please choose a date." if @date.blank?
+      return "Amounts must be whole numbers (yen)." if @amounts.values.any?(&:negative?)
+      return "Enter an amount for at least one category." unless @amounts.values.any?(&:positive?)
 
       if FinancePeriod.exists?(finance_unit: @finance_unit, year: @date.year, month: @date.month, status: :closed)
-        "#{@date.strftime("%B %Y")} chu close a ni. Monthly report atangin reopen hmasa rawh."
+        "#{@date.strftime("%B %Y")} is closed. Reopen it from the monthly report first."
       end
     end
 
@@ -85,8 +85,8 @@ module Admin
     end
 
     def description
-      parts = [ "Pathianni thawhlawm" ]
-      parts << "Chhiartu: #{@counted_by}" if @counted_by.present?
+      parts = [ "Sunday offering" ]
+      parts << "Counted by: #{@counted_by}" if @counted_by.present?
       parts << @note if @note.present?
       parts.join(" · ")
     end

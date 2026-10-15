@@ -3,8 +3,8 @@
     <%= image_tag "tokyo_mizo_church_logo.png", alt: "", class: "h-11 w-11 shrink-0 rounded-xl border border-[var(--line)] object-contain p-1" %>
 
     <div class="min-w-0 flex-1 pr-8">
-      <h2 class="card-title">Phone-ah app angin dah rawh</h2>
-      <p class="card-note mt-0.5">Home Screen-ah dah la, app dang ang bawkin i hawng thei ang.</p>
+      <h2 class="card-title">Add to your phone</h2>
+      <p class="card-note mt-0.5">Put it on your Home Screen and open it like any other app.</p>
 
       <div data-pwa-install-target="androidPanel" class="hidden">
         <button type="button" data-action="click->pwa-install#install" class="btn btn-primary mt-3">
@@ -14,9 +14,9 @@
       </div>
 
       <ol data-pwa-install-target="iosPanel" class="mt-3 hidden list-inside list-decimal space-y-1 text-[15px] text-[var(--ink-soft)]">
-        <li>Browser-a <strong>Share</strong> <%= heroicon "arrow-up-on-square", variant: :outline, options: { class: "inline h-4 w-4 align-[-2px]" } %> hmeh rawh</li>
-        <li><strong>Add to Home Screen</strong> thlang rawh</li>
-        <li><strong>Add</strong> hmeh rawh</li>
+        <li>Tap <strong>Share</strong> <%= heroicon "arrow-up-on-square", variant: :outline, options: { class: "inline h-4 w-4 align-[-2px]" } %> in your browser</li>
+        <li>Choose <strong>Add to Home Screen</strong></li>
+        <li>Tap <strong>Add</strong></li>
       </ol>
     </div>
 

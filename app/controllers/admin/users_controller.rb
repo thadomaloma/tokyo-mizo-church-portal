@@ -12,7 +12,7 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && @user.save
-        redirect_to admin_settings_path, notice: "User siam fel a ni."
+        redirect_to admin_settings_path, notice: "User created."
       else
         render :new, status: :unprocessable_entity
       end
@@ -25,13 +25,13 @@ module Admin
       role_assigned = assign_requested_role(@user)
 
       if role_assigned && self_lockout_attempt?
-        @user.errors.add(:base, "Mahni account deactivate emaw administrator access paih emaw theih a ni lo.")
+        @user.errors.add(:base, "You can't deactivate your own account or remove your own admin access.")
         render :edit, status: :unprocessable_entity
         return
       end
 
       if role_assigned && @user.save
-        redirect_to admin_settings_path, notice: "User siamthat fel a ni."
+        redirect_to admin_settings_path, notice: "User updated."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -39,12 +39,12 @@ module Admin
 
     def destroy
       if @user == current_user
-        redirect_to admin_settings_path, alert: "Mahni account delete theih a ni lo."
+        redirect_to admin_settings_path, alert: "You can't delete your own account."
       elsif @user.destroy
-        redirect_to admin_settings_path, notice: "User delete fel a ni."
+        redirect_to admin_settings_path, notice: "User deleted."
       else
         redirect_to admin_settings_path,
-                    alert: @user.errors.full_messages.to_sentence.presence || "User delete theih a ni lo."
+                    alert: @user.errors.full_messages.to_sentence.presence || "This user can't be deleted."
       end
     end
 

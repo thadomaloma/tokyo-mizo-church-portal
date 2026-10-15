@@ -54,7 +54,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "April - May 2026 Income Transactions"
     assert_includes response.body, "May income"
     assert_not_includes response.body, "May expense"
-    assert_includes response.body, "¥10,000"
+    assert_includes page_text, "¥10,000"
     assert_select "input[name='ledger_type'][value='income']", visible: false
     assert_select "a[aria-current='page']", text: "Income"
   end
@@ -107,7 +107,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert response.body.start_with?("%PDF")
   end
 
-  test "finance excel export uses a compact comparison section instead of a native chart object" do
+  test "finance excel export has a summary sheet and a transactions sheet without chart objects" do
     sign_in_user
 
     get finance_admin_reports_path(format: :xlsx)
@@ -120,7 +120,10 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
       entry_names = zip_file.entries.map(&:name)
 
       assert_not entry_names.any? { |name| name.start_with?("xl/charts/") }
-      assert_includes zip_file.read("xl/worksheets/sheet1.xml"), "INCOME VS EXPENSE"
+      summary = zip_file.read("xl/worksheets/sheet1.xml")
+      assert_includes summary, "Where the money came from"
+      assert_includes summary, "Month by month"
+      assert_includes zip_file.read("xl/workbook.xml"), "Transactions"
     end
   end
 
@@ -160,7 +163,7 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "finance_report_expense_"
 
     Zip::File.open_buffer(response.body) do |zip_file|
-      worksheet = zip_file.read("xl/worksheets/sheet1.xml")
+      worksheet = zip_file.read("xl/worksheets/sheet2.xml")
 
       assert_includes worksheet, "EXPENSE-ONLY-EXPORT-MARKER"
       assert_not_includes worksheet, "INCOME-ONLY-EXPORT-MARKER"

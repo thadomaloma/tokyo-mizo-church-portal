@@ -3,7 +3,7 @@
   actions = capture do
     concat render("admin/shared/unit_switcher", url: admin_finance_transactions_path)
     if can_manage_finance?
-      concat link_to("Pathianni thawhlawm", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary")
+      concat link_to("Sunday offering", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary")
       concat(link_to(new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id), class: "btn btn-primary max-lg:hidden") do
         heroicon("plus", variant: :outline, options: { class: "h-5 w-5" }) + "Add transaction"
       end)
@@ -14,13 +14,13 @@
 <%= render "admin/shared/page_header",
     eyebrow: @finance_unit.name,
     title: "Transactions",
-    subtitle: "Sum lut, sum chhuak leh transfer zawng zawng.",
+    subtitle: "All income, expenses and transfers.",
     actions: actions %>
 
 <div class="space-y-4">
   <nav class="flex gap-2 overflow-x-auto pb-1" aria-label="Finance tools">
     <%= link_to admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
-      <%= heroicon "document-text", variant: :outline, options: { class: "h-4 w-4" } %> Thla report
+      <%= heroicon "document-text", variant: :outline, options: { class: "h-4 w-4" } %> Monthly report
     <% end %>
     <%= link_to finance_admin_reports_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
       <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "h-4 w-4" } %> PDF / Excel
@@ -35,27 +35,27 @@
       <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
 
       <div class="flex gap-2">
-        <%= label_tag :q, "Zawng rawh", class: "sr-only" %>
-        <%= form.search_field :q, value: @query, placeholder: "Category emaw note zawng rawh", class: "input flex-1" %>
-        <button type="submit" class="btn btn-primary" aria-label="Zawng rawh">
+        <%= label_tag :q, "Search", class: "sr-only" %>
+        <%= form.search_field :q, value: @query, placeholder: "Search category or note", class: "input flex-1" %>
+        <button type="submit" class="btn btn-primary" aria-label="Search">
           <%= heroicon "magnifying-glass", variant: :outline, options: { class: "h-5 w-5" } %>
         </button>
       </div>
 
       <details class="mt-3" <%= "open" if @type_filter || @category_filter || @payment_location_filter %>>
         <summary class="link inline-flex cursor-pointer list-none items-center gap-1 text-[15px]">
-          <%= heroicon "adjustments-horizontal", variant: :outline, options: { class: "h-5 w-5" } %> Filter dang
+          <%= heroicon "adjustments-horizontal", variant: :outline, options: { class: "h-5 w-5" } %> More filters
         </summary>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <%= label_tag :transaction_type, "Type", class: "field-label" %>
-            <%= form.select :transaction_type, [ [ "Sum lut", "income" ], [ "Sum chhuak", "expense" ], [ "Transfer", "transfer" ] ],
-                { include_blank: "A vaiin", selected: @type_filter }, class: "input" %>
+            <%= form.select :transaction_type, [ [ "Income", "income" ], [ "Expense", "expense" ], [ "Transfer", "transfer" ] ],
+                { include_blank: "All", selected: @type_filter }, class: "input" %>
           </div>
           <div>
             <%= label_tag :category_id, "Category", class: "field-label" %>
             <%= form.collection_select :category_id, @filter_categories, :id, :name,
-                { include_blank: "A vaiin", selected: @category_filter }, class: "input" %>
+                { include_blank: "All", selected: @category_filter }, class: "input" %>
           </div>
           <div>
             <%= label_tag :payment_location, "Account", class: "field-label" %>
@@ -73,19 +73,17 @@
     <% end %>
 
     <p class="border-b border-[var(--line)] px-5 py-2.5 text-sm text-[var(--ink-muted)] sm:px-6">
-      <%= pluralize(@transactions_count, "record") %><%= " a inmil" if filtering %>
+      <%= pluralize(@transactions_count, "record") %><%= " matching" if filtering %>
     </p>
 
     <% if @transactions.any? %>
-      <div class="row-list">
-        <%= render partial: "finance_transaction", collection: @transactions, locals: { closed_periods: @closed_periods } %>
-      </div>
+      <%= render "admin/shared/ledger", transactions: @transactions, actions: true, closed_periods: @closed_periods %>
       <%= render "admin/shared/pagination", pagy: @pagy %>
     <% elsif filtering %>
-      <%= render "admin/shared/empty_state", icon: "magnifying-glass", title: "A inmil a awm lo", message: "Thu dang hmangin zawng la, emaw filter clear rawh." %>
+      <%= render "admin/shared/empty_state", icon: "magnifying-glass", title: "No matches", message: "Try other words or clear the filters." %>
     <% else %>
-      <%= render "admin/shared/empty_state", icon: "banknotes", title: "Record a la awm lo",
-          message: "Sum lut emaw sum chhuak emaw dah hnuah hetah a lang ang.",
+      <%= render "admin/shared/empty_state", icon: "banknotes", title: "No transactions yet",
+          message: "Income and expenses you add will show here.",
           path: (new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id) if can_manage_finance?),
           action: "Add transaction" %>
     <% end %>

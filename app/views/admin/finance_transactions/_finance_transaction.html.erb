@@ -24,9 +24,9 @@
     </p>
   </div>
 
-  <p class="money shrink-0 text-base font-semibold <%= tone_classes(tone, :amount) %>">
-    <span class="sr-only"><%= { income: "Sum lut", expense: "Sum chhuak", transfer: "Transfer" }.fetch(tone) %>:</span>
-    <%= signed_yen(finance_transaction) %>
+  <p class="shrink-0 text-[15px] font-medium">
+    <span class="sr-only"><%= { income: "Income", expense: "Expense", transfer: "Transfer" }.fetch(tone) %>:</span>
+    <%= transaction_money(finance_transaction) %>
   </p>
 
   <% if finance_transaction.expense? || can_manage_finance? %>
@@ -41,8 +41,8 @@
           <%= heroicon "pencil-square", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Edit</span>
         <% end %>
         <%= button_to admin_finance_transaction_path(finance_transaction), method: :delete,
-            form: { data: { turbo_confirm: "He record hi delete i duh tak tak em?" } },
-            class: "btn btn-ghost btn-sm !text-[var(--money-out)] hover:!bg-[var(--money-out-bg)]", title: "Delete" do %>
+            form: { data: { turbo_confirm: "Delete this transaction?" } },
+            class: "btn btn-ghost btn-sm hover:!bg-[var(--money-out-bg)] hover:!text-[var(--money-out)]", title: "Delete" do %>
           <%= heroicon "trash", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Delete</span>
         <% end %>
       <% end %>

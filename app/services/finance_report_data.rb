@@ -17,7 +17,10 @@ class FinanceReportData
 
   attr_reader :transactions, :income, :expense, :balance, :period_year, :start_month, :end_month
 
-  def initialize(transactions:, income:, expense:, balance:, period_year:, start_month:, end_month:)
+  # `account_balances` are the real Cash and Bank balances at the end of the
+  # period ({ "cash" => n, "bank" => n }), transfers included. Without them
+  # the report falls back to the period's income − expense per account.
+  def initialize(transactions:, income:, expense:, balance:, period_year:, start_month:, end_month:, account_balances: nil)
     @transactions = transactions
     @income = income
     @expense = expense
@@ -25,6 +28,7 @@ class FinanceReportData
     @period_year = period_year
     @start_month = start_month
     @end_month = end_month
+    @account_balances = account_balances
   end
 
   def summary_rows
@@ -35,6 +39,46 @@ class FinanceReportData
       [ "Cash Balance", cash_balance ],
       [ "Bank Account Balance", bank_balance ]
     ]
+  end
+
+  def closing_cash
+    cash_balance
+  end
+
+  def closing_bank
+    bank_balance
+  end
+
+  def closing_balances?
+    @account_balances.present?
+  end
+
+  # [[category name, amount], ...] largest first.
+  def income_by_category
+    category_totals(transactions.select(&:income?))
+  end
+
+  def expense_by_category
+    category_totals(transactions.select(&:expense?))
+  end
+
+  # [[month label, income, expense, net, tithe, offering], ...]
+  def monthly_rows
+    month_dates.map do |date|
+      in_month = transactions.select { |transaction| transaction.transaction_date&.year == date.year && transaction.transaction_date&.month == date.month }
+      income_total = in_month.select(&:income?).sum(&:amount)
+      expense_total = in_month.select(&:expense?).sum(&:amount)
+      incomes = in_month.select(&:income?)
+
+      [
+        date.strftime("%b %Y"),
+        income_total,
+        expense_total,
+        income_total - expense_total,
+        category_total(incomes, TITHE_KEYWORDS),
+        category_total(incomes, OFFERING_KEYWORDS)
+      ]
+    end
   end
 
   def chart_rows
@@ -66,11 +110,21 @@ class FinanceReportData
   end
 
   def cash_balance
+    return @account_balances.fetch("cash", 0) if closing_balances?
+
     transactions.select(&:payment_location_cash?).sum { |transaction| signed_amount(transaction) }
   end
 
   def bank_balance
+    return @account_balances.fetch("bank", 0) if closing_balances?
+
     transactions.select(&:payment_location_bank?).sum { |transaction| signed_amount(transaction) }
+  end
+
+  def category_totals(list)
+    list.group_by { |transaction| transaction.finance_category&.name || "Uncategorised" }
+        .map { |name, items| [ name, items.sum(&:amount) ] }
+        .sort_by { |_, amount| -amount }
   end
 
   def signed_amount(transaction)

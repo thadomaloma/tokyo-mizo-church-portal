@@ -22,7 +22,7 @@ module Admin
       if amounts.values.any?(&:negative?)
         load_form
         @amounts = amounts
-        flash.now[:alert] = "Amount chu number (yen) chauh ziak rawh."
+        flash.now[:alert] = "Amounts must be whole numbers (yen)."
         return render :edit, status: :unprocessable_entity
       end
 
@@ -40,7 +40,7 @@ module Admin
         end
       end
 
-      redirect_to admin_budget_path(@year, finance_unit_id: @finance_unit.id), notice: "#{@year} budget save a ni."
+      redirect_to admin_budget_path(@year, finance_unit_id: @finance_unit.id), notice: "#{@year} budget saved."
     rescue ActiveRecord::RecordInvalid => error
       load_form
       @amounts = amounts
@@ -84,7 +84,7 @@ module Admin
       return if can_manage_current_finance_unit?
 
       redirect_to admin_budget_path(@year, finance_unit_id: current_finance_unit&.id),
-                  alert: "Budget siam thei turin he finance unit enkawl phalna i nei lo."
+                  alert: "You need permission to manage this finance unit to edit its budget."
     end
   end
 end

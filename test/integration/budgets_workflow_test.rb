@@ -13,7 +13,7 @@ class BudgetsWorkflowTest < ActionDispatch::IntegrationTest
 
     get admin_budget_path(@year, finance_unit_id: @unit.id)
     assert_response :success
-    assert_match "budget a la awm lo", response.body
+    assert_includes page_text, "No budget for #{@year} yet"
 
     patch admin_budget_path(@year), params: { finance_unit_id: @unit.id, amounts: { @expense_category.id => "120,000" } }
     assert_redirected_to admin_budget_path(@year, finance_unit_id: @unit.id)

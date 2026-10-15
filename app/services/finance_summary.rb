@@ -79,6 +79,50 @@ class FinanceSummary
     end
   end
 
+  # Running total of expenses by day: this month (up to today) against the
+  # whole of last month, so the reader sees whether spending is ahead of pace.
+  def spending_pace
+    this_start = today.beginning_of_month
+    last_start = this_start.prev_month
+    rows = transactions.expense.where(transaction_date: last_start..today.end_of_month)
+                       .group(:transaction_date).sum(:amount)
+    days = (1..[ this_start.end_of_month.day, last_start.end_of_month.day ].max).to_a
+
+    cumulative = lambda do |start, last_day|
+      running = 0
+      days.map do |day|
+        next nil if day > last_day
+
+        running += rows.fetch(start + (day - 1), 0)
+      end
+    end
+
+    {
+      days: days,
+      this_month: cumulative.call(this_start, today.day),
+      last_month: cumulative.call(last_start, last_start.end_of_month.day),
+      this_label: this_start.strftime("%B"),
+      last_label: last_start.strftime("%B")
+    }
+  end
+
+  # Total balance (income − expense to date) at the end of each of the last
+  # `count` months; the current month shows today's balance.
+  def balance_history(count = 12)
+    months = (0...count).map { |offset| today.beginning_of_month << (count - 1 - offset) }
+    opening = transactions.income.where(transaction_date: ...months.first).sum(:amount) -
+              transactions.expense.where(transaction_date: ...months.first).sum(:amount)
+    movements = transactions.income_or_expense.where(transaction_date: months.first..today)
+                            .pluck(:transaction_type, :transaction_date, :amount)
+
+    running = opening
+    months.map do |month|
+      in_month = movements.select { |_, date, _| date.beginning_of_month == month }
+      running += in_month.sum { |type, _, amount| type == "income" ? amount : -amount }
+      { label: month.strftime("%b"), balance: running }
+    end
+  end
+
   private
 
   attr_reader :finance_unit, :today

@@ -2,7 +2,7 @@
   <%= render "admin/shared/form_errors", object: finance_unit %>
 
   <div>
-    <%= form.label :name, "Unit hming", class: "field-label" %>
+    <%= form.label :name, "Unit name", class: "field-label" %>
     <%= form.text_field :name, placeholder: "e.g. Thalai Department", class: "input" %>
   </div>
 
@@ -10,7 +10,7 @@
     <div>
       <%= form.label :unit_type, "Type", class: "field-label" %>
       <%= form.select :unit_type, FinanceUnit::UNIT_TYPE_LABELS.invert.to_a, {}, class: "input" %>
-      <p class="field-hint">Department chuan Treasurer leh Finance Secretary a nei thei; Fund (Building Sum ang) chuan Treasurer chauh. A hnuah thlak theih a ni lo.</p>
+      <p class="field-hint">A department can have a treasurer and a finance secretary; a fund (like a building fund) has a treasurer only. This cannot be changed later.</p>
     </div>
   <% else %>
     <p class="text-sm text-slate-500">Type: <span class="font-semibold text-slate-800"><%= FinanceUnit::UNIT_TYPE_LABELS[finance_unit.unit_type] %></span></p>
@@ -18,7 +18,7 @@
     <% unless finance_unit.main? %>
       <label class="flex items-center gap-3 text-sm font-bold text-slate-700">
         <%= form.check_box :active, class: "h-5 w-5 rounded border-slate-300" %>
-        Active (inactive unit chu menu-ah a lang tawh lo; a record erawh a awm reng)
+        Active (inactive units are hidden from menus, but their records are kept)
       </label>
     <% end %>
   <% end %>

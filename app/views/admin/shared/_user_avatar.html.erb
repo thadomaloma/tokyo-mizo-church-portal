@@ -3,4 +3,4 @@
   text_class = local_assigns.fetch(:text_class, "text-sm")
   initial = (user.name.to_s.first.presence || user.email.to_s.first.presence || "U").upcase
 %>
-<span class="flex <%= size_class %> shrink-0 items-center justify-center rounded-full bg-[#12395a] <%= text_class %> font-semibold text-white" aria-hidden="true"><%= initial %></span>
+<span class="flex <%= size_class %> shrink-0 items-center justify-center rounded-full bg-[var(--brand)] <%= text_class %> font-medium text-white" aria-hidden="true"><%= initial %></span>

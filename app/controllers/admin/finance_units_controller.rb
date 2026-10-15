@@ -23,7 +23,7 @@ module Admin
         FinanceCategory.install_system_catalog_for!(@finance_unit)
       end
 
-      redirect_to admin_finance_units_path, notice: "#{@finance_unit.name} siam a ni. Treasurer leh Viewer assign rawh."
+      redirect_to admin_finance_units_path, notice: "#{@finance_unit.name} created. Now assign a treasurer and viewers."
     rescue ActiveRecord::RecordInvalid
       render :new, status: :unprocessable_entity
     end
@@ -32,7 +32,7 @@ module Admin
 
     def update
       if @finance_unit.update(finance_unit_params.except(:unit_type))
-        redirect_to admin_finance_units_path, notice: "#{@finance_unit.name} siamthat a ni."
+        redirect_to admin_finance_units_path, notice: "#{@finance_unit.name} updated."
       else
         render :edit, status: :unprocessable_entity
       end

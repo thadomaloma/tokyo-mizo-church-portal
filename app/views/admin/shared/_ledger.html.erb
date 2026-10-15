@@ -1,0 +1,86 @@
+<%#
+  Transaction ledger: a statement-style table on wider screens, compact rows
+  on phones. Locals: transactions, location (account perspective, optional),
+  actions (edit/delete/voucher buttons), closed_periods, show_unit.
+%>
+<%
+  location = local_assigns[:location]
+  actions = local_assigns.fetch(:actions, false)
+  closed_periods = local_assigns[:closed_periods]
+  show_unit = local_assigns.fetch(:show_unit, false)
+%>
+
+<table class="ledger hidden md:table">
+  <thead>
+    <tr>
+      <th class="w-28">Date</th>
+      <th>Description</th>
+      <th>Category</th>
+      <th class="w-24">Account</th>
+      <th class="num w-36">Amount</th>
+      <% if actions %><th class="w-32"><span class="sr-only">Actions</span></th><% end %>
+    </tr>
+  </thead>
+  <tbody>
+    <% transactions.each do |transaction| %>
+      <% tone = transaction_tone(transaction, location: location) %>
+      <% closed = closed_periods&.include?([ transaction.transaction_date.year, transaction.transaction_date.month ]) %>
+      <tr>
+        <td class="whitespace-nowrap text-[var(--ink-muted)]"><%= transaction.transaction_date.strftime("%-d %b %Y") %></td>
+        <td>
+          <span class="flex items-center gap-2.5">
+            <span class="row-icon !h-7 !w-7 <%= tone_classes(transaction.transfer? ? :transfer : tone, :icon) %>" aria-hidden="true">
+              <%= heroicon transaction_icon(transaction), variant: :outline, options: { class: "h-4 w-4" } %>
+            </span>
+            <span class="min-w-0">
+              <span class="block font-medium text-[var(--ink)]"><%= transaction.description.presence || (transaction.transfer? ? "Transfer" : transaction.finance_category&.name) %></span>
+              <% extras = [ transaction.expense_voucher_number, (transaction.finance_unit.name if show_unit) ].compact %>
+              <% if extras.any? || closed %>
+                <span class="block text-[13px] text-[var(--ink-muted)]">
+                  <%= extras.join(" · ") %>
+                  <% if closed %><span class="chip chip-muted ml-1 !py-0 !text-[12px]"><%= heroicon "lock-closed", variant: :outline, options: { class: "h-3 w-3" } %>Closed</span><% end %>
+                </span>
+              <% end %>
+            </span>
+          </span>
+        </td>
+        <td class="text-[var(--ink-soft)]"><%= transaction.transfer? ? "Transfer" : transaction.finance_category&.name %></td>
+        <td class="whitespace-nowrap text-[var(--ink-soft)]"><%= transaction.transfer? ? transaction.title : transaction.location_label %></td>
+        <td class="num font-medium"><%= transaction_money(transaction, location: location) %></td>
+        <% if actions %>
+          <td>
+            <span class="flex justify-end gap-0.5">
+              <% if transaction.expense? %>
+                <%= link_to receipt_admin_finance_transaction_path(transaction), class: "btn btn-ghost btn-icon", title: "Voucher print", aria: { label: "Voucher print" } do %>
+                  <%= heroicon "printer", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
+                <% end %>
+              <% end %>
+              <% if can_manage_finance? %>
+                <%= link_to edit_admin_finance_transaction_path(transaction), class: "btn btn-ghost btn-icon", title: "Edit", aria: { label: "Edit" } do %>
+                  <%= heroicon "pencil-square", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
+                <% end %>
+                <%= button_to admin_finance_transaction_path(transaction), method: :delete,
+                    form: { data: { turbo_confirm: "Delete this transaction?" } },
+                    class: "btn btn-ghost btn-icon hover:!bg-[var(--money-out-bg)] hover:!text-[var(--money-out)]", title: "Delete", aria: { label: "Delete" } do %>
+                  <%= heroicon "trash", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
+                <% end %>
+              <% end %>
+            </span>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="md:hidden">
+  <% if actions %>
+    <div class="row-list">
+      <%= render partial: "admin/finance_transactions/finance_transaction", collection: transactions, locals: { closed_periods: closed_periods } %>
+    </div>
+  <% else %>
+    <ul class="row-list">
+      <%= render partial: "admin/shared/activity_row", collection: transactions, as: :transaction, locals: { location: location } %>
+    </ul>
+  <% end %>
+</div>

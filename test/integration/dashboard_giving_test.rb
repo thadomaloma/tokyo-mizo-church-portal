@@ -21,10 +21,11 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_match "Thla 6 kal ta chhung.", response.body
+    assert_select "[data-cash-flow-chart]", text: /Cash flow/
+    assert_select "[data-spending-pace-chart]", text: /Spending pace/
     assert_match Date.current.strftime("%b"), response.body
-    assert_match "¥12,000", response.body
-    assert_match "¥8,000", response.body
+    assert_includes page_text, "¥12,000"
+    assert_includes page_text, "¥8,000"
   end
 
   test "dashboard hides finance cards when the user has no finance assignment" do
@@ -43,7 +44,7 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     assert_no_match(/Kum kal mek chhunga finance kal dan\./, response.body)
     assert_no_match(/This Month Giving/, response.body)
     assert_no_match(/Finance record thar ber te/, response.body)
-    assert_match "Finance access pek i la ni lo", response.body
+    assert_includes page_text, "You don't have finance access yet"
   end
 
   private

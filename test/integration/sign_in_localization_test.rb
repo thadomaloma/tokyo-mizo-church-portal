@@ -1,7 +1,7 @@
 require "test_helper"
 
 class SignInLocalizationTest < ActionDispatch::IntegrationTest
-  test "sign in page uses clear Mizo labels" do
+  test "sign in page uses clear English labels" do
     get new_user_session_path
 
     assert_response :success
@@ -14,16 +14,16 @@ class SignInLocalizationTest < ActionDispatch::IntegrationTest
     assert_no_match(/Sign in to continue/, response.body)
   end
 
-  test "invalid sign in message is shown in Mizo" do
+  test "invalid sign in shows a plain message" do
     post user_session_path, params: {
       user: { email: "unknown@example.com", password: "wrong-password" }
     }
 
     assert_response :unprocessable_entity
-    assert_match(/Email address emaw password a dik lo\./, response.body)
+    assert_match(/Incorrect email or password\./, response.body)
   end
 
-  test "password recovery page uses Mizo instructions" do
+  test "password recovery page uses plain instructions" do
     get new_user_password_path
 
     assert_response :success

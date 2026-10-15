@@ -1,10 +1,9 @@
 <%= render "admin/shared/page_header",
-    eyebrow: Date.current.strftime("%B %Y"),
-    title: "Chibai, #{current_user.name.split.first}",
-    subtitle: (@finance_unit ? "#{@finance_unit.name} sum leh pai dinhmun." : nil),
+    eyebrow: @finance_unit&.name,
+    title: "Hello, #{current_user.name.split.first}",
     actions: (render("admin/shared/unit_switcher", url: admin_root_path) if @finance_unit) %>
 
-<div class="space-y-5 lg:space-y-6">
+<div class="space-y-6">
   <%= render "admin/shared/pwa_install_card" %>
 
   <% if @finance_unit %>
@@ -14,115 +13,140 @@
       expense_change = FinanceSummary.change_percent(summary.month_expense, summary.previous_month_expense)
     %>
 
-    <section class="hero-card p-5 sm:p-7" data-balance-card>
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <p class="text-[15px] text-white/75">Sum awm zawng zawng</p>
-          <p class="money mt-1 text-4xl font-bold sm:text-5xl"><%= yen(summary.current_balance) %></p>
-        </div>
-        <%= link_to admin_accounts_path(finance_unit_id: @finance_unit.id),
-            class: "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-4 text-sm font-semibold hover:bg-white/20" do %>
-          Accounts <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
-        <% end %>
-      </div>
+    <section class="hero-card overflow-hidden" data-balance-card>
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div class="p-6 sm:p-8">
+          <p class="eyebrow">Total balance</p>
+          <p class="figure-xl mt-3 text-[var(--ink)]"><%= money(summary.current_balance) %></p>
+          <p class="mt-3 text-sm text-[var(--ink-muted)]">Cash and bank combined, as of today.</p>
 
-      <div class="mt-5 grid grid-cols-2 gap-3">
-        <% [ [ "Cash", "wallet", summary.cash_balance ], [ "Bank", "building-library", summary.bank_balance ] ].each do |name, icon, balance| %>
-          <div class="hero-tile px-4 py-3">
-            <p class="flex items-center gap-1.5 text-sm text-white/70">
-              <%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %><%= name %>
-            </p>
-            <p class="money mt-1 text-lg font-semibold sm:text-xl"><%= yen(balance) %></p>
-          </div>
-        <% end %>
-      </div>
-    </section>
-
-    <% if can_manage_finance? %>
-      <nav class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Quick actions">
-        <% [
-             [ "Pathianni thawhlawm", "gift", new_admin_offering_path(finance_unit_id: @finance_unit.id), "tone-in" ],
-             [ "Sum chhuak dah", "arrow-trending-down", new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "expense"), "tone-out" ],
-             [ "Bank-ah dah / la", "arrows-right-left", new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "transfer"), "tone-move" ],
-             [ "Thla report", "document-text", admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), "tone-move" ]
-           ].each do |label, icon, path, tone| %>
-          <%= link_to path, class: "card flex min-h-[4.5rem] items-center gap-3 px-4 py-3 transition hover:border-[var(--line-strong)]" do %>
-            <span class="row-icon <%= tone %>" aria-hidden="true"><%= heroicon icon, variant: :outline, options: { class: "h-5 w-5" } %></span>
-            <span class="text-[15px] font-semibold leading-snug text-[var(--ink)]"><%= label %></span>
+          <% if can_manage_finance? %>
+            <nav class="mt-6 flex flex-wrap gap-2" aria-label="Quick actions">
+              <%= link_to new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-primary btn-sm" do %>
+                <%= heroicon "gift", variant: :outline, options: { class: "h-4 w-4" } %> Sunday offering
+              <% end %>
+              <%= link_to new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "expense"), class: "btn btn-secondary btn-sm" do %>
+                <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4" } %> Add expense
+              <% end %>
+              <%= link_to new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "transfer"), class: "btn btn-secondary btn-sm" do %>
+                <%= heroicon "arrows-right-left", variant: :outline, options: { class: "h-4 w-4" } %> Transfer
+              <% end %>
+            </nav>
           <% end %>
-        <% end %>
-      </nav>
-    <% end %>
+        </div>
 
-    <section aria-labelledby="this-month">
-      <h2 id="this-month" class="mb-3 text-[15px] font-semibold text-[var(--ink-muted)]"><%= Date.current.strftime("%B") %> thla chhung</h2>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="card card-pad">
-          <p class="stat-label">Sum lut</p>
-          <p class="stat-value money-in">+<%= yen(summary.month_income) %></p>
-          <p class="mt-2 flex items-center gap-2 text-sm text-[var(--ink-muted)]"><%= percent_change_badge(income_change, good_when: :up) %> <%= "thla kal ta aiin" if income_change %></p>
-        </div>
-        <div class="card card-pad">
-          <p class="stat-label">Sum chhuak</p>
-          <p class="stat-value money-out">−<%= yen(summary.month_expense) %></p>
-          <p class="mt-2 flex items-center gap-2 text-sm text-[var(--ink-muted)]"><%= percent_change_badge(expense_change, good_when: :down) %> <%= "thla kal ta aiin" if expense_change %></p>
-        </div>
-        <div class="card card-pad">
-          <p class="stat-label">A bang (Net)</p>
-          <p class="stat-value <%= summary.net_change.negative? ? "money-out" : "text-[var(--ink)]" %>">
-            <%= summary.net_change.negative? ? "−" : "+" %><%= yen(summary.net_change.abs) %>
-          </p>
-          <p class="mt-2 text-sm text-[var(--ink-muted)]">Sum lut − sum chhuak</p>
+        <div class="grid grid-cols-2 border-t border-[var(--line)] bg-[var(--surface-sunken)] lg:grid-cols-1 lg:border-l lg:border-t-0">
+          <% [ [ "Cash", "wallet", summary.cash_balance ], [ "Bank", "building-library", summary.bank_balance ] ].each_with_index do |(name, icon, balance), index| %>
+            <%= link_to admin_accounts_path(finance_unit_id: @finance_unit.id),
+                class: "group flex flex-col justify-center gap-2 p-5 transition hover:bg-white sm:p-6 #{index.zero? ? "border-r border-[var(--line)] lg:border-b lg:border-r-0" : ""}" do %>
+              <span class="flex items-center justify-between text-sm text-[var(--ink-muted)]">
+                <span class="inline-flex items-center gap-1.5"><%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %><%= name %></span>
+                <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4 opacity-0 transition group-hover:opacity-100" } %>
+              </span>
+              <span class="figure-lg text-[var(--ink)]"><%= money(balance) %></span>
+            <% end %>
+          <% end %>
         </div>
       </div>
     </section>
 
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)] lg:gap-6">
-      <%= render Admin::Dashboard::MonthlyFinanceChart.new(
-          months: @monthly_overview,
-          subtitle: "Thla 6 kal ta chhung."
-        ) %>
+    <section class="card" aria-labelledby="this-month">
+      <div class="card-head">
+        <h2 id="this-month" class="card-title"><%= Date.current.strftime("%B %Y") %></h2>
+        <%= link_to "Monthly report", admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), class: "link text-sm" %>
+      </div>
+      <dl class="grid grid-cols-3 divide-x divide-[var(--line)]">
+        <div class="p-4 sm:p-6">
+          <dt class="stat-label">Income</dt>
+          <dd class="stat-value money-in max-sm:!text-base"><%= money(summary.month_income, sign: :plus) %></dd>
+          <dd class="mt-2 flex items-center gap-2 text-[13px] text-[var(--ink-muted)]"><%= percent_change_badge(income_change, good_when: :up) %><span class="max-sm:hidden"><%= "vs last month" if income_change %></span></dd>
+        </div>
+        <div class="p-4 sm:p-6">
+          <dt class="stat-label">Expenses</dt>
+          <dd class="stat-value money-out max-sm:!text-base"><%= money(summary.month_expense, sign: :minus) %></dd>
+          <dd class="mt-2 flex items-center gap-2 text-[13px] text-[var(--ink-muted)]"><%= percent_change_badge(expense_change, good_when: :down) %><span class="max-sm:hidden"><%= "vs last month" if expense_change %></span></dd>
+        </div>
+        <div class="p-4 sm:p-6">
+          <dt class="stat-label">Net</dt>
+          <dd class="stat-value max-sm:!text-base <%= summary.net_change.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(summary.net_change, sign: (summary.net_change.negative? ? :minus : :plus)) %></dd>
+          <dd class="mt-2 text-[13px] text-[var(--ink-muted)] max-sm:hidden">Income − expenses</dd>
+        </div>
+      </dl>
+    </section>
 
-      <div class="space-y-5">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,1fr)]">
+      <%= render "admin/shared/chart",
+          title: "Cash flow",
+          subtitle: "Money in and out over the last 6 months.",
+          type: "bar",
+          labels: @monthly_overview.map { |month| month[:label] },
+          series: [
+            { label: "Income", color: chart_color(:income), values: @monthly_overview.map { |month| month[:income] } },
+            { label: "Expenses", color: chart_color(:expense), values: @monthly_overview.map { |month| month[:expense] } }
+          ],
+          table_label: "Month",
+          html: { data: { cash_flow_chart: true } } %>
+
+      <div class="space-y-6">
         <section class="card card-pad" data-budget-card>
           <div class="flex items-center justify-between gap-3">
             <h2 class="card-title"><%= Date.current.year %> Budget</h2>
-            <%= link_to (@budget_progress.planned? ? "View" : "Siam rawh"), admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "link text-[15px]" %>
+            <%= link_to (@budget_progress.planned? ? "View" : "Create"), admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "link text-sm" %>
           </div>
 
           <% if @budget_progress.planned? %>
-            <p class="mt-3 text-[15px] text-[var(--ink-soft)]">
-              <span class="money text-2xl font-bold text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span> hman tawh
+            <p class="mt-4 flex items-baseline gap-2">
+              <span class="figure-lg text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span>
+              <span class="text-sm text-[var(--ink-muted)]">used</span>
             </p>
-            <div class="bar mt-2"><span class="<%= @budget_progress.status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
-            <p class="money mt-2 text-sm text-[var(--ink-muted)]"><%= yen(@budget_progress.spent_total) %> / <%= yen(@budget_progress.planned_total) %></p>
+            <div class="bar mt-3"><span class="<%= @budget_progress.status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
+            <p class="mt-2 text-[13px] text-[var(--ink-muted)]"><%= money(@budget_progress.spent_total) %> / <%= money(@budget_progress.planned_total) %></p>
 
-            <ul class="mt-4 space-y-3 border-t border-[var(--line)] pt-4">
+            <ul class="mt-5 space-y-3.5 border-t border-[var(--line)] pt-4">
               <% @budget_progress.lines.sort_by { |line| -line.percent_used }.first(3).each do |line| %>
                 <li>
                   <div class="flex justify-between gap-2 text-sm">
                     <span class="truncate text-[var(--ink-soft)]"><%= line.category.name %></span>
-                    <span class="money shrink-0 font-semibold <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= line.percent_used %>%</span>
+                    <span class="money shrink-0 font-medium <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= line.percent_used %>%</span>
                   </div>
-                  <div class="bar mt-1.5 !h-1.5"><span class="<%= line.over? ? "bg-rose-600" : "bg-sky-700" %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
+                  <div class="bar mt-1.5 !h-1"><span class="<%= line.over? ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
                 </li>
               <% end %>
             </ul>
           <% else %>
-            <p class="card-note mt-2">Kum <%= Date.current.year %> atan budget a la awm lo. Category tin hman tur zat ruahman la, hetah hman zat a lang ang.</p>
+            <p class="card-note mt-2">No budget for <%= Date.current.year %> yet. Plan how much to spend in each category and track it here.</p>
           <% end %>
         </section>
 
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,1fr)]">
+      <%= render "admin/shared/chart",
+          title: "Spending pace",
+          subtitle: "Running total of expenses this month compared with last month.",
+          type: "line",
+          labels: @spending_pace[:days],
+          series: [
+            { label: @spending_pace[:last_label], color: chart_color(:context), values: @spending_pace[:last_month], order: 1, endLabel: false },
+            { label: @spending_pace[:this_label], color: chart_color(:expense), values: @spending_pace[:this_month], order: 0 }
+          ],
+          end_labels: true,
+          table_label: "Day",
+          tooltip_title_prefix: "Day ",
+          html: { data: { spending_pace_chart: true } } %>
+
+      <div class="space-y-6">
         <section class="card card-pad">
-          <h2 class="card-title">Thla hi thawhlawm</h2>
-          <dl class="mt-3 grid grid-cols-2 gap-3">
+          <h2 class="card-title">This month's giving</h2>
+          <dl class="mt-4 grid grid-cols-2 gap-4">
             <div>
-              <dt class="stat-label">Sawm a pakhat</dt>
-              <dd class="money mt-0.5 text-xl font-bold text-[var(--ink)]"><%= yen(@sawmapakhat_total) %></dd>
+              <dt class="stat-label">Tithe</dt>
+              <dd class="figure-lg mt-1 !text-[1.5rem] text-[var(--ink)]"><%= money(@sawmapakhat_total) %></dd>
             </div>
             <div>
-              <dt class="stat-label">Thawhlawm</dt>
-              <dd class="money mt-0.5 text-xl font-bold text-[var(--ink)]"><%= yen(@weekly_offering_total) %></dd>
+              <dt class="stat-label">Offering</dt>
+              <dd class="figure-lg mt-1 !text-[1.5rem] text-[var(--ink)]"><%= money(@weekly_offering_total) %></dd>
             </div>
           </dl>
         </section>
@@ -131,19 +155,17 @@
 
     <section class="card overflow-hidden">
       <div class="card-head">
-        <h2 class="card-title">A thar ber te</h2>
-        <%= link_to "A vaiin en rawh", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "link text-[15px]" %>
+        <h2 class="card-title">Recent activity</h2>
+        <%= link_to "View all", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "link text-sm" %>
       </div>
 
       <% if @recent_transactions.any? %>
-        <ul class="row-list">
-          <%= render partial: "admin/shared/activity_row", collection: @recent_transactions, as: :transaction %>
-        </ul>
+        <%= render "admin/shared/ledger", transactions: @recent_transactions %>
       <% else %>
         <%= render "admin/shared/empty_state",
             icon: "banknotes",
-            title: "Record a la awm lo",
-            message: "Sum lut emaw sum chhuak emaw dah hnuah hetah a lang ang.",
+            title: "No transactions yet",
+            message: "Income and expenses you add will show here.",
             path: (new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id) if can_manage_finance?),
             action: "Add transaction" %>
       <% end %>
@@ -152,8 +174,8 @@
     <section class="card">
       <%= render "admin/shared/empty_state",
           icon: "lock-closed",
-          title: "Finance access pek i la ni lo",
-          message: "Admin-in finance access a pek hunah record te hetah a lang ang." %>
+          title: "You don't have finance access yet",
+          message: "Your records will appear here once an admin gives you access." %>
     </section>
   <% end %>
 </div>

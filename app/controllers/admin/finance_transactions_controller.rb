@@ -21,7 +21,7 @@ module Admin
       return if @finance_transaction.expense?
 
       redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-                  alert: "Receipt chu sum chhuak record atan chauh a awm."
+                  alert: "Vouchers are only available for expenses."
     end
 
     def new
@@ -47,7 +47,7 @@ module Admin
         flash.now[:alert] = closed_period_message(@finance_transaction.transaction_date)
         render :new, status: :unprocessable_entity
       elsif @finance_transaction.save
-        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry save fel a ni."
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction saved."
       else
         load_categories
         render :new, status: :unprocessable_entity
@@ -70,7 +70,7 @@ module Admin
         flash.now[:alert] = closed_period_message(blocking_date)
         render :edit, status: :unprocessable_entity
       elsif @finance_transaction.update(new_attrs)
-        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry siamthat fel a ni."
+        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction updated."
       else
         load_categories
         render :edit, status: :unprocessable_entity
@@ -85,7 +85,7 @@ module Admin
       end
 
       @finance_transaction.destroy
-      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Finance entry delete fel a ni."
+      redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction deleted."
     end
 
     private
@@ -141,7 +141,7 @@ module Admin
     end
 
     def closed_period_message(date)
-      "#{date.strftime("%B %Y")} close a ni. Thlakna siam hmain Monthly Review atangin reopen rawh."
+      "#{date.strftime("%B %Y")} is closed. Reopen it from the monthly report before making changes."
     end
 
     def finance_ledger_transactions

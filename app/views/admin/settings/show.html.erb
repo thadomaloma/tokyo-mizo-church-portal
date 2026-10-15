@@ -1,10 +1,10 @@
 <%= render "admin/shared/page_header",
     title: "Settings",
-    subtitle: current_user.super_admin? ? "I account, app hmangtu te leh finance unit te." : "I account chanchin." %>
+    subtitle: current_user.super_admin? ? "Your account, users and finance units." : "Your account details." %>
 
 <div class="mx-auto max-w-3xl space-y-5">
   <section class="card card-pad">
-    <h2 class="card-title">Ka account</h2>
+    <h2 class="card-title">My account</h2>
     <div class="mt-4 flex items-center gap-4">
       <%= render "admin/shared/user_avatar", user: current_user, size_class: "h-14 w-14", text_class: "text-lg" %>
       <div class="min-w-0">
@@ -13,7 +13,7 @@
         <p class="mt-1.5"><span class="chip chip-brand"><%= current_user.role.humanize %></span></p>
       </div>
     </div>
-    <p class="field-hint mt-4">Password thlak i duh chuan logout la, sign-in page-a "Password theihnghilh" hmang rawh.</p>
+    <p class="field-hint mt-4">To change your password, log out and use "Forgot your password?" on the sign-in page.</p>
   </section>
 
   <% if current_user.super_admin? %>
@@ -21,7 +21,7 @@
       <div class="card-head">
         <div>
           <h2 class="card-title">Users</h2>
-          <p class="card-note">App hmang thei te.</p>
+          <p class="card-note">People who can use this app.</p>
         </div>
         <%= link_to new_admin_user_path, class: "btn btn-primary btn-sm" do %>
           <%= heroicon "user-plus", variant: :outline, options: { class: "h-4 w-4" } %> Add user
@@ -40,11 +40,11 @@
               <p class="row-meta truncate">
                 <%= user.role.humanize %> ·
                 <% if user.super_admin? %>
-                  Finance zawng zawng
+                  All finance units
                 <% elsif user.finance_unit_memberships.any? %>
                   <%= user.finance_unit_memberships.map { |membership| "#{membership.finance_unit.name} (#{membership.role.humanize})" }.to_sentence %>
                 <% else %>
-                  Finance access a la nei lo
+                  No finance access yet
                 <% end %>
               </p>
             </div>
@@ -58,7 +58,7 @@
       <span class="row-icon tone-move" aria-hidden="true"><%= heroicon "building-office-2", variant: :outline, options: { class: "h-5 w-5" } %></span>
       <span class="min-w-0 flex-1">
         <span class="block text-[15px] font-semibold text-[var(--ink)]">Finance units & access</span>
-        <span class="block text-sm text-[var(--ink-muted)]">Treasurer, Finance Secretary leh Viewer ruat rawh; department emaw fund atan unit thar siam theih a ni.</span>
+        <span class="block text-sm text-[var(--ink-muted)]">Assign treasurers, finance secretaries and viewers, or add a unit for a department or fund.</span>
       </span>
       <%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %>
     <% end %>

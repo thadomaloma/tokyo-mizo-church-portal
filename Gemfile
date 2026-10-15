@@ -13,8 +13,6 @@ gem "jbuilder"
 gem "devise"
 gem "pundit"
 gem "ransack"
-gem "chartkick"
-gem "groupdate"
 gem "prawn"
 gem "prawn-table"
 gem "caxlsx"
@@ -63,7 +61,6 @@ group :test do
 end
 
 gem "heroicon", "~> 1.0"
-gem "heroicon-rails", "~> 0.2.9"
 
 gem "ruby_ui", "~> 1.4", group: :development, require: false
 

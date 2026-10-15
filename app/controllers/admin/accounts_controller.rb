@@ -6,6 +6,7 @@ module Admin
       @finance_unit = current_finance_unit
       @finance_summary = FinanceSummary.new(@finance_unit)
       @accounts = FinanceTransaction::LOCATIONS.map { |location| account_overview(location) }
+      @balance_history = @finance_summary.balance_history(12)
     end
 
     private

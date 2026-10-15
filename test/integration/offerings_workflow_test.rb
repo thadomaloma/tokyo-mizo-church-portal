@@ -22,10 +22,10 @@ class OfferingsWorkflowTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to admin_finance_transactions_path(finance_unit_id: @unit.id)
-    assert_equal "11 October thawhlawm ¥57,000 save a ni.", flash[:notice]
+    assert_equal "Offering of ¥57,000 for 11 October saved.", flash[:notice]
     record = @unit.finance_transactions.find_by!(finance_category: @tithe)
     assert_equal 45_000, record.amount
-    assert_equal "Pathianni thawhlawm · Chhiartu: Mawia, Zuali", record.description
+    assert_equal "Sunday offering · Counted by: Mawia, Zuali", record.description
   end
 
   test "an empty or invalid count saves nothing" do
@@ -58,6 +58,8 @@ class OfferingsWorkflowTest < ActionDispatch::IntegrationTest
 
     get admin_finance_period_path(2026, 10, finance_unit_id: @unit.id)
     assert_response :success
-    assert_select "[data-statement]", text: /Balance hmasa.*Sum lut.*Tithe.*¥9,000.*Sum chhuak.*Balance tawp/m
+    assert_select "[data-statement]", text: /Opening balance.*Income.*Tithe.*¥9,000.*Expenses.*Closing balance/m
+    assert_select "a[data-turbo='false'][href*='.pdf'][href*='start_month=10'][href*='end_month=10']", text: /Download PDF/
+    assert_select "button", text: /Print/, count: 0
   end
 end

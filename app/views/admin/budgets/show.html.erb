@@ -1,11 +1,11 @@
 <%
-  status_labels = { on_track: "A kal dik", watch: "Fimkhur rawh", over: "Budget a tlu" }
+  status_labels = { on_track: "On track", watch: "Watch closely", over: "Over budget" }
   status_chips = { on_track: "chip-in", watch: "chip-warn", over: "chip-out" }
-  bar_class = ->(line) { line.over? ? "bg-rose-600" : (line.percent_used > 85 ? "bg-amber-500" : "bg-emerald-600") }
+  bar_class = ->(line) { line.over? ? "bg-[var(--money-out)]" : (line.percent_used > 85 ? "bg-[var(--warn)]" : "bg-[var(--brand-soft)]") }
   actions = capture do
     concat render("admin/shared/unit_switcher", url: admin_budget_path(@year))
     if can_manage_finance?
-      concat link_to((@progress.planned? ? "Edit budget" : "Budget siam rawh"), admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id), class: "btn btn-primary")
+      concat link_to((@progress.planned? ? "Edit budget" : "Create budget"), admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id), class: "btn btn-primary")
     end
   end
 %>
@@ -13,15 +13,15 @@
 <%= render "admin/shared/page_header",
     eyebrow: @finance_unit.name,
     title: "Budget",
-    subtitle: "Kum chhunga category tin hman tur ruahmanna leh hman tawh zat.",
+    subtitle: "Your yearly spending plan for each category, and how much is used.",
     actions: actions %>
 
 <div class="space-y-5">
-  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Budget kum">
+  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Budget year">
     <%= link_to admin_budget_path(@year - 1, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
       <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= @year - 1 %>
     <% end %>
-    <p class="text-lg font-bold text-[var(--ink)]"><%= @year %></p>
+    <p class="font-display text-xl text-[var(--ink)]"><%= @year %></p>
     <%= link_to admin_budget_path(@year + 1, finance_unit_id: @finance_unit.id), class: "btn btn-ghost" do %>
       <%= @year + 1 %><%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5" } %>
     <% end %>
@@ -32,33 +32,33 @@
     <section class="card card-pad" data-budget-summary>
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p class="stat-label">Hman tawh</p>
-          <p class="money mt-1 text-3xl font-bold text-[var(--ink)]">
-            <%= yen(@progress.spent_total) %> <span class="text-lg font-medium text-[var(--ink-muted)]">/ <%= yen(@progress.planned_total) %></span>
+          <p class="stat-label">Spent so far</p>
+          <p class="figure-lg mt-2 text-[var(--ink)]">
+            <%= money(@progress.spent_total) %> <span class="font-sans text-base text-[var(--ink-muted)]">/ <%= money(@progress.planned_total) %></span>
           </p>
         </div>
         <span class="chip <%= status_chips[status] %>"><%= status_labels[status] %></span>
       </div>
 
-      <div class="bar mt-4 !h-3"><span class="<%= status == :over ? "bg-rose-600" : "bg-emerald-600" %>" style="width: <%= [ @progress.percent_used, 100 ].min %>%"></span></div>
+      <div class="bar mt-4 !h-3"><span class="<%= status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @progress.percent_used, 100 ].min %>%"></span></div>
 
       <div class="mt-3 flex flex-wrap justify-between gap-2 text-[15px]">
-        <span class="text-[var(--ink-muted)]"><%= @progress.percent_used %>% hman tawh · kum <%= @progress.year_elapsed_percent %>% a kal tawh</span>
-        <span class="money font-semibold <%= @progress.remaining_total.negative? ? "money-out" : "text-[var(--ink)]" %>">
-          <%= @progress.remaining_total.negative? ? "#{yen(-@progress.remaining_total)} a tlu" : "#{yen(@progress.remaining_total)} a la bang" %>
+        <span class="text-[var(--ink-muted)]"><%= @progress.percent_used %>% used · <%= @progress.year_elapsed_percent %>% of the year gone</span>
+        <span class="money font-medium <%= @progress.remaining_total.negative? ? "money-out" : "text-[var(--ink)]" %>">
+          <%= @progress.remaining_total.negative? ? "#{yen(-@progress.remaining_total)} over budget" : "#{yen(@progress.remaining_total)} left" %>
         </span>
       </div>
     </section>
 
     <section class="card overflow-hidden">
-      <div class="card-head"><h2 class="card-title">Category tin</h2></div>
+      <div class="card-head"><h2 class="card-title">By category</h2></div>
       <ul class="row-list">
         <% @progress.lines.each do |line| %>
           <li class="px-5 py-4 sm:px-6">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <p class="text-[15px] font-semibold text-[var(--ink)]"><%= line.category.name %></p>
               <p class="money text-[15px] text-[var(--ink-muted)]">
-                <span class="font-semibold <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= yen(line.spent) %></span> / <%= yen(line.planned) %>
+                <span class="font-semibold <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= money(line.spent) %></span> / <%= money(line.planned) %>
               </p>
             </div>
             <div class="bar mt-2"><span class="<%= bar_class.call(line) %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
@@ -67,15 +67,15 @@
       </ul>
 
       <% if @progress.unplanned_spending.positive? %>
-        <p class="notice notice-warn !rounded-none">Budget-a awm lo category-ah <%= yen(@progress.unplanned_spending) %> hman a ni.</p>
+        <p class="notice notice-warn !rounded-none"><%= money(@progress.unplanned_spending) %> was spent in categories without a budget.</p>
       <% end %>
     </section>
   <% else %>
     <section class="card">
-      <%= render "admin/shared/empty_state", icon: "chart-pie", title: "#{@year} budget a la awm lo",
-          message: "Category tin atan kum chhunga hman tur zat ruahman la, hman zat leh la bang zat hetah a lang ang.",
+      <%= render "admin/shared/empty_state", icon: "chart-pie", title: "No budget for #{@year} yet",
+          message: "Plan how much to spend in each category this year, then track spending and what is left here.",
           path: (admin_edit_budget_path(@year, finance_unit_id: @finance_unit.id) if can_manage_finance?),
-          action: "Budget siam rawh" %>
+          action: "Create budget" %>
     </section>
   <% end %>
 </div>

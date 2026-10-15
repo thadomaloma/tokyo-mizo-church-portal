@@ -110,7 +110,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     get admin_finance_transactions_path(finance_unit_id: @naupang.id)
 
     assert_response :success
-    assert_select "a[href='#{receipt_admin_finance_transaction_path(expense)}']", count: 1
+    assert_select "a[href='#{receipt_admin_finance_transaction_path(expense)}']", minimum: 1
     assert_select "a[href='#{edit_admin_finance_transaction_path(expense)}']", count: 0
     assert_select "form[action='#{admin_finance_transaction_path(expense)}']", count: 0
 
@@ -191,9 +191,9 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "naupang-department_finance_report"
 
     Zip::File.open_buffer(response.body) do |zip_file|
-      worksheet = zip_file.read("xl/worksheets/sheet1.xml")
+      assert_includes zip_file.read("xl/worksheets/sheet1.xml"), "Naupang Department"
+      worksheet = zip_file.read("xl/worksheets/sheet2.xml")
 
-      assert_includes worksheet, "Naupang Department"
       assert_includes worksheet, "NAUPANG-EXPORT-MARKER"
       assert_not_includes worksheet, "THALAI-EXPORT-MARKER"
     end
@@ -221,7 +221,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_finance_units_path
     assert_equal "finance_secretary", membership.reload.role
-    assert_match(/Finance secretary anga assign tawh/, flash[:alert])
+    assert_match(/already assigned as finance secretary/, flash[:alert])
 
     post admin_finance_unit_finance_unit_memberships_path(@thalai), params: {
       finance_unit_membership: { user_id: "", role: "finance_secretary" }
@@ -264,7 +264,7 @@ class FinanceUnitsWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_finance_units_path
     assert_equal "treasurer", @membership.reload.role
-    assert_match(/Treasurer anga assign tawh/, flash[:alert])
+    assert_match(/already assigned as treasurer/, flash[:alert])
   end
 
   test "an unassigned member cannot open finance ledger or export reports" do

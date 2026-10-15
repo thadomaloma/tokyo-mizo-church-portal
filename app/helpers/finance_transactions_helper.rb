@@ -16,6 +16,26 @@ module FinanceTransactionsHelper
     "¥#{number_with_delimiter(amount.to_i)}"
   end
 
+  # Display amount: the currency symbol is set lighter than the figure.
+  # `sign:` is :plus, :minus or :auto (minus only when negative).
+  def money(amount, sign: :auto, class: nil)
+    amount = amount.to_i
+    prefix = case sign
+    when :plus then "+"
+    when :minus then "−"
+    else amount.negative? ? "−" : ""
+    end
+
+    tag.span(class: [ "money", binding.local_variable_get(:class) ]) do
+      safe_join([ prefix, tag.span("¥", class: "cur"), number_with_delimiter(amount.abs) ])
+    end
+  end
+
+  def transaction_money(transaction, location: nil, class: nil)
+    sign = { income: :plus, expense: :minus, transfer: nil }.fetch(transaction_tone(transaction, location: location))
+    money(transaction.amount, sign: sign, class: [ tone_classes(transaction_tone(transaction, location: location), :amount), binding.local_variable_get(:class) ])
+  end
+
   # :income, :expense or :transfer. Seen from one account (`location`), a
   # transfer reads as money in or out of that account.
   def transaction_tone(transaction, location: nil)
@@ -54,7 +74,7 @@ module FinanceTransactionsHelper
     arrow = percent.positive? ? "↑" : (percent.negative? ? "↓" : "")
 
     tag.span("#{arrow}#{percent.abs}%", class: "chip #{good ? "chip-in" : "chip-out"}",
-             title: "Thla kal ta nen khaikhinna")
+             title: "Compared with last month")
   end
 
   def audit_action_label(audit)

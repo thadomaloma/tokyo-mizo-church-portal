@@ -46,7 +46,8 @@ module Admin
             start_month: @start_month,
             end_month: @end_month,
             ledger_type_label: @ledger_type_label,
-            finance_unit_label: @finance_unit_label
+            finance_unit_label: @finance_unit_label,
+            account_balances: closing_account_balances
           )
 
           send_data pdf.render,
@@ -64,7 +65,8 @@ module Admin
             balance: @balance,
             period_year: @period_year,
             start_month: @start_month,
-            end_month: @end_month
+            end_month: @end_month,
+            account_balances: closing_account_balances
           )
 
           response.headers[
@@ -89,10 +91,32 @@ module Admin
                                                     (period_start << month_count).month,
                                                     (period_start - 1).month)
 
+      rows = period_transactions.reorder(nil).pluck(:transaction_type, :transaction_date, :amount)
+      @monthly_cash_flow = (@start_month..@end_month).map do |month|
+        in_month = rows.select { |_, date, _| date.month == month }
+        {
+          label: Date::ABBR_MONTHNAMES[month],
+          income: in_month.sum { |type, _, amount| type == "income" ? amount : 0 },
+          expense: in_month.sum { |type, _, amount| type == "expense" ? amount : 0 }
+        }
+      end
+
       totals = period_transactions.expense.reorder(nil).group(:finance_category_id).sum(:amount)
       names = FinanceCategory.where(id: totals.keys).pluck(:id, :name).to_h
       @expense_by_category = totals.map { |id, amount| [ names.fetch(id, "No Category"), amount ] }
                                    .sort_by { |_, amount| -amount }
+    end
+
+    # Real Cash and Bank balances (transfers included) at the end of the
+    # selected period, across every unit the report covers.
+    def closing_account_balances
+      period_end = Date.new(@period_year, @end_month, -1)
+      units = @finance_unit ? [ @finance_unit ] : available_finance_units.to_a
+      summaries = units.map { |unit| FinanceSummary.new(unit) }
+
+      FinanceTransaction::LOCATIONS.to_h do |location|
+        [ location, summaries.sum { |summary| summary.account_balance(location, on: period_end) } ]
+      end
     end
 
     def selected_finance_year

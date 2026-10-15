@@ -1,6 +1,6 @@
 <%= link_to path,
     aria: { current: (active ? "page" : nil) },
-    class: "flex min-h-[3.5rem] flex-col items-center justify-center gap-1 #{active ? "text-[#0b1f33]" : "text-slate-500"}" do %>
+    class: "flex min-h-[3.5rem] flex-col items-center justify-center gap-1 #{active ? "text-[var(--brand)]" : "text-[var(--ink-muted)]"}" do %>
   <%= heroicon icon, variant: (active ? :solid : :outline), options: { class: "h-6 w-6" } %>
-  <span class="whitespace-nowrap text-[11px] font-semibold leading-none"><%= name %></span>
+  <span class="whitespace-nowrap text-[11px] font-medium leading-none"><%= name %></span>
 <% end %>

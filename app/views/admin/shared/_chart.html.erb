@@ -1,0 +1,75 @@
+<%#
+  Finance chart card. Locals: title, subtitle, type ("bar" | "line"),
+  labels, series ([{ label:, color:, values:, area: }]), end_labels,
+  table_label (first column heading of the data table), tooltip_title_prefix.
+  Every chart has a legend for two or more series and a table twin.
+%>
+<%
+  chart_id = "chart-#{SecureRandom.hex(4)}"
+  config = {
+    type: type,
+    labels: labels,
+    series: series,
+    endLabels: local_assigns.fetch(:end_labels, false),
+    tooltipTitlePrefix: local_assigns[:tooltip_title_prefix]
+  }
+  rows = labels.each_with_index.reject { |_, index| series.all? { |item| item[:values][index].nil? } }
+%>
+
+<section class="card card-pad" aria-labelledby="<%= chart_id %>-title" <%= tag.attributes(local_assigns[:html] || {}) %>>
+  <div class="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
+    <div>
+      <h2 id="<%= chart_id %>-title" class="card-title"><%= title %></h2>
+      <% if local_assigns[:subtitle].present? %>
+        <p class="card-note mt-0.5"><%= subtitle %></p>
+      <% end %>
+    </div>
+
+    <% if series.size > 1 %>
+      <ul class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[var(--ink-soft)]" aria-label="Legend">
+        <% series.each do |item| %>
+          <li class="inline-flex items-center gap-2">
+            <% if type == "line" %>
+              <span class="inline-block h-0.5 w-4 rounded-full" style="background: <%= item[:color] %>" aria-hidden="true"></span>
+            <% else %>
+              <span class="inline-block h-2.5 w-2.5 rounded-[3px]" style="background: <%= item[:color] %>" aria-hidden="true"></span>
+            <% end %>
+            <%= item[:label] %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <div class="relative mt-4 h-60 sm:h-64" data-controller="finance-chart"
+       data-finance-chart-config-value="<%= config.to_json %>">
+    <canvas data-finance-chart-target="canvas" role="img"
+            aria-label="<%= title %>. Values are listed in the table below."></canvas>
+  </div>
+
+  <details class="mt-3 text-sm">
+    <summary class="link inline-flex cursor-pointer list-none items-center gap-1 text-[13px]">
+      <%= heroicon "table-cells", variant: :outline, options: { class: "h-4 w-4" } %> Show as table
+    </summary>
+    <div class="mt-2 overflow-x-auto">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th><%= local_assigns.fetch(:table_label, "Period") %></th>
+            <% series.each do |item| %><th class="num"><%= item[:label] %></th><% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.each do |label, index| %>
+            <tr>
+              <td><%= "#{local_assigns[:tooltip_title_prefix]}#{label}" %></td>
+              <% series.each do |item| %>
+                <td class="num"><%= item[:values][index].nil? ? "—" : money(item[:values][index]) %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>

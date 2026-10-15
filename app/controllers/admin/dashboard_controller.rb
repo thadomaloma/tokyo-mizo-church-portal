@@ -6,6 +6,7 @@ module Admin
 
       @finance_summary = FinanceSummary.new(@finance_unit)
       @monthly_overview = @finance_summary.monthly_overview(6)
+      @spending_pace = @finance_summary.spending_pace
       @budget_progress = BudgetProgress.new(@finance_unit, Date.current.year)
       @recent_transactions = @finance_unit.finance_transactions.includes(:finance_category).latest.limit(6)
       load_monthly_giving_totals
