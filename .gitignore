@@ -46,3 +46,6 @@
 
 # Browser automation screenshots and logs
 /.playwright-mcp/
+
+# Railway IaC SDK, installed with npm in .railway/
+/.railway/node_modules/

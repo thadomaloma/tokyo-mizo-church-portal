@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Railway Infrastructure as Code SDK for railway.ts",
+  "type": "module",
+  "dependencies": {
+    "railway": "3.16.0"
+  }
+}
