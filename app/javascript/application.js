@@ -2,6 +2,7 @@
 import "Chart.bundle"
 import "@hotwired/turbo-rails"
 import "controllers"
+import "prevent_zoom"
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
