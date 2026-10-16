@@ -23,7 +23,7 @@
     min-height: 210mm;
     padding: 12mm 12mm 10mm;
     background: #fff;
-    color: #23221e;
+    color: #1a2433;
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
     font-size: 9.5pt;
     line-height: 1.45;
@@ -31,15 +31,15 @@
     flex-direction: column;
   }
   .voucher .serif { font-family: Newsreader, "Iowan Old Style", Georgia, serif; }
-  .voucher .label { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #7b766b; }
-  .voucher .rule { border-top: 0.6pt solid #23221e; }
-  .voucher .hair { border-top: 0.4pt solid #d8d3c7; }
+  .voucher .label { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #687385; }
+  .voucher .rule { border-top: 0.6pt solid #1a2433; }
+  .voucher .hair { border-top: 0.4pt solid #dde3ea; }
   .voucher .num { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 
   /* On screen the sheet is shown at its real proportions, scaled to fit. */
   .voucher-frame { width: 100%; max-width: 148mm; margin: 0 auto; }
   @media screen {
-    .voucher { width: 100%; min-height: auto; aspect-ratio: 148 / 210; box-shadow: 0 1px 2px rgb(35 34 30 / 0.06), 0 18px 40px rgb(35 34 30 / 0.12); border: 1px solid #e6e2d8; border-radius: 4px; }
+    .voucher { width: 100%; min-height: auto; aspect-ratio: 148 / 210; box-shadow: 0 1px 2px rgb(26 36 51 / 0.06), 0 18px 40px rgb(26 36 51 / 0.12); border: 1px solid #e3e8ee; border-radius: 4px; }
   }
   @media screen and (max-width: 560px) {
     .voucher { aspect-ratio: auto; padding: 7mm 6mm; }
@@ -75,13 +75,13 @@
           <%= image_tag "tokyo_mizo_church_logo_print.png", alt: "", style: "width: 13mm; height: 13mm; object-fit: contain;" %>
           <div>
             <h1 class="serif" style="font-size: 15pt; line-height: 1.1; margin: 0;">Tokyo Mizo Church</h1>
-            <p style="margin: 1mm 0 0; font-size: 8pt; color: #7b766b;"><%= @finance_unit.name %> · Tokyo, Japan</p>
+            <p style="margin: 1mm 0 0; font-size: 8pt; color: #687385;"><%= @finance_unit.name %> · Tokyo, Japan</p>
           </div>
         </div>
         <div style="text-align: right;">
           <p class="label" style="margin: 0;">Expense Receipt</p>
           <p class="serif num" style="margin: 1mm 0 0; font-size: 13pt;"><%= voucher_number %></p>
-          <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #46443d;"><%= transaction.transaction_date.strftime("%-d %B %Y") %></p>
+          <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #3d4757;"><%= transaction.transaction_date.strftime("%-d %B %Y") %></p>
         </div>
       </header>
 
@@ -90,9 +90,9 @@
       <section>
         <p class="label" style="margin: 0;">Amount paid</p>
         <p class="serif num" style="margin: 1.5mm 0 0; font-size: 30pt; line-height: 1;">
-          <span style="font-size: 17pt; vertical-align: 0.5em; color: #7b766b; margin-right: 1mm;">¥</span><%= number_with_delimiter(transaction.amount) %>
+          <span style="font-size: 17pt; vertical-align: 0.5em; color: #687385; margin-right: 1mm;">¥</span><%= number_with_delimiter(transaction.amount) %>
         </p>
-        <p style="margin: 2.5mm 0 0; font-size: 9pt; font-style: italic; color: #46443d;"><%= yen_in_words(transaction.amount) %></p>
+        <p style="margin: 2.5mm 0 0; font-size: 9pt; font-style: italic; color: #3d4757;"><%= yen_in_words(transaction.amount) %></p>
       </section>
 
       <div class="hair" style="margin: 5mm 0 4mm;"></div>
@@ -106,20 +106,20 @@
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 2.5mm 4mm 2.5mm 0; border-top: 0.4pt solid #d8d3c7; vertical-align: top;">
+            <td style="padding: 2.5mm 4mm 2.5mm 0; border-top: 0.4pt solid #dde3ea; vertical-align: top;">
               <p style="margin: 0; font-weight: 500;"><%= description %></p>
-              <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #7b766b;"><%= category_name %></p>
+              <p style="margin: 0.5mm 0 0; font-size: 8pt; color: #687385;"><%= category_name %></p>
             </td>
-            <td class="num" style="padding: 2.5mm 0; border-top: 0.4pt solid #d8d3c7; text-align: right; vertical-align: top;">¥<%= number_with_delimiter(transaction.amount) %></td>
+            <td class="num" style="padding: 2.5mm 0; border-top: 0.4pt solid #dde3ea; text-align: right; vertical-align: top;">¥<%= number_with_delimiter(transaction.amount) %></td>
           </tr>
           <tr>
-            <td style="padding: 2mm 0; border-top: 0.6pt solid #23221e; font-weight: 600;">Total</td>
-            <td class="num" style="padding: 2mm 0; border-top: 0.6pt solid #23221e; border-bottom: 1.6pt double #23221e; text-align: right; font-weight: 600;">¥<%= number_with_delimiter(transaction.amount) %></td>
+            <td style="padding: 2mm 0; border-top: 0.6pt solid #1a2433; font-weight: 600;">Total</td>
+            <td class="num" style="padding: 2mm 0; border-top: 0.6pt solid #1a2433; border-bottom: 1.6pt double #1a2433; text-align: right; font-weight: 600;">¥<%= number_with_delimiter(transaction.amount) %></td>
           </tr>
         </tbody>
       </table>
 
-      <dl style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; margin: 6mm 0 0; padding: 3mm 3.5mm; background: #f7f5f0; border-radius: 1.5mm;">
+      <dl style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; margin: 6mm 0 0; padding: 3mm 3.5mm; background: #f5f7fa; border-radius: 1.5mm;">
         <div>
           <dt class="label">Paid from</dt>
           <dd style="margin: 0.8mm 0 0;"><%= paid_from %></dd>
@@ -138,15 +138,15 @@
         <div style="display: grid; grid-template-columns: repeat(<%= signatures.size %>, minmax(0, 1fr)); gap: 4mm;">
           <% signatures.each do |label, name| %>
             <div>
-              <div style="height: 12mm; border-bottom: 0.6pt solid #23221e;"></div>
+              <div style="height: 12mm; border-bottom: 0.6pt solid #1a2433;"></div>
               <p class="label" style="margin: 1.5mm 0 0;"><%= label %></p>
-              <p style="margin: 0.3mm 0 0; font-size: 8pt; color: #46443d; min-height: 3.5mm;"><%= name %></p>
+              <p style="margin: 0.3mm 0 0; font-size: 8pt; color: #3d4757; min-height: 3.5mm;"><%= name %></p>
             </div>
           <% end %>
         </div>
 
         <div class="hair" style="margin: 6mm 0 2.5mm;"></div>
-        <p style="margin: 0; display: flex; justify-content: space-between; gap: 4mm; font-size: 7pt; color: #7b766b;">
+        <p style="margin: 0; display: flex; justify-content: space-between; gap: 4mm; font-size: 7pt; color: #687385;">
           <span>Recorded in the <%= @finance_unit.name %> ledger, Tokyo Mizo Church.</span>
           <span class="num">Printed <%= Date.current.strftime("%-d %b %Y") %></span>
         </p>

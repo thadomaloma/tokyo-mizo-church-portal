@@ -9,9 +9,9 @@ import "Chart.bundle"
 // data-finance-chart-config-value = { type: "bar"|"line", labels: [...],
 //   series: [{ label, color, values, area, order, endLabel }], endLabels: true|false }
 // Lower `order` draws on top; `endLabel: false` skips a context series.
-const INK = "#23221e"
-const MUTED = "#7b766b"
-const GRID = "#ece9e1"
+const INK = "#1a2433"
+const MUTED = "#687385"
+const GRID = "#edf0f4"
 const SURFACE = "#ffffff"
 const FONT = "Inter, ui-sans-serif, system-ui, sans-serif"
 
@@ -38,7 +38,7 @@ const crosshair = {
     const { ctx, chartArea } = chart
     const x = active[0].element.x
     ctx.save()
-    ctx.strokeStyle = "#cfc9bb"
+    ctx.strokeStyle = "#c4ccd7"
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(x, chartArea.top)
@@ -119,7 +119,7 @@ export default class extends Controller {
           financeEndLabels: { enabled: Boolean(showEndLabels) },
           tooltip: {
             backgroundColor: SURFACE,
-            borderColor: "#e6e2d8",
+            borderColor: "#e3e8ee",
             borderWidth: 1,
             titleColor: MUTED,
             bodyColor: INK,
@@ -141,7 +141,7 @@ export default class extends Controller {
         scales: {
           x: {
             grid: { display: false },
-            border: { color: "#d3cdbf" },
+            border: { color: "#cdd5df" },
             ticks: {
               color: MUTED,
               font: { family: FONT, size: 12 },

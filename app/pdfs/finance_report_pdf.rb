@@ -3,11 +3,11 @@
 # else. Colour only marks money in (green) and out (red); amounts also carry
 # +/− signs so the report still reads correctly when printed in black & white.
 class FinanceReportPdf
-  INK = "23221E".freeze
-  SOFT = "46443D".freeze
-  MUTED = "7B766B".freeze
-  LINE = "E6E2D8".freeze
-  SUNKEN = "F7F5F0".freeze
+  INK = "1A2433".freeze
+  SOFT = "3D4757".freeze
+  MUTED = "687385".freeze
+  LINE = "E3E8EE".freeze
+  SUNKEN = "F5F7FA".freeze
   BRAND = "16305A".freeze
   MONEY_IN = "2F7552".freeze
   MONEY_OUT = "A8432F".freeze

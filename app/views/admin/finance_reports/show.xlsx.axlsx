@@ -5,11 +5,11 @@
 wb = xlsx_package.workbook
 wb.use_autowidth = false
 
-ink = "23221E"
-soft = "46443D"
-muted = "7B766B"
-line = "E6E2D8"
-sunken = "F7F5F0"
+ink = "1A2433"
+soft = "3D4757"
+muted = "687385"
+line = "E3E8EE"
+sunken = "F5F7FA"
 money_in = "2F7552"
 money_out = "A8432F"
 serif = "Georgia"

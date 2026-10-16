@@ -5,7 +5,7 @@ module ChartsHelper
   CHART_COLORS = {
     income: "#3a6ea5",
     expense: "#d8743f",
-    context: "#b8b2a5"
+    context: "#b3bcc8"
   }.freeze
 
   def chart_color(key)

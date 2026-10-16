@@ -3,16 +3,18 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Warm, editorial neutrals (Mercury-style) with the church navy as the only accent. */
-  --app-bg: #f6f5f1;
-  --sidebar-bg: #efede6;
+  /* Cool, neutral surfaces as used by Stripe, GitHub and Mercury's app: a
+     faint blue-grey canvas, white cards with hairline borders, slate ink,
+     and the church navy as the only accent. */
+  --app-bg: #f6f8fa;
+  --sidebar-bg: #eef1f5;
   --surface: #ffffff;
-  --surface-sunken: #faf9f6;
-  --ink: #23221e;
-  --ink-soft: #46443d;
-  --ink-muted: #7b766b;
-  --line: #e6e2d8;
-  --line-strong: #d3cdbf;
+  --surface-sunken: #f8fafc;
+  --ink: #1a2433;
+  --ink-soft: #3d4757;
+  --ink-muted: #687385;
+  --line: #e3e8ee;
+  --line-strong: #cdd5df;
   --brand: #16305a;
   --brand-hover: #0f2547;
   --brand-soft: #2b4f86;
@@ -257,9 +259,9 @@
   .field-label { display: block; margin-bottom: 0.375rem; font-size: 0.875rem; font-weight: 500; color: var(--ink-soft); }
   .field-hint { margin-top: 0.375rem; font-size: 0.8125rem; line-height: 1.25rem; color: var(--ink-muted); }
   .input { display: block; width: 100%; min-height: 2.75rem; border: 1px solid var(--line-strong); border-radius: 0.625rem; background: #fff; padding: 0.5625rem 0.875rem; color: var(--ink); transition: border-color 120ms, box-shadow 120ms; }
-  .input:hover { border-color: #bfb8a7; }
+  .input:hover { border-color: #b3bdc9; }
   .input:focus { border-color: var(--brand-soft); outline: none; box-shadow: 0 0 0 3px var(--focus); }
-  .input::placeholder { color: #a8a294; }
+  .input::placeholder { color: #9aa4b2; }
   .input-money { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
   .input-amount { min-height: 5rem; border-radius: 0.75rem; text-align: center; font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 2.5rem; font-weight: 400; letter-spacing: -0.01em; font-variant-numeric: lining-nums; }
 
@@ -267,7 +269,7 @@
   .segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.25rem; border-radius: 999px; background: var(--sidebar-bg); padding: 0.25rem; }
   .segmented > * { display: inline-flex; min-height: 2.5rem; align-items: center; justify-content: center; gap: 0.375rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; color: var(--ink-muted); transition: color 120ms; }
   .segmented > *:hover { color: var(--ink); }
-  .segmented > [aria-current="page"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(35 34 30 / 0.08), inset 0 0 0 1px var(--line); }
+  .segmented > [aria-current="page"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(26 36 51 / 0.08), inset 0 0 0 1px var(--line); }
 
   .chip { display: inline-flex; align-items: center; gap: 0.375rem; border-radius: 999px; padding: 0.1875rem 0.625rem; font-size: 0.8125rem; font-weight: 500; }
   .chip-muted { background: var(--sidebar-bg); color: var(--ink-soft); }
@@ -276,7 +278,7 @@
   .chip-warn { background: var(--warn-bg); color: var(--warn); }
   .chip-brand { background: var(--brand-bg); color: var(--brand-soft); }
 
-  .bar { height: 0.375rem; overflow: hidden; border-radius: 999px; background: #ece9e1; }
+  .bar { height: 0.375rem; overflow: hidden; border-radius: 999px; background: #edf0f4; }
   .bar > span { display: block; height: 100%; border-radius: 999px; }
 
   .notice { border-radius: 0.625rem; padding: 0.75rem 1rem; font-size: 0.9375rem; }
@@ -296,7 +298,7 @@
   /* Navigation */
   .side-link { display: flex; min-height: 2.5rem; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0 0.75rem; font-size: 0.9375rem; font-weight: 500; color: var(--ink-soft); transition: background-color 120ms, color 120ms; }
   .side-link:hover { background: rgb(255 255 255 / 0.6); color: var(--ink); }
-  .side-link[aria-current="page"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(35 34 30 / 0.06), inset 0 0 0 1px var(--line); }
+  .side-link[aria-current="page"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(26 36 51 / 0.06), inset 0 0 0 1px var(--line); }
   .side-link svg { color: var(--ink-muted); }
   .side-link[aria-current="page"] svg { color: var(--brand); }
 
