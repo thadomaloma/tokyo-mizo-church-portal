@@ -9,7 +9,7 @@ class FinanceCategory < ApplicationRecord
     { code: "member_contribution", name: "Member Contribution (Member Sum)", category_type: "income", unit_types: %w[church department] },
     { code: "donation", name: "Donation (Thilpek)", category_type: "income", unit_types: %w[church department fund] },
     { code: "fundraising", name: "Fundraising (Sum Tuakna)", category_type: "income", unit_types: %w[church department] },
-    { code: "opening_balance", name: "Opening Balance (Balance Hmasa)", category_type: "income", unit_types: %w[church department fund] },
+    { code: "opening_balance", name: "Opening Balance", category_type: "income", unit_types: %w[church department fund] },
     { code: "other_income", name: "Other Income (Sum Lut Dang)", category_type: "income", unit_types: %w[church department fund] },
     { code: "rent", name: "Church Rent (Biak In Rent)", category_type: "expense", unit_types: %w[church department] },
     { code: "utilities", name: "Utilities (Electric, Gas & Water)", category_type: "expense", unit_types: %w[church department] },
