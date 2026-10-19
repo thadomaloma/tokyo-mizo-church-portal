@@ -77,7 +77,7 @@
         <tbody>
           <tr class="statement-total"><td>Closing balance (<%= period.end_date.strftime("%-d %b") %>)</td><td><%= money(@closing_balance) %></td></tr>
           <tr><td class="pl-4 text-[var(--ink-soft)]">Cash</td><td><%= money(@closing_accounts["cash"]) %></td></tr>
-          <tr><td class="pl-4 text-[var(--ink-soft)]">Bank</td><td><%= money(@closing_accounts["bank"]) %></td></tr>
+          <tr><td class="pl-4 text-[var(--ink-soft)]"><%= @finance_unit.account_label("bank") %></td><td><%= money(@closing_accounts["bank"]) %></td></tr>
         </tbody>
       </table>
     </section>

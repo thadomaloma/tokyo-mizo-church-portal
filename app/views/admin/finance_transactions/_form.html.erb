@@ -2,7 +2,7 @@
   transaction_type = finance_transaction.transaction_type.presence || "expense"
   transfer = transaction_type == "transfer"
   tabs = [ [ "income", "Income", "arrow-trending-up" ], [ "expense", "Expense", "arrow-trending-down" ], [ "transfer", "Transfer", "arrows-right-left" ] ]
-  account_options = [ [ "Cash", "cash" ], [ "Bank", "bank" ] ]
+  account_options = @finance_unit.account_options
   type_labels = { "income" => "Income", "expense" => "Expense", "transfer" => "Transfer" }
 %>
 

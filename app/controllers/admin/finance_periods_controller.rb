@@ -6,7 +6,7 @@ module Admin
 
     def show
       period = @finance_period
-      @transactions = period.transactions.includes(:finance_category).latest
+      @transactions = period.transactions.includes(:finance_category, :finance_unit).latest
       @income = @transactions.income.sum(:amount)
       @expense = @transactions.expense.sum(:amount)
       @net_change = @income - @expense

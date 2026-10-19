@@ -15,7 +15,7 @@
       </div>
       <div>
         <%= form.label :payment_location, "Deposit to", class: "field-label" %>
-        <%= form.select :payment_location, [ [ "Cash", "cash" ], [ "Bank", "bank" ] ], {}, class: "input" %>
+        <%= form.select :payment_location, current_finance_unit.account_options, {}, class: "input" %>
       </div>
     </div>
   </div>

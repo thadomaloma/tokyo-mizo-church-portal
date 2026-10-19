@@ -41,6 +41,9 @@
               <%= heroicon account[:location] == "bank" ? "building-library" : "wallet", variant: :outline, options: { class: "h-5 w-5" } %>
             </span>
             <h2 class="card-title"><%= account[:name] %></h2>
+            <% if account[:location] == "bank" && current_user.super_admin? %>
+              <%= link_to "Rename", edit_admin_finance_unit_path(@finance_unit), class: "link ml-auto text-sm" %>
+            <% end %>
           </div>
 
           <p class="figure-lg mt-4 <%= account[:balance].negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(account[:balance]) %></p>
@@ -67,7 +70,7 @@
 
         <%= link_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id, payment_location: account[:location]),
             class: "flex min-h-12 items-center justify-center gap-1.5 border-t border-[var(--line)] text-[15px] font-semibold text-[var(--brand-soft)] hover:bg-[var(--brand-bg)]" do %>
-          All <%= account[:name].downcase %> transactions <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
+          All <%= account[:location] == "cash" ? "cash" : account[:name] %> transactions <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4" } %>
         <% end %>
       </section>
     <% end %>

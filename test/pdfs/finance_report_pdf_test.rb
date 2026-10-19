@@ -54,6 +54,7 @@ class FinanceReportPdfTest < ActiveSupport::TestCase
 
   def finance_transaction(category, transaction_type, amount, transaction_date, description: category.name)
     FinanceTransaction.new(
+      finance_unit: finance_units(:main),
       transaction_type: transaction_type,
       finance_category: category,
       amount: amount,

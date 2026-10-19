@@ -104,7 +104,7 @@ module Admin
 
     def finance_ledger_transactions
       transactions = finance_transactions
-                       .includes(:finance_category)
+                       .includes(:finance_category, :finance_unit)
                        .latest
 
       transactions = transactions.where(transaction_type: @type_filter) if @type_filter

@@ -6,6 +6,12 @@
     <%= form.text_field :name, placeholder: "e.g. Thalai Department", class: "input" %>
   </div>
 
+  <div>
+    <%= form.label :bank_account_name, "Bank account name", class: "field-label" %>
+    <%= form.text_field :bank_account_name, placeholder: "e.g. Yucho Bank", maxlength: 40, class: "input" %>
+    <p class="field-hint">Shown instead of "Bank" on the dashboard, accounts, vouchers and reports. Leave empty to keep "Bank".</p>
+  </div>
+
   <% if finance_unit.new_record? %>
     <div>
       <%= form.label :unit_type, "Type", class: "field-label" %>
@@ -13,11 +19,11 @@
       <p class="field-hint">A department can have a treasurer and a finance secretary; a fund (like a building fund) has a treasurer only. This cannot be changed later.</p>
     </div>
   <% else %>
-    <p class="text-sm text-slate-500">Type: <span class="font-semibold text-slate-800"><%= FinanceUnit::UNIT_TYPE_LABELS[finance_unit.unit_type] %></span></p>
+    <p class="text-sm text-[var(--ink-muted)]">Type: <span class="font-semibold text-[var(--ink)]"><%= FinanceUnit::UNIT_TYPE_LABELS[finance_unit.unit_type] %></span></p>
 
     <% unless finance_unit.main? %>
-      <label class="flex items-center gap-3 text-sm font-bold text-slate-700">
-        <%= form.check_box :active, class: "h-5 w-5 rounded border-slate-300" %>
+      <label class="flex items-center gap-3 text-sm font-medium text-[var(--ink-soft)]">
+        <%= form.check_box :active, class: "h-5 w-5 rounded border-[var(--line-strong)]" %>
         Active (inactive units are hidden from menus, but their records are kept)
       </label>
     <% end %>

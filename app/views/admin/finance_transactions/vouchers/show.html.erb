@@ -3,7 +3,7 @@
   voucher_number = transaction.expense_voucher_number
   category_name = transaction.finance_category&.name || "—"
   description = transaction.description.presence || category_name
-  paid_from = transaction.payment_location_bank? ? "Bank account" : "Cash"
+  paid_from = transaction.payment_location_bank? ? (@finance_unit.bank_account_name || "Bank account") : "Cash"
   signatures = [
     [ "Prepared by", transaction.recorded_by&.name ],
     ([ "Checked by", "Finance Secretary" ] unless @finance_unit.unit_type == "fund"),

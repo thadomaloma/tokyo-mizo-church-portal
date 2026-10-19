@@ -17,12 +17,12 @@ module Admin
 
       {
         location: location,
-        name: FinanceTransaction::LOCATION_LABELS.fetch(location),
+        name: @finance_unit.account_label(location),
         balance: @finance_summary.account_balance(location),
         month_in: month_in,
         month_out: month_out,
         recent: transactions.where(payment_location: location).or(transactions.where(transfer_to_location: location))
-                            .includes(:finance_category).latest.limit(5)
+                            .includes(:finance_category, :finance_unit).latest.limit(5)
       }
     end
   end

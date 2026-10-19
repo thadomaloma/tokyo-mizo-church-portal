@@ -27,6 +27,7 @@ class FinanceReportPdf
     end_month: Date.current.month,
     ledger_type_label: "All Transactions",
     finance_unit_label: "Main Church Finance",
+    bank_label: "Bank",
     account_balances: nil
   )
     @transactions = transactions
@@ -37,6 +38,7 @@ class FinanceReportPdf
     @period_end = Date.new(period_year, end_month, -1)
     @ledger_type_label = ledger_type_label
     @finance_unit_label = finance_unit_label
+    @bank_label = bank_label
     @report_data = FinanceReportData.new(
       transactions: transactions,
       income: income,
@@ -158,7 +160,7 @@ class FinanceReportPdf
     title = report_data.closing_balances? ? "Balances at #{period_end.strftime('%-d %B %Y')}" : "Movement by account"
     items = [
       [ "Cash", report_data.closing_cash ],
-      [ "Bank", report_data.closing_bank ],
+      [ @bank_label, report_data.closing_bank ],
       [ "Total", report_data.closing_cash + report_data.closing_bank ]
     ]
     height = 46
@@ -287,7 +289,7 @@ class FinanceReportPdf
       data << [
         transaction.transaction_date.strftime("%-d %b %Y"),
         { content: "#{escape(title)}#{details.present? ? "\n<font size='7'><color rgb='#{MUTED}'>#{escape(details)}</color></font>" : ''}", inline_format: true },
-        transaction.payment_location_bank? ? "Bank" : "Cash",
+        transaction.location_label,
         signed_transaction(transaction)
       ]
     end

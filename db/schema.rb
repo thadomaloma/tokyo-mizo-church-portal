@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_030000) do
   create_table "audits", force: :cascade do |t|
     t.string "action"
     t.integer "associated_id"
@@ -121,6 +121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_020000) do
 
   create_table "finance_units", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.string "bank_account_name"
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.integer "position", default: 0, null: false

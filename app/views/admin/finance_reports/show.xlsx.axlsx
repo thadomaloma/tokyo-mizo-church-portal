@@ -84,7 +84,7 @@ wb.add_worksheet(name: "Summary") do |sheet|
   sheet.add_row [], height: 12
 
   balance_title = report_data.closing_balances? ? "Balances at #{period_end.strftime('%-d %B %Y')}" : "Movement by account"
-  sheet.add_row [ balance_title, nil, "Cash", "Bank", nil, "Total" ], style: box_label_style, height: 18
+  sheet.add_row [ balance_title, nil, "Cash", @bank_label, nil, "Total" ], style: box_label_style, height: 18
   sheet.add_row [ "Transfers included", nil, report_data.closing_cash, report_data.closing_bank, nil, report_data.closing_cash + report_data.closing_bank ],
                 style: [ box_label_style, box_label_style, box_value_style, box_value_style, box_value_style, box_total_style ], height: 22
   sheet.add_row [], height: 16
@@ -145,7 +145,7 @@ wb.add_worksheet(name: "Transactions") do |sheet|
       income_row ? "Income" : "Expense",
       transaction.finance_category&.name || "—",
       transaction.description.presence || "—",
-      transaction.payment_location_bank? ? "Bank" : "Cash",
+      transaction.location_label,
       transaction.expense_voucher_number || "",
       income_row ? transaction.amount : -transaction.amount
     ], style: [ date_style, (income_row ? in_type_style : out_type_style), cell_style, cell_style, cell_style, muted_cell_style, signed_amount_style ],

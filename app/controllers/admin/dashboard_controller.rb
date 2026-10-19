@@ -8,7 +8,7 @@ module Admin
       @monthly_overview = @finance_summary.monthly_overview(6)
       @spending_pace = @finance_summary.spending_pace
       @budget_progress = BudgetProgress.new(@finance_unit, Date.current.year)
-      @recent_transactions = @finance_unit.finance_transactions.includes(:finance_category).latest.limit(6)
+      @recent_transactions = @finance_unit.finance_transactions.includes(:finance_category, :finance_unit).latest.limit(6)
       load_monthly_giving_totals
     end
 
@@ -16,7 +16,7 @@ module Admin
 
     def load_monthly_giving_totals
       transactions = @finance_unit.finance_transactions
-                       .includes(:finance_category)
+                       .includes(:finance_category, :finance_unit)
                        .this_month
                        .to_a
 

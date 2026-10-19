@@ -45,7 +45,7 @@ module Admin
     end
 
     def finance_unit_params
-      params.require(:finance_unit).permit(:name, :unit_type, :active)
+      params.expect(finance_unit: %i[name unit_type active bank_account_name])
     end
   end
 end

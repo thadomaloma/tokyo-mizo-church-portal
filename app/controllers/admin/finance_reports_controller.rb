@@ -45,11 +45,13 @@ module Admin
         @finance_unit = nil
         @finance_unit_selector = "all"
         @finance_unit_label = "Consolidated Finance"
+        @bank_label = "Bank"
         @finance_scope = FinanceTransaction.where(finance_unit: available_finance_units)
       else
         @finance_unit = current_finance_unit
         @finance_unit_selector = @finance_unit.id
         @finance_unit_label = @finance_unit.name
+        @bank_label = @finance_unit.account_label("bank")
         @finance_scope = @finance_unit.finance_transactions
       end
     end
@@ -67,7 +69,7 @@ module Admin
       {
         income: @income, expense: @expense, balance: @balance, period_label: @period.label,
         period_year: @period.year, start_month: @period.start_month, end_month: @period.end_month,
-        ledger_type_label: @ledger_type_label, finance_unit_label: @finance_unit_label,
+        ledger_type_label: @ledger_type_label, finance_unit_label: @finance_unit_label, bank_label: @bank_label,
         account_balances: closing_account_balances
       }
     end

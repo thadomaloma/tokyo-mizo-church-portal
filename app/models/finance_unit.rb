@@ -19,6 +19,9 @@ class FinanceUnit < ApplicationRecord
   validates :name, :slug, :unit_type, presence: true
   validates :slug, uniqueness: true, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }
   validates :unit_type, inclusion: { in: UNIT_TYPES }
+  validates :bank_account_name, length: { maximum: 40 }
+
+  normalizes :bank_account_name, with: ->(name) { name.squish.presence }
   validate :main_unit_must_remain_active
   validate :slug_cannot_change, on: :update
   validate :membership_roles_must_match_unit_type, on: :update
@@ -30,6 +33,16 @@ class FinanceUnit < ApplicationRecord
 
   def self.main
     find_by!(slug: MAIN_SLUG)
+  end
+
+  # Display name of one of the unit's two accounts: "Cash", or the bank's
+  # name when one is set (e.g. "Yucho Bank"), otherwise "Bank".
+  def account_label(location)
+    location.to_s == "bank" ? (bank_account_name.presence || "Bank") : "Cash"
+  end
+
+  def account_options
+    FinanceTransaction::LOCATIONS.map { |location| [ account_label(location), location ] }
   end
 
   def main?

@@ -2,7 +2,6 @@ class FinanceTransaction < ApplicationRecord
   audited
 
   LOCATIONS = %w[cash bank].freeze
-  LOCATION_LABELS = { "cash" => "Cash", "bank" => "Bank" }.freeze
 
   belongs_to :finance_category, optional: true
   belongs_to :finance_unit
@@ -40,11 +39,11 @@ class FinanceTransaction < ApplicationRecord
   scope :this_month, -> { where(transaction_date: Date.current.all_month) }
 
   def location_label
-    LOCATION_LABELS.fetch(payment_location, payment_location.to_s.humanize)
+    finance_unit.account_label(payment_location)
   end
 
   def transfer_to_label
-    LOCATION_LABELS.fetch(transfer_to_location, transfer_to_location.to_s.humanize)
+    finance_unit.account_label(transfer_to_location)
   end
 
   # Shown wherever a category name would be: transfers have no category.
