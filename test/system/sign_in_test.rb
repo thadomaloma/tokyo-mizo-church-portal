@@ -10,6 +10,6 @@ class SignInTest < ApplicationSystemTestCase
     click_button "Sign In"
 
     assert_current_path authenticated_root_path
-    assert_text "Chibai, #{user.name}. Lo kir leh rawh."
+    assert_text "Hello, #{user.name.split.first}"
   end
 end

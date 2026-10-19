@@ -6,7 +6,7 @@ class FinanceAccessTest < ApplicationSystemTestCase
 
     visit admin_finance_units_path
 
-    assert_text "Finance Access"
+    assert_text "Finance units & access"
     assert_text "Permission Workflow"
     assert_text "Main Church Finance"
     assert_field "finance-unit-#{finance_units(:main).id}-treasurer"
@@ -17,7 +17,7 @@ class FinanceAccessTest < ApplicationSystemTestCase
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
 
     page.current_window.resize_to(390, 844)
-    assert_text "Finance Access"
+    assert_text "Finance units & access"
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
   end
 
@@ -29,6 +29,6 @@ class FinanceAccessTest < ApplicationSystemTestCase
     fill_in "Password", with: "password"
     click_button "Sign In"
     assert_current_path authenticated_root_path
-    assert_text "Chibai, #{user.name}. Lo kir leh rawh."
+    assert_text "Hello, #{user.name.split.first}"
   end
 end
