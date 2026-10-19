@@ -1,130 +1,158 @@
-# Tokyo Mizo Church Portal
+# Tokyo Mizo Church Finance
 
-Tokyo Mizo Church Portal is a finance management app built with Ruby on Rails 8. It helps the church's finance team record income and expenses, print expense vouchers, close months, and export reports.
+The finance app of Tokyo Mizo Church, Japan. The church's finance team records
+Sunday offerings, income and expenses, prints expense vouchers, closes each
+month and exports reports, from a laptop or a phone.
 
-![Tokyo Mizo Church Portal dashboard preview](docs/dashboard-preview.png)
+<p>
+  <img src="docs/dashboard-preview.png" alt="Dashboard on a laptop: total balance card, this month's income and expenses, cash flow chart and budget progress" width="72%">
+  &nbsp;
+  <img src="docs/mobile-preview.png" alt="The same dashboard on a phone, with the bottom navigation bar" width="22%">
+</p>
 
-## Features
+Version 2.0 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thado
 
-The workflow follows Sumvon (our personal finance app): Home, Transactions,
-Budget, Reports and Accounts, with one prominent "Add transaction" action.
+## What it does
 
-* Multi-unit ledgers (Main Church, departments, funds)
-* Income, expense and Cash ↔ Bank transfers (transfers never count as income or expense)
-* Accounts page with Cash and Bank balances
-* Yearly budget per expense category, with progress on the dashboard
-* Monthly comparison and spending by category in reports
-* Expense vouchers with printable receipts, and monthly closing
-* PDF & Excel report export
-* A handful of user accounts with per-unit finance access, managed from Settings
-* Mobile-friendly, installable as a PWA
+**Recording**
 
-## User Roles
+* Income, expenses and transfers between Cash and Bank. Transfers move money
+  between accounts and never count as income or expense.
+* Sunday offering form: every giving category on one screen, totalled as you type.
+* Expense vouchers numbered per year (EXP-2026-0001, …) and printable as an A5
+  payment voucher with the amount in words and signature lines.
+* Change history on every transaction (who changed what, and when).
 
-* Super Admin
-* Pastor
-* Adviser
-* Secretary
-* Treasurer
-* Member
+**Overview**
 
-## Finance Units
+* Home: total balance, Cash and Bank, this month against last month, cash
+  flow and spending-pace charts, budget progress and recent activity.
+* Accounts: balance over time and each account's money in and out.
+* Yearly budget per expense category, with progress through the year.
 
-The portal keeps each ministry ledger separate while retaining one shared login
-and administration area. The default units are Main Church Finance, Naupang
-Department, Thalai Department, Hmeichhe Department, Building Sum, and Mission
-Sum.
+**Month end and reports**
 
-President and Secretary accounts can oversee every unit, assign unit-specific
-finance roles, and export a consolidated report. Church and department units
-support Treasurers, Finance Secretaries, and Viewers; Building Sum and Mission
-Sum use a Treasurer (plus optional read-only Viewers). Unit managers can update
-only their assigned ledgers. Existing finance records are assigned to Main
-Church Finance automatically when the multi-unit migration runs.
+* Monthly statement with opening and closing balances. Closing a month locks
+  its entries until someone who manages the unit reopens it.
+* Reports for any range of months: by category, by month, tithe and offering.
+  Download as PDF or Excel. Admins can also report on all units together.
 
-## Technology Stack
+**Finance units**
 
-* Ruby on Rails 8
-* SQLite (single file, no database server)
-* Hotwire (Turbo & Stimulus)
-* Tailwind CSS
-* Devise Authentication
-* Prawn PDF
-* Axlsx Excel Export
+The Main Church Finance ledger exists from the start. Departments and funds
+(for example a building or mission fund) can be added in Settings when they
+start keeping their own money; each has its own ledger, categories and
+vouchers.
 
-## Local Setup
+**Phones**
 
-Clone the repository:
+* Installable on the Home Screen (PWA), with an offline page.
+* Bottom navigation bar with a central "Add transaction" button; larger text,
+  fixed 100% zoom.
 
-```bash
+## Who can do what
+
+| Role | Access |
+| --- | --- |
+| **Chairman**, **Secretary** | Everything: all units, users, finance units, backups |
+| **Treasurer**, **Finance Secretary** | Per unit, as assigned in Settings → Finance units & access |
+
+Within a unit, a person is a **Treasurer** or **Finance Secretary** (can add,
+edit and delete entries, close and reopen months, edit budgets) or a
+**Viewer** (read only). Records of other units stay hidden.
+
+## Security and backups
+
+* Sign-in is limited to 10 attempts per IP address in 3 minutes, and password
+  reset requests to 5 in 15 minutes.
+* Ten wrong passwords lock an account for an hour. The Chairman or Secretary
+  can unlock it sooner by saving the user in Settings.
+* A Content Security Policy only lets the app's own scripts run. HTTPS only;
+  passwords need at least 12 characters.
+* Closed months cannot be changed, and every transaction keeps an audit trail.
+* **Backups** are emailed, gzipped and encrypted with `BACKUP_PASSPHRASE`, to
+  `BACKUP_EMAIL`, so a copy always lives outside the server:
+  * every night at 11pm (Tokyo) when finance records changed that day;
+  * every Sunday at 11pm regardless, so there is a copy at least weekly;
+  * whenever an admin presses "Send backup now" in Settings.
+
+  A Gmail filter on the subject "Tokyo Mizo Church Finance backup" keeps them
+  in their own label.
+
+### Opening and restoring a backup
+
+On any computer with OpenSSL:
+
+```sh
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
+  -in tmc-backup-YYYY-MM-DD.sqlite3.gz.enc -out backup.sqlite3.gz
+gunzip backup.sqlite3.gz
+```
+
+To restore, upload `backup.sqlite3` to the server's volume as
+`production.sqlite3` (on Railway: `railway volume files upload … --overwrite`)
+and redeploy.
+
+## Technology
+
+* Ruby 4.0, Rails 8.1
+* SQLite: one database file holds records, cache and background jobs; no
+  database server
+* Hotwire (Turbo and Stimulus), importmap, Tailwind CSS 4
+* Devise (sign-in, password reset, lockout), audited (change history)
+* Prawn (PDF), caxlsx (Excel), Chart.js (charts)
+* Solid Queue (backups and other background jobs) and Solid Cache
+* Minitest and Capybara; CI runs tests, browser tests, RuboCop, Brakeman,
+  bundler-audit and importmap audit on every push
+
+## Running it locally
+
+```sh
 git clone git@github.com:thadomaloma/tokyo-mizo-church-portal.git
 cd tokyo-mizo-church-portal
-```
-
-Install dependencies:
-
-```bash
 bundle install
-```
-
-Create and prepare the database:
-
-```bash
 bin/rails db:prepare
-```
-
-Create the first admin account:
-
-```bash
-SEED_ADMIN_EMAIL=admin@tokyomizochurch.org \
-SEED_ADMIN_PASSWORD='<use-a-long-unique-password>' \
-SEED_ADMIN_NAME="Super Admin" \
+SEED_ADMIN_EMAIL=you@example.com \
+SEED_ADMIN_PASSWORD='<a long unique password>' \
+SEED_ADMIN_NAME="Your Name" \
 bin/rails db:seed
-```
-
-Start the app:
-
-```bash
 bin/dev
 ```
 
-Open:
+Open <http://localhost:3000> and sign in with the seed account (a Chairman).
+The seed password is only applied when the account is first created; to change
+it on purpose, run the seed once with `RESET_SEED_ADMIN_PASSWORD=true`.
 
-```text
-http://localhost:3000
+Run the checks CI runs:
+
+```sh
+bin/rails test test:system
+bin/rubocop
+bin/brakeman
 ```
 
-The seed password is applied only when the account is first created. To rotate it
-intentionally, set `RESET_SEED_ADMIN_PASSWORD=true` for one seed run and then
-remove that variable.
+## Deploying
 
-## Production Setup
+The app is one Docker image and one persistent folder, `/rails/storage`, which
+holds the SQLite database. On boot the entrypoint runs `db:prepare`, which
+applies any new migrations.
 
-Everything the app stores is one SQLite database under `storage/`
-(`storage/production.sqlite3`, or `DATABASE_PATH`); nothing is uploaded. Run
-the Docker image on any small server with that folder mounted as a persistent
-volume at `/rails/storage` (`config/deploy.yml` already does this for Kamal).
-The entrypoint runs `db:prepare` on boot.
+It runs on Railway: pushing to `main` deploys, and `.railway/railway.ts`
+describes the service and its volume (preview changes with
+`railway config plan`). Any host that can run a container with a persistent
+volume works the same way.
 
-Required variables:
+Variables:
 
-* `SECRET_KEY_BASE` or `RAILS_MASTER_KEY`
-* `APP_HOST` (the public host name, used in password reset emails)
-* `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`, and optionally `MAILER_FROM`
-* `SOLID_QUEUE_IN_PUMA=true` so background jobs run inside the web process
+| Variable | Purpose |
+| --- | --- |
+| `RAILS_MASTER_KEY` or `SECRET_KEY_BASE` | Rails secrets |
+| `APP_HOST` | Public host name for links in emails (falls back to Railway's domain) |
+| `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD` | Sending password resets and backups (optional `MAILER_FROM`) |
+| `SOLID_QUEUE_IN_PUMA=true` | Run background jobs inside the web process |
+| `BACKUP_PASSPHRASE` | Encrypts backups; keep it in a password manager. No passphrase, no backups |
+| `BACKUP_EMAIL` | Where backups go (defaults to `GMAIL_USERNAME`) |
 
-Back up the `storage/` folder every day; it holds the whole database.
-
-Do not keep `SEED_ADMIN_PASSWORD` set after the first successful seed.
-
-### Moving data off the old PostgreSQL database
-
-`bin/rails db:import_from_postgres` copies users, finance units, categories,
-transactions, periods and audits from `SOURCE_DATABASE_URL` into an empty
-SQLite database. See `lib/tasks/import_from_postgres.rake` for the exact steps.
-
-## Purpose
-
-The portal is designed to keep the church's finances accurate and transparent while staying simple and cheap to run.
-
-Developed for Tokyo Mizo Church, Japan.
+Never set `DATABASE_URL`: the app refuses to start with it, so a linked
+database cannot replace the SQLite file by accident. Do not leave
+`SEED_ADMIN_PASSWORD` set after the first seed.
