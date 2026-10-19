@@ -29,6 +29,8 @@ module Admin
       end
 
       if @user.save
+        # Saving a locked-out user (often with a new password) unlocks them.
+        @user.unlock_access! if @user.access_locked?
         redirect_to admin_settings_path, notice: "User updated."
       else
         render :edit, status: :unprocessable_entity

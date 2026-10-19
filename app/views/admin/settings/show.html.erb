@@ -36,6 +36,7 @@
               <p class="row-title truncate">
                 <%= user.name %>
                 <% unless user.active? %><span class="chip chip-out ml-1 !py-0">Inactive</span><% end %>
+                <% if user.access_locked? %><span class="chip chip-warn ml-1 !py-0" title="Too many wrong passwords. Saving this user unlocks it.">Locked</span><% end %>
               </p>
               <p class="row-meta truncate">
                 <%= user.role.humanize %> ·

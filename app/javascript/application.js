@@ -3,6 +3,7 @@ import "Chart.bundle"
 import "@hotwired/turbo-rails"
 import "controllers"
 import "prevent_zoom"
+import "password_toggle"
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

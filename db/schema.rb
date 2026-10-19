@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_010000) do
   create_table "audits", force: :cascade do |t|
     t.string "action"
     t.integer "associated_id"
@@ -280,6 +280,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_030000) do
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.integer "failed_attempts", default: 0, null: false
+    t.datetime "locked_at"
     t.string "name"
     t.string "phone"
     t.datetime "remember_created_at"

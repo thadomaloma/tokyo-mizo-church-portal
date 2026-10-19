@@ -21,7 +21,7 @@
               <%= f.password_field :password, autocomplete: "current-password", data: { password_input: true },
                   class: "min-h-[2.875rem] min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3.5 text-[var(--ink)] focus:outline-none focus:ring-0" %>
               <button type="button" class="mr-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--ink-muted)] hover:bg-[var(--app-bg)]"
-                      data-password-toggle onclick="return window.togglePasswordVisibility(this)" aria-label="Show password" title="Show password">
+                      data-password-toggle aria-label="Show password" title="Show password">
                 <span data-password-show-icon><%= heroicon "eye", variant: :outline, options: { class: "h-5 w-5" } %></span>
                 <span class="hidden" data-password-hide-icon><%= heroicon "eye-slash", variant: :outline, options: { class: "h-5 w-5" } %></span>
               </button>

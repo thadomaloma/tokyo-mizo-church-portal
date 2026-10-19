@@ -120,15 +120,16 @@
       <p>You need an internet connection to see the latest finance data.</p>
 
       <div class="actions">
-        <button type="button" class="retry" onclick="location.reload()">Retry</button>
+        <button type="button" class="retry" data-retry>Retry</button>
       </div>
 
       <p class="status" data-status>Waiting for an internet connection&hellip;</p>
     </div>
 
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       (function () {
         var status = document.querySelector("[data-status]");
+        document.querySelector("[data-retry]").addEventListener("click", function () { location.reload(); });
 
         function render() {
           var online = navigator.onLine;

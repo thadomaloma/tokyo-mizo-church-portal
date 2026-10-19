@@ -2,6 +2,7 @@
 
 pin "application"
 pin "prevent_zoom"
+pin "password_toggle"
 pin "Chart.bundle", to: "Chart.bundle.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"

@@ -10,7 +10,7 @@ en:
       already_authenticated: "You are already signed in."
       inactive: "Your account is not active yet."
       invalid: "Incorrect email or password."
-      locked: "Your account is locked."
+      locked: "Your account is locked after too many wrong passwords. Try again in an hour, or ask the Chairman or Secretary to unlock it."
       last_attempt: "You have one more try before your account is locked."
       not_found_in_database: "Incorrect email or password."
       timeout: "Your session expired. Please sign in again."

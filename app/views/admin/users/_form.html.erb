@@ -11,11 +11,11 @@
             text_class: "text-lg" %>
 
         <div class="min-w-0">
-          <p class="font-semibold text-slate-900">
+          <p class="font-semibold text-[var(--ink)]">
             <%= user.name.presence || "New User" %>
           </p>
 
-          <p class="break-words text-sm text-slate-500">
+          <p class="break-words text-sm text-[var(--ink-muted)]">
             <%= user.email.presence || "Email will show here" %>
           </p>
         </div>
@@ -65,7 +65,7 @@
             { prompt: "Select role" },
             class: "input" %>
 
-        <p class="mt-2 text-xs leading-5 text-slate-500">
+        <p class="mt-2 text-xs leading-5 text-[var(--ink-muted)]">
           This is the person's church role. Finance permissions are set per unit on the Finance units & access page.
         </p>
       </div>
@@ -74,14 +74,14 @@
     <div class="rounded-xl border border-[var(--line)] p-4">
       <div class="flex items-start gap-3">
         <%= form.check_box :active,
-            class: "mt-1 rounded border-slate-300 text-sky-600 focus:ring-sky-500" %>
+            class: "mt-1 rounded border-[var(--line-strong)] text-[var(--brand)] focus:ring-[var(--brand)]" %>
 
         <div>
           <%= form.label :active,
               "Active Account",
-              class: "font-bold text-slate-800" %>
+              class: "font-bold text-[var(--ink)]" %>
 
-          <p class="mt-1 text-sm text-slate-500">
+          <p class="mt-1 text-sm text-[var(--ink-muted)]">
             Active users can sign in. Inactive users cannot.
           </p>
         </div>
@@ -89,16 +89,16 @@
     </div>
 
     <div class="rounded-xl bg-[var(--app-bg)] p-4">
-      <h2 class="font-semibold text-slate-900">
+      <h2 class="font-semibold text-[var(--ink)]">
         Password
       </h2>
 
       <% if user.persisted? %>
-        <p class="mt-1 text-sm text-slate-500">
+        <p class="mt-1 text-sm text-[var(--ink-muted)]">
           Leave the password fields empty to keep the current password.
         </p>
       <% else %>
-        <p class="mt-1 text-sm text-slate-500">
+        <p class="mt-1 text-sm text-[var(--ink-muted)]">
           Set a temporary password for this user.
         </p>
       <% end %>
@@ -113,12 +113,11 @@
             <%= form.password_field :password,
                 placeholder: user.persisted? ? "Leave empty to keep the current password" : "At least 12 characters",
                 data: { password_input: true },
-                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
+                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-[var(--ink)] placeholder-[#9b9cb5] focus:outline-none focus:ring-0" %>
 
             <button type="button"
-                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sky-600 hover:bg-sky-50"
+                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--brand)] hover:bg-[var(--brand-bg)]"
                     data-password-toggle
-                    onclick="return window.togglePasswordVisibility(this)"
                     aria-label="Show password"
                     title="Show password">
               <span data-password-show-icon>
@@ -145,12 +144,11 @@
             <%= form.password_field :password_confirmation,
                 placeholder: "Type the password again",
                 data: { password_input: true },
-                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0" %>
+                class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-[var(--ink)] placeholder-[#9b9cb5] focus:outline-none focus:ring-0" %>
 
             <button type="button"
-                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sky-600 hover:bg-sky-50"
+                    class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--brand)] hover:bg-[var(--brand-bg)]"
                     data-password-toggle
-                    onclick="return window.togglePasswordVisibility(this)"
                     aria-label="Show password"
                     title="Show password">
               <span data-password-show-icon>

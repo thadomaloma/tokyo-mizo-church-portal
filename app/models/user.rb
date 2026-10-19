@@ -9,7 +9,8 @@ class User < ApplicationRecord
   devise :database_authenticatable,
          :recoverable,
          :rememberable,
-         :validatable
+         :validatable,
+         :lockable
 
   # Church office of the person. Chairman and Secretary administer the app;
   # everyone else gets finance access per unit (FinanceUnitMembership).
