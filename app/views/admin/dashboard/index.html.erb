@@ -38,7 +38,7 @@
         <div class="grid grid-cols-2 border-t border-[var(--line)] bg-[var(--surface-sunken)] lg:grid-cols-1 lg:border-l lg:border-t-0">
           <% [ [ "Cash", "wallet", summary.cash_balance ], [ "Bank", "building-library", summary.bank_balance ] ].each_with_index do |(name, icon, balance), index| %>
             <%= link_to admin_accounts_path(finance_unit_id: @finance_unit.id),
-                class: "group flex flex-col justify-center gap-2 p-5 transition hover:bg-white sm:p-6 #{index.zero? ? "border-r border-[var(--line)] lg:border-b lg:border-r-0" : ""}" do %>
+                class: "group flex flex-col justify-center gap-2 p-5 transition hover:bg-white/10 sm:p-6 #{index.zero? ? "border-r border-[var(--line)] lg:border-b lg:border-r-0" : ""}" do %>
               <span class="flex items-center justify-between text-sm text-[var(--ink-muted)]">
                 <span class="inline-flex items-center gap-1.5"><%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %><%= name %></span>
                 <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4 opacity-0 transition group-hover:opacity-100" } %>

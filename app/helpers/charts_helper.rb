@@ -1,11 +1,12 @@
 # Colours for finance charts. Income/expense are a validated CVD-safe pair
-# (blue/orange, adjacent ΔE 19 under protanopia); the green/red money text
+# (indigo/orange, a blue-orange pair that stays apart under protanopia
+# and deuteranopia); the green/red money text
 # elsewhere always carries a +/− sign, so meaning never rests on colour.
 module ChartsHelper
   CHART_COLORS = {
-    income: "#3a6ea5",
-    expense: "#d8743f",
-    context: "#b3bcc8"
+    income: "#4f46e5",
+    expense: "#ea7a2f",
+    context: "#c4c5d8"
   }.freeze
 
   def chart_color(key)
