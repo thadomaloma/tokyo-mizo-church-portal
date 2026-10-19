@@ -16,8 +16,9 @@ Version 2.0 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thad
 
 **Recording**
 
-* Income, expenses and transfers between Cash and Bank. Transfers move money
-  between accounts and never count as income or expense.
+* Income, expenses and transfers between Cash and the bank account, which can
+  carry the bank's own name (e.g. "Yucho Bank"). Transfers move money between
+  accounts and never count as income or expense.
 * Sunday offering form: every giving category on one screen, totalled as you type.
 * Expense vouchers numbered per year (EXP-2026-0001, …) and printable as an A5
   payment voucher with the amount in words and signature lines.
@@ -93,9 +94,14 @@ openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
 gunzip backup.sqlite3.gz
 ```
 
-To restore, upload `backup.sqlite3` to the server's volume as
-`production.sqlite3` (on Railway: `railway volume files upload … --overwrite`)
-and redeploy.
+To restore on Railway (anything entered after the backup is lost):
+
+1. Upload it over the live database:
+   `railway volume files upload backup.sqlite3 /production.sqlite3 --overwrite`
+2. Delete `/production.sqlite3-wal` and `/production.sqlite3-shm` from the
+   volume, so SQLite does not replay the old write-ahead log onto the restored
+   file.
+3. Redeploy straight away.
 
 ## Technology
 
@@ -106,6 +112,7 @@ and redeploy.
 * Devise (sign-in, password reset, lockout), audited (change history)
 * Prawn (PDF), caxlsx (Excel), Chart.js (charts)
 * Solid Queue (backups and other background jobs) and Solid Cache
+* Cloudflare R2 for backups (S3 API, signed with aws-sigv4)
 * Minitest and Capybara; CI runs tests, browser tests, RuboCop, Brakeman,
   bundler-audit and importmap audit on every push
 
@@ -115,15 +122,16 @@ and redeploy.
 git clone git@github.com:thadomaloma/tokyo-mizo-church-portal.git
 cd tokyo-mizo-church-portal
 bundle install
-bin/rails db:prepare
 SEED_ADMIN_EMAIL=you@example.com \
 SEED_ADMIN_PASSWORD='<a long unique password>' \
 SEED_ADMIN_NAME="Your Name" \
-bin/rails db:seed
+bin/rails db:prepare
 bin/dev
 ```
 
-Open <http://localhost:3000> and sign in with the seed account (a Chairman).
+`db:prepare` creates the database, the Main Church Finance ledger with its
+categories, and the first account. Open <http://localhost:3000> and sign in
+with that account (a Chairman).
 The seed password is only applied when the account is first created; to change
 it on purpose, run the seed once with `RESET_SEED_ADMIN_PASSWORD=true`.
 
@@ -133,6 +141,8 @@ Run the checks CI runs:
 bin/rails test test:system
 bin/rubocop
 bin/brakeman
+bin/bundler-audit
+bin/importmap audit
 ```
 
 ## Deploying
