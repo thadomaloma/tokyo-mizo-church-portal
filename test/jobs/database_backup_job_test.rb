@@ -1,40 +1,45 @@
 require "test_helper"
 
 class DatabaseBackupJobTest < ActiveJob::TestCase
-  include ActionMailer::TestHelper
+  include EnvHelper
 
+  PASSPHRASE = "a long passphrase".freeze
   # Wednesday and Sunday nights long after the fixtures were loaded, so
   # nothing counts as changed "today" unless a test changes it.
   QUIET_WEDNESDAY = Time.zone.local(2030, 1, 2, 23, 0)
   SUNDAY = Time.zone.local(2030, 1, 6, 23, 0)
 
   setup do
-    @previous_env = %w[BACKUP_PASSPHRASE BACKUP_EMAIL].index_with { |key| ENV[key] }
-    ENV["BACKUP_PASSPHRASE"] = "a long passphrase"
-    ENV["BACKUP_EMAIL"] = "backups@example.com"
+    @r2 = FakeR2.new
+    @previous_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
   end
 
-  teardown { @previous_env.each { |key, value| ENV[key] = value } }
+  teardown do
+    @r2.stop
+    Rails.cache = @previous_cache
+  end
 
-  test "emails an encrypted backup on a day the finances changed" do
+  test "uploads an encrypted backup on a day the finances changed" do
     travel_to QUIET_WEDNESDAY do
       record_an_expense
-      assert_emails(1) { DatabaseBackupJob.perform_now }
+      run_backup
     end
 
-    mail = ActionMailer::Base.deliveries.last
-    assert_equal [ "backups@example.com" ], mail.to
-    assert_match "Tokyo Mizo Church Finance backup", mail.subject
-    attachment = mail.attachments.first
-    assert_equal "tmc-backup-2030-01-02.sqlite3.gz.enc", attachment.filename
-    assert attachment.body.decoded.b.start_with?(DatabaseBackup::MAGIC)
-    assert_match "openssl enc -d", mail.body.encoded
+    upload = @r2.requests.sole
+    assert_equal "/tmc-backups/tmc-backup-2030-01-02-2300.sqlite3.gz.enc", upload[:path]
+    restored = DatabaseBackup.decrypt(upload[:body], passphrase: PASSPHRASE)
+    assert restored.start_with?("SQLite format 3")
+
+    last = DatabaseBackup.last_upload
+    assert_equal "tmc-backup-2030-01-02-2300.sqlite3.gz.enc", last["filename"]
+    assert_equal upload[:body].bytesize, last["bytes"]
   end
 
-  test "sends nothing on a quiet weekday" do
-    travel_to QUIET_WEDNESDAY do
-      assert_no_emails { DatabaseBackupJob.perform_now }
-    end
+  test "uploads nothing on a quiet weekday" do
+    travel_to(QUIET_WEDNESDAY) { run_backup }
+
+    assert_empty @r2.requests
   end
 
   test "a deleted transaction counts as a change" do
@@ -42,28 +47,31 @@ class DatabaseBackupJobTest < ActiveJob::TestCase
 
     travel_to QUIET_WEDNESDAY do
       transaction.destroy!
-      assert_emails(1) { DatabaseBackupJob.perform_now }
+      run_backup
     end
+
+    assert_equal 1, @r2.requests.size
   end
 
-  test "always sends on Sunday so there is a weekly copy" do
-    travel_to SUNDAY do
-      assert_emails(1) { DatabaseBackupJob.perform_now }
-    end
+  test "always uploads on Sunday so there is a weekly copy" do
+    travel_to(SUNDAY) { run_backup }
+
+    assert_equal 1, @r2.requests.size
   end
 
-  test "Send backup now sends even on a quiet day" do
-    travel_to QUIET_WEDNESDAY do
-      assert_emails(1) { DatabaseBackupJob.perform_now(force: true) }
-    end
+  test "Send backup now uploads even on a quiet day" do
+    travel_to(QUIET_WEDNESDAY) { run_backup(force: true) }
+
+    assert_equal 1, @r2.requests.size
   end
 
-  test "sends nothing until a passphrase is set" do
-    ENV["BACKUP_PASSPHRASE"] = nil
-
-    travel_to SUNDAY do
-      assert_no_emails { DatabaseBackupJob.perform_now(force: true) }
+  test "uploads nothing until a passphrase is set" do
+    with_env(@r2.env.merge("BACKUP_PASSPHRASE" => nil)) do
+      travel_to(SUNDAY) { DatabaseBackupJob.perform_now(force: true) }
     end
+
+    assert_empty @r2.requests
+    assert_nil DatabaseBackup.last_upload
   end
 
   test "runs every night at 11pm in production" do
@@ -74,6 +82,10 @@ class DatabaseBackupJobTest < ActiveJob::TestCase
   end
 
   private
+
+  def run_backup(force: false)
+    with_env(@r2.env.merge("BACKUP_PASSPHRASE" => PASSPHRASE)) { DatabaseBackupJob.perform_now(force: force) }
+  end
 
   def record_an_expense
     FinanceTransaction.create!(

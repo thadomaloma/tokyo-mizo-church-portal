@@ -69,9 +69,12 @@
       <span class="min-w-0 flex-1">
         <span class="block text-[15px] font-semibold text-[var(--ink)]">Backups</span>
         <% if DatabaseBackup.configured? %>
-          <span class="block text-sm text-[var(--ink-muted)]">An encrypted copy is emailed to <%= DatabaseBackup.recipient %> at 11pm on days the finances change, and every Sunday.</span>
+          <span class="block text-sm text-[var(--ink-muted)]">An encrypted copy is saved to Cloudflare R2 at 11pm on days the finances change, and every Sunday.</span>
+          <% if (last = DatabaseBackup.last_upload) %>
+            <span class="mt-1 block text-sm text-[var(--ink-soft)]" data-last-backup>Last backup: <%= l(last["uploaded_at"].in_time_zone, format: "%-d %b %Y, %H:%M") %> · <%= number_to_human_size(last["bytes"]) %></span>
+          <% end %>
         <% else %>
-          <span class="block text-sm text-[var(--money-out)]">Email backups are off. Set BACKUP_PASSPHRASE on Railway to turn them on.</span>
+          <span class="block text-sm text-[var(--money-out)]">Backups are off. Set BACKUP_PASSPHRASE and the R2_ variables on Railway to turn them on.</span>
         <% end %>
       </span>
       <% if DatabaseBackup.configured? %>

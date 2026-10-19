@@ -50,3 +50,6 @@ group :test do
 end
 
 gem "heroicon", "~> 1.0"
+
+# Signs uploads of the nightly backup to Cloudflare R2 (S3-compatible API)
+gem "aws-sigv4", "~> 1.12"

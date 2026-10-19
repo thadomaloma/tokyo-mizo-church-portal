@@ -70,22 +70,26 @@ edit and delete entries, close and reopen months, edit budgets) or a
 * A Content Security Policy only lets the app's own scripts run. HTTPS only;
   passwords need at least 12 characters.
 * Closed months cannot be changed, and every transaction keeps an audit trail.
-* **Backups** are emailed, gzipped and encrypted with `BACKUP_PASSPHRASE`, to
-  `BACKUP_EMAIL`, so a copy always lives outside the server:
+* **Backups** of the whole database, gzipped and encrypted with
+  `BACKUP_PASSPHRASE`, are uploaded to a Cloudflare R2 bucket, so a copy
+  always lives outside the server:
   * every night at 11pm (Tokyo) when finance records changed that day;
   * every Sunday at 11pm regardless, so there is a copy at least weekly;
   * whenever an admin presses "Send backup now" in Settings.
 
-  A Gmail filter on the subject "Tokyo Mizo Church Finance backup" keeps them
-  in their own label.
+  Settings shows whether backups are on and when the last one was taken.
+  The copy is taken on its own connection, so people can keep working, and a
+  copy that did not finish is never uploaded.
 
 ### Opening and restoring a backup
 
-On any computer with OpenSSL:
+Download the file from the bucket in the Cloudflare dashboard (R2 → the
+bucket → the newest `tmc-backup-YYYY-MM-DD-HHMM.sqlite3.gz.enc`), then on any
+computer with OpenSSL:
 
 ```sh
 openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
-  -in tmc-backup-YYYY-MM-DD.sqlite3.gz.enc -out backup.sqlite3.gz
+  -in tmc-backup-YYYY-MM-DD-HHMM.sqlite3.gz.enc -out backup.sqlite3.gz
 gunzip backup.sqlite3.gz
 ```
 
@@ -148,10 +152,10 @@ Variables:
 | --- | --- |
 | `RAILS_MASTER_KEY` or `SECRET_KEY_BASE` | Rails secrets |
 | `APP_HOST` | Public host name for links in emails (falls back to Railway's domain) |
-| `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD` | Sending password resets and backups (optional `MAILER_FROM`) |
+| `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD` | Password reset emails (optional `MAILER_FROM`). Railway's Hobby plan blocks SMTP, so these only work on Pro or another host |
 | `SOLID_QUEUE_IN_PUMA=true` | Run background jobs inside the web process |
 | `BACKUP_PASSPHRASE` | Encrypts backups; keep it in a password manager. No passphrase, no backups |
-| `BACKUP_EMAIL` | Where backups go (defaults to `GMAIL_USERNAME`) |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | The Cloudflare R2 bucket for backups (an API token with Object Read & Write on that bucket only) |
 
 Never set `DATABASE_URL`: the app refuses to start with it, so a linked
 database cannot replace the SQLite file by accident. Do not leave

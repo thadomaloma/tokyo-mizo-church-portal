@@ -9,9 +9,9 @@ module Admin
     def create
       if DatabaseBackup.configured?
         DatabaseBackupJob.perform_later(force: true)
-        redirect_to admin_settings_path, notice: "Backup is on its way to #{DatabaseBackup.recipient}."
+        redirect_to admin_settings_path, notice: "Backup started. It will appear in Cloudflare R2 within a minute."
       else
-        redirect_to admin_settings_path, alert: "Set BACKUP_PASSPHRASE on Railway before sending backups."
+        redirect_to admin_settings_path, alert: "Set BACKUP_PASSPHRASE and the R2_ variables on Railway before sending backups."
       end
     end
   end

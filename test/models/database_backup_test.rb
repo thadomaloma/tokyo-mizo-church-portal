@@ -5,15 +5,30 @@ class DatabaseBackupTest < ActiveSupport::TestCase
   PASSPHRASE = "correct horse battery staple".freeze
 
   test "a backup decrypts to a copy of the database" do
-    backup = DatabaseBackup.new(passphrase: PASSPHRASE, created_on: Date.new(2026, 10, 19))
+    backup = DatabaseBackup.new(passphrase: PASSPHRASE, created_at: Time.zone.local(2026, 10, 19, 23, 0))
 
-    assert_equal "tmc-backup-2026-10-19.sqlite3.gz.enc", backup.filename
+    assert_equal "tmc-backup-2026-10-19-2300.sqlite3.gz.enc", backup.filename
     assert backup.data.start_with?(DatabaseBackup::MAGIC)
 
     with_restored(DatabaseBackup.decrypt(backup.data, passphrase: PASSPHRASE)) do |db|
       assert_equal FinanceTransaction.count, db.get_first_value("SELECT COUNT(*) FROM finance_transactions")
       assert_equal FinanceTransaction.sum(:amount), db.get_first_value("SELECT SUM(amount) FROM finance_transactions")
     end
+  end
+
+  test "a backup is complete while someone else is writing" do
+    writer = SQLite3::Database.new(ActiveRecord::Base.connection_db_config.database)
+    writer.busy_timeout = 1_000
+    writer.execute("BEGIN IMMEDIATE")
+    writer.execute("UPDATE finance_units SET name = name")
+
+    backup = DatabaseBackup.new(passphrase: PASSPHRASE)
+    with_restored(DatabaseBackup.decrypt(backup.data, passphrase: PASSPHRASE)) do |db|
+      assert_equal FinanceUnit.count, db.get_first_value("SELECT COUNT(*) FROM finance_units")
+    end
+  ensure
+    writer&.execute("ROLLBACK")
+    writer&.close
   end
 
   test "the wrong passphrase cannot open a backup" do

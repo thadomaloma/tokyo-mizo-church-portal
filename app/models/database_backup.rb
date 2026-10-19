@@ -7,26 +7,30 @@ require "zlib"
 # backup can be opened on any computer without this app:
 #
 #   openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
-#     -in tmc-backup-2026-10-19.sqlite3.gz.enc -out backup.sqlite3.gz
+#     -in tmc-backup-2026-10-19-2300.sqlite3.gz.enc -out backup.sqlite3.gz
 #   gunzip backup.sqlite3.gz
 class DatabaseBackup
   CIPHER = "aes-256-cbc".freeze
   ITERATIONS = 600_000
   MAGIC = "Salted__".b.freeze
+  LAST_UPLOAD_CACHE_KEY = "database_backup/last_upload".freeze
+  COPY_ATTEMPTS = 20
 
-  attr_reader :created_on
+  attr_reader :created_at
 
   def self.passphrase
     ENV["BACKUP_PASSPHRASE"].presence
   end
 
-  def self.recipient
-    ENV["BACKUP_EMAIL"].presence || ENV["GMAIL_USERNAME"].presence
+  # Backups are only ever stored encrypted, in the R2 bucket.
+  def self.configured?
+    passphrase.present? && R2Bucket.configured?
   end
 
-  # Backups are only ever sent encrypted, to a known address.
-  def self.configured?
-    passphrase.present? && recipient.present?
+  # { "filename" =>, "bytes" =>, "uploaded_at" => } of the latest upload, for
+  # Settings; nil when none is known.
+  def self.last_upload
+    Rails.cache.read(LAST_UPLOAD_CACHE_KEY)
   end
 
   # Finance records whose changes call for a fresh backup. Audits also catch
@@ -58,39 +62,63 @@ class DatabaseBackup
     end
   end
 
-  def initialize(passphrase: self.class.passphrase, created_on: Date.current)
+  def initialize(passphrase: self.class.passphrase, created_at: Time.current)
     raise ArgumentError, "BACKUP_PASSPHRASE is not set" if passphrase.blank?
 
     @passphrase = passphrase
-    @created_on = created_on
+    @created_at = created_at
   end
 
   def filename
-    "tmc-backup-#{created_on.iso8601}.sqlite3.gz.enc"
+    "tmc-backup-#{created_at.strftime("%Y-%m-%d-%H%M")}.sqlite3.gz.enc"
   end
 
   def data
     @data ||= encrypt(Zlib.gzip(snapshot))
   end
 
+  def upload!(bucket = R2Bucket.new)
+    bucket.put(filename, data)
+    Rails.cache.write(LAST_UPLOAD_CACHE_KEY, { "filename" => filename, "bytes" => data.bytesize, "uploaded_at" => Time.current })
+  end
+
   private
 
   attr_reader :passphrase
 
-  # SQLite's online backup API copies a consistent snapshot while the app
-  # keeps running (unlike VACUUM INTO, it also works inside a transaction).
+  # SQLite's online backup API, on a connection of its own: in WAL mode it
+  # reads the last committed state without waiting for the app's writers.
+  # A copy that did not finish is an error, never an empty upload.
   def snapshot
     Dir.mktmpdir do |dir|
       path = File.join(dir, "backup.sqlite3")
+      source = SQLite3::Database.new(database_path)
       copy = SQLite3::Database.new(path)
-      ActiveRecord::Base.connection_pool.with_connection do |connection|
-        backup = SQLite3::Backup.new(copy, "main", connection.raw_connection, "main")
-        backup.step(-1)
-        backup.finish
-      end
+      copy_all(SQLite3::Backup.new(copy, "main", source, "main"))
       copy.close
-      File.binread(path)
+      source.close
+
+      File.binread(path).tap do |bytes|
+        raise "Backup copy is not a SQLite database" unless bytes.start_with?("SQLite format 3\0")
+      end
     end
+  end
+
+  def copy_all(backup)
+    COPY_ATTEMPTS.times do
+      case backup.step(-1)
+      when SQLite3::Constants::ErrorCode::DONE then return
+      when SQLite3::Constants::ErrorCode::BUSY, SQLite3::Constants::ErrorCode::LOCKED then sleep 0.5
+      else raise "SQLite backup failed"
+      end
+    end
+    raise "Database stayed busy; backup not taken"
+  ensure
+    backup.finish
+  end
+
+  def database_path
+    Rails.root.join(ActiveRecord::Base.connection_db_config.database).to_s
   end
 
   def encrypt(plain)
