@@ -294,7 +294,7 @@ class FinanceReportPdf
       ]
     end
 
-    pdf.table(data, header: true, width: pdf.bounds.width, column_widths: { 0 => 72, 2 => 52, 3 => 84 }) do |table|
+    pdf.table(data, header: true, width: pdf.bounds.width, column_widths: { 0 => 72, 2 => 76, 3 => 84 }) do |table|
       style_table(table)
       table.column(3).align = :right
       table.column(0).rows(1..-1).text_color = MUTED
