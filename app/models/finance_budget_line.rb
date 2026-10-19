@@ -1,5 +1,5 @@
 class FinanceBudgetLine < ApplicationRecord
-  belongs_to :finance_budget, inverse_of: :lines
+  belongs_to :finance_budget, inverse_of: :lines, touch: true
   belongs_to :finance_category
 
   validates :amount, numericality: { only_integer: true, greater_than: 0 }

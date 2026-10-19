@@ -63,6 +63,21 @@
       </span>
       <%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %>
     <% end %>
+
+    <section class="card flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6" data-settings-backup>
+      <span class="row-icon <%= DatabaseBackup.configured? ? "tone-in" : "tone-out" %>" aria-hidden="true"><%= heroicon "shield-check", variant: :outline, options: { class: "h-5 w-5" } %></span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-[15px] font-semibold text-[var(--ink)]">Backups</span>
+        <% if DatabaseBackup.configured? %>
+          <span class="block text-sm text-[var(--ink-muted)]">An encrypted copy is emailed to <%= DatabaseBackup.recipient %> at 11pm on days the finances change, and every Sunday.</span>
+        <% else %>
+          <span class="block text-sm text-[var(--money-out)]">Email backups are off. Set BACKUP_PASSPHRASE on Railway to turn them on.</span>
+        <% end %>
+      </span>
+      <% if DatabaseBackup.configured? %>
+        <%= button_to "Send backup now", admin_backup_path, class: "btn btn-secondary btn-sm" %>
+      <% end %>
+    </section>
   <% end %>
 
   <section class="card card-pad" data-app-about>

@@ -24,6 +24,7 @@ Rails.application.routes.draw do
     root "dashboard#index"
 
     resource :settings, only: :show
+    resource :backup, only: :create
     resources :accounts, only: :index
     resources :offerings, only: %i[new create]
     resources :budgets, param: :year, only: %i[index show edit update], constraints: { year: /\d{4}/ }
