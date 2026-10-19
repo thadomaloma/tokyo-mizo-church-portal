@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_020000) do
   create_table "audits", force: :cascade do |t|
     t.string "action"
     t.integer "associated_id"
@@ -91,7 +91,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_010000) do
     t.text "description"
     t.bigint "finance_category_id"
     t.bigint "finance_unit_id", null: false
-    t.string "payer_name"
     t.string "payment_location", default: "cash", null: false
     t.bigint "recorded_by_id", null: false
     t.date "transaction_date"
@@ -128,7 +127,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_010000) do
     t.string "slug", null: false
     t.string "unit_type", default: "department", null: false
     t.datetime "updated_at", null: false
-    t.integer "voucher_sequence", default: 0, null: false
     t.index ["active", "position"], name: "index_finance_units_on_active_and_position"
     t.index ["slug"], name: "index_finance_units_on_slug", unique: true
   end

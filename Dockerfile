@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
+# This Dockerfile is designed for production, not development. Railway builds it; to run it by hand:
 # docker build -t tokyo_mizo_church_portal .
 # docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name tokyo_mizo_church_portal tokyo_mizo_church_portal
 

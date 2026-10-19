@@ -28,8 +28,6 @@ gem "solid_queue"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-gem "kamal", require: false
-
 gem "thruster", require: false
 
 group :development, :test do
@@ -41,8 +39,6 @@ group :development, :test do
 end
 
 group :development do
-  # Only for lib/tasks/import_from_postgres.rake (one-off copy off Railway)
-  gem "pg", "~> 1.1", require: false
   gem "web-console"
   gem "letter_opener_web"
   gem "bullet"

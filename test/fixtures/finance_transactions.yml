@@ -4,7 +4,6 @@ one:
   transaction_type: income
   amount: 1
   transaction_date: 2026-05-30
-  payer_name: MyString
   description: MyText
   finance_category: one
   finance_unit: main
@@ -15,7 +14,6 @@ two:
   transaction_type: expense
   amount: 1
   transaction_date: 2026-05-30
-  payer_name: MyString
   description: MyText
   finance_category: two
   finance_unit: main

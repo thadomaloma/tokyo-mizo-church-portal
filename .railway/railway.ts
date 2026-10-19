@@ -1,12 +1,11 @@
 import { defineRailway, github, project, service, volume } from "railway/iac";
 
-// Railway setup for the web app. Replaces railway.json (Config as Code is
-// read until 2026-12-01). Preview with `railway config plan` before
+// Railway setup for the web app. Preview with `railway config plan` before
 // `railway config apply`.
 //
-// Only the resources declared here belong to this file; the old Postgres
-// service is left alone. Variables (RAILS_MASTER_KEY etc.) stay managed in
-// the Railway dashboard and are never written here.
+// Only the resources declared here belong to this file. Variables
+// (RAILS_MASTER_KEY etc.) stay managed in the Railway dashboard and are
+// never written here.
 export const partial = "tokyo-mizo-church-portal";
 
 export default defineRailway(() => {

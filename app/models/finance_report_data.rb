@@ -35,16 +35,6 @@ class FinanceReportData
     @account_balances = account_balances
   end
 
-  def summary_rows
-    [
-      [ "Total Income", income ],
-      [ "Total Expense", expense ],
-      [ "Balance", balance ],
-      [ "Cash Balance", cash_balance ],
-      [ "Bank Account Balance", bank_balance ]
-    ]
-  end
-
   def closing_cash
     cash_balance
   end
@@ -83,13 +73,6 @@ class FinanceReportData
         giving_total(incomes, "offering")
       ]
     end
-  end
-
-  def chart_rows
-    [
-      [ "Income", income ],
-      [ "Expense", expense ]
-    ]
   end
 
   def monthly_tithe_offering_rows
