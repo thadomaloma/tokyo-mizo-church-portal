@@ -91,7 +91,12 @@
       <dt class="text-[var(--ink-muted)]">App</dt>
       <dd class="text-[var(--ink)]">Tokyo Mizo Church Finance</dd>
       <dt class="text-[var(--ink-muted)]">Version</dt>
-      <dd class="text-[var(--ink)]"><%= Rails.configuration.x.app_version %></dd>
+      <dd class="text-[var(--ink)]" data-app-version>
+        <%= Rails.configuration.x.app_version %>
+        <% if AppBuild.current.built_at %>
+          <span class="text-[var(--ink-muted)]">· Updated <%= AppBuild.current.built_at.strftime("%-d %b %Y") %><%= " (#{AppBuild.current.commit})" if AppBuild.current.commit %></span>
+        <% end %>
+      </dd>
       <dt class="text-[var(--ink-muted)]">Developer</dt>
       <dd class="text-[var(--ink)]"><%= Rails.configuration.x.app_developer %></dd>
     </dl>

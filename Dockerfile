@@ -48,6 +48,11 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
+# Which commit this is and when it was built, for Settings → About.
+# Railway passes RAILWAY_GIT_COMMIT_SHA to builds that declare it.
+ARG RAILWAY_GIT_COMMIT_SHA
+RUN printf '%s\n%s\n' "${RAILWAY_GIT_COMMIT_SHA}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > BUILD_INFO
+
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/

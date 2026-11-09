@@ -10,7 +10,7 @@ month and exports reports, from a laptop or a phone.
   <img src="docs/mobile-preview.png" alt="The same dashboard on a phone, with the bottom navigation bar" width="22%">
 </p>
 
-Version 2.0 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thado
+Version 2.1 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thado
 
 ## What it does
 
@@ -20,14 +20,20 @@ Version 2.0 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thad
   carry the bank's own name (e.g. "Yucho Bank"). Transfers move money between
   accounts and never count as income or expense.
 * Sunday offering form: every giving category on one screen, totalled as you type.
+* Monthly bills form: the bills paid every month (rent, utilities, love gifts)
+  on one screen, filled in with last time's amounts; bills already entered
+  that month are flagged so nothing is recorded twice.
 * Expense vouchers numbered per year (EXP-2026-0001, …) and printable as an A5
   payment voucher with the amount in words and signature lines.
-* Change history on every transaction (who changed what, and when).
+* Change history on every transaction, and an Activity page listing every
+  entry added, changed or deleted, months closed or reopened and budget
+  changes (who, what and when).
 
 **Overview**
 
 * Home: total balance, Cash and Bank, this month against last month, cash
-  flow and spending-pace charts, budget progress and recent activity.
+  flow and spending-pace charts, this year so far against the same days of
+  last year, budget progress and recent activity.
 * Accounts: balance over time and each account's money in and out.
 * Yearly budget per expense category, with progress through the year.
 
@@ -37,6 +43,11 @@ Version 2.0 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thad
   its entries until someone who manages the unit reopens it.
 * Reports for any range of months: by category, by month, tithe and offering.
   Download as PDF or Excel. Admins can also report on all units together.
+* Yearly report (PDF) for the year-end meeting: opening and closing balance,
+  income and expenses by category against the budget and the year before,
+  month by month, with signature lines.
+* Opening balances are money brought forward: reports show them apart from
+  income.
 
 **Finance units**
 
@@ -50,6 +61,30 @@ vouchers.
 * Installable on the Home Screen (PWA), with an offline page.
 * Bottom navigation bar with a central "Add transaction" button; larger text,
   fixed 100% zoom.
+
+## What's new
+
+**2.1** · 9 November 2026
+
+* Home compares this year so far with the same days of last year.
+* Activity page (More menu): every entry added, changed or deleted, with
+  months closed or reopened and budget changes.
+* Monthly bills form and a yearly report PDF.
+* Change password in Settings; Categories in the More menu; the Utilities
+  category now includes Wifi.
+* Reports show opening balances apart from income.
+* The 2025 Excel cash book was brought in (`finance:import_cash_book`).
+* Fixes: the chosen finance unit stays selected across pages; long notes no
+  longer push the edit and delete buttons off screen; search finds % and _
+  as typed; a closed month's report hides edit and delete.
+
+**2.0** · 16 October 2026
+
+* The finance app on SQLite: income, expenses and transfers, Sunday
+  offerings, expense vouchers, monthly closing, yearly budgets, reports as
+  PDF or Excel, finance units, phone app (PWA) and backups to Cloudflare R2.
+
+Settings → About shows the version and when the running copy was updated.
 
 ## Who can do what
 

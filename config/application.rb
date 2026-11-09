@@ -34,7 +34,10 @@ module TokyoMizoChurchPortal
     config.time_zone = "Tokyo"
 
     # Shown on the Settings and sign-in pages.
-    config.x.app_version = "2.0"
+    # Raise for each release users notice: 2.1 → 2.2 for new features,
+    # 2.1 → 2.1.1 for fixes only; list the changes under "What's new" in
+    # the README. The commit and build date show automatically (AppBuild.current).
+    config.x.app_version = "2.1"
     config.x.app_developer = "Maloma Thado"
     # config.eager_load_paths << Rails.root.join("extras")
 

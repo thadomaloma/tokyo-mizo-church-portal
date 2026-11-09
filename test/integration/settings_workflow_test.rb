@@ -10,7 +10,7 @@ class SettingsWorkflowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, ordinary_member.name
     assert_select "[data-settings-users]", count: 0
-    assert_select "[data-app-about]", text: /Version\s*2\.0.*Developer\s*Maloma Thado/m
+    assert_select "[data-app-about]", text: /Version\s*#{Regexp.escape(Rails.configuration.x.app_version)}.*Developer\s*Maloma Thado/m
   end
 
   test "a super admin manages users from settings" do
@@ -77,6 +77,18 @@ class SettingsWorkflowTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     assert user.reload.valid_password?("password")
+  end
+
+
+  test "About shows when the running copy was updated" do
+    AppBuild.instance_variable_set(:@current, AppBuild.new("aa20ff9d3c1e2f\n2026-11-09T01:30:00Z\n"))
+    sign_in(users(:three))
+
+    get admin_settings_path
+
+    assert_select "[data-app-version]", text: /#{Regexp.escape(Rails.configuration.x.app_version)}\s*· Updated 9 Nov 2026 \(aa20ff9\)/
+  ensure
+    AppBuild.instance_variable_set(:@current, nil)
   end
 
   private
