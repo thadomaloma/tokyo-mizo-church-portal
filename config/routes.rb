@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     resources :accounts, only: :index
     resources :activities, only: :index
     resources :offerings, only: %i[new create]
+    resources :monthly_bills, only: %i[new create]
     resources :budgets, param: :year, only: %i[index show edit update], constraints: { year: /\d{4}/ }
 
     resources :users, except: %i[index show]
@@ -44,5 +45,6 @@ Rails.application.routes.draw do
       resources :finance_unit_memberships, only: %i[create destroy]
     end
     resource :finance_report, only: :show
+    resources :annual_reports, param: :year, only: :show, constraints: { year: /\d{4}/ }
   end
 end

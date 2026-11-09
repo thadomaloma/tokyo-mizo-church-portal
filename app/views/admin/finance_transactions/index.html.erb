@@ -4,6 +4,7 @@
     concat render("admin/shared/unit_switcher", url: admin_finance_transactions_path)
     if can_manage_finance?
       concat link_to("Sunday offering", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary")
+      concat link_to("Monthly bills", new_admin_monthly_bill_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary")
       concat(link_to(new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id), class: "btn btn-primary max-lg:hidden") do
         heroicon("plus", variant: :outline, options: { class: "h-5 w-5" }) + "Add transaction"
       end)

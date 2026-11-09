@@ -8,6 +8,11 @@
     concat(link_to(admin_finance_report_path(period_params.merge(ledger_type: @ledger_type, format: :xlsx)), data: { turbo: false }, class: "btn btn-secondary") do
       heroicon("table-cells", variant: :outline, options: { class: "h-5 w-5" }) + "Export Excel"
     end)
+    if @finance_unit && @period_year <= Date.current.year
+      concat(link_to(admin_annual_report_path(@period_year, finance_unit_id: @finance_unit.id, format: :pdf), data: { turbo: false }, class: "btn btn-secondary") do
+        heroicon("document-chart-bar", variant: :outline, options: { class: "h-5 w-5" }) + "#{@period_year} annual report"
+      end)
+    end
   end
 %>
 

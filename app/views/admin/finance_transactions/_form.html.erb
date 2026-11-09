@@ -22,6 +22,8 @@
       </nav>
       <% if transaction_type == "income" %>
         <p class="notice notice-info">Recording a Sunday collection with several categories? Use the <%= link_to "Sunday offering form", new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "link" %>.</p>
+      <% elsif transaction_type == "expense" %>
+        <p class="notice notice-info">Paying the regular bills (rent, utilities, ...)? Use the <%= link_to "Monthly bills form", new_admin_monthly_bill_path(finance_unit_id: @finance_unit.id), class: "link" %> to enter them all at once.</p>
       <% end %>
     <% else %>
       <p><span class="chip chip-muted"><%= type_labels[transaction_type] %></span></p>

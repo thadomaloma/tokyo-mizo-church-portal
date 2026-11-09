@@ -8,7 +8,7 @@ module AdminHelper
 
     items + [
       nav_item("Transactions", admin_finance_transactions_path, "arrows-right-left",
-               prefixes: %w[/admin/finance_transactions /admin/offerings]),
+               prefixes: %w[/admin/finance_transactions /admin/offerings /admin/monthly_bills]),
       nav_item("Budget", admin_budgets_path, "chart-pie", prefixes: %w[/admin/budgets]),
       nav_item("Reports", admin_finance_period_path(Date.current.year, Date.current.month), "chart-bar",
                prefixes: %w[/admin/finance_report /admin/finance_periods]),

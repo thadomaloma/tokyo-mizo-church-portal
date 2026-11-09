@@ -25,6 +25,9 @@
               <%= link_to new_admin_offering_path(finance_unit_id: @finance_unit.id), class: "btn btn-primary btn-sm" do %>
                 <%= heroicon "gift", variant: :outline, options: { class: "h-4 w-4" } %> Sunday offering
               <% end %>
+              <%= link_to new_admin_monthly_bill_path(finance_unit_id: @finance_unit.id), class: "btn btn-secondary btn-sm" do %>
+                <%= heroicon "calendar-days", variant: :outline, options: { class: "h-4 w-4" } %> Monthly bills
+              <% end %>
               <%= link_to new_admin_finance_transaction_path(finance_unit_id: @finance_unit.id, transaction_type: "expense"), class: "btn btn-secondary btn-sm" do %>
                 <%= heroicon "arrow-up-right", variant: :outline, options: { class: "h-4 w-4" } %> Add expense
               <% end %>

@@ -1,0 +1,82 @@
+<%
+  unit = current_finance_unit
+  month = @bills.month
+  previous_month = month.prev_month
+  next_month = month.next_month
+%>
+
+<%= render "admin/shared/page_header",
+    eyebrow: unit.name,
+    title: "Monthly bills",
+    subtitle: "The bills paid every month, filled in with last time's amount. Change what's different and leave a box empty to skip it." %>
+
+<div class="mx-auto max-w-2xl space-y-4">
+  <nav class="card flex items-center justify-between px-3 py-2" aria-label="Choose month">
+    <%= link_to new_admin_monthly_bill_path(month: previous_month.strftime("%Y-%m"), finance_unit_id: unit.id), class: "btn btn-ghost" do %>
+      <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= previous_month.strftime("%b %Y") %>
+    <% end %>
+    <p class="font-display text-xl text-[var(--ink)]"><%= month.strftime("%B %Y") %></p>
+    <%= link_to new_admin_monthly_bill_path(month: next_month.strftime("%Y-%m"), finance_unit_id: unit.id), class: "btn btn-ghost" do %>
+      <%= next_month.strftime("%b %Y") %><%= heroicon "chevron-right", variant: :outline, options: { class: "h-5 w-5" } %>
+    <% end %>
+  </nav>
+
+  <% if @bills.bills.empty? %>
+    <section class="card">
+      <%= render "admin/shared/empty_state", icon: "calendar-days", title: "No regular bills found",
+          message: "Bills show here once the same expense (same category and note) has been entered in two of the three months before #{month.strftime("%B")}.",
+          path: new_admin_finance_transaction_path(finance_unit_id: unit.id, transaction_type: "expense"), action: "Add an expense" %>
+    </section>
+  <% else %>
+    <%= form_with model: @bills, scope: :monthly_bills, url: admin_monthly_bills_path(finance_unit_id: unit.id, month: month.strftime("%Y-%m")),
+        class: "card", data: { controller: "offering-total" } do |form| %>
+      <div class="card-pad">
+        <%= render "admin/shared/form_errors", object: @bills %>
+
+        <div class="sm:max-w-60">
+          <%= form.label :transaction_date, "Date paid", class: "field-label" %>
+          <%= form.date_field :transaction_date, min: month, max: month.end_of_month, class: "input", required: true %>
+        </div>
+      </div>
+
+      <ul class="row-list border-y border-[var(--line)]" data-monthly-bills>
+        <% @bills.bills.each do |bill| %>
+          <% field = "monthly_bills[entries][#{bill.key}]" %>
+          <li class="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_9rem_9.5rem] sm:items-center sm:px-6">
+            <div class="min-w-0">
+              <label for="bill_<%= bill.key %>" class="block text-[15px] font-medium text-[var(--ink)] wrap-anywhere"><%= bill.name %></label>
+              <p class="row-meta">
+                <%= bill.finance_category.name unless bill.description.blank? %><%= " · " unless bill.description.blank? %>Last: <%= yen(bill.amount) %> on <%= bill.last_date.strftime("%-d %b") %>
+              </p>
+              <% if bill.recorded_on %>
+                <p class="mt-1"><span class="chip chip-warn !py-0">Already added on <%= bill.recorded_on.strftime("%-d %b") %></span></p>
+              <% elsif !bill.every_month %>
+                <p class="mt-1"><span class="chip chip-muted !py-0">Not every month: enter it if paid</span></p>
+              <% end %>
+            </div>
+            <div class="grid grid-cols-2 gap-3 sm:contents">
+              <%= select_tag "#{field}[payment_location]", options_for_select(unit.account_options, @bills.payment_location_for(bill)),
+                  class: "input", aria: { label: "Account for #{bill.name}" } %>
+              <% amount = @bills.amount_for(bill) %>
+              <%= number_field_tag "#{field}[amount]", (amount if amount.is_a?(Integer)), id: "bill_#{bill.key}",
+                  min: 0, step: 1, inputmode: "numeric", placeholder: "0",
+                  data: { offering_total_target: "amount", action: "input->offering-total#update" }, class: "input input-money" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="flex items-center justify-between bg-[var(--app-bg)] px-5 py-4 sm:px-6">
+        <span class="text-[15px] font-semibold text-[var(--ink)]">Total</span>
+        <span class="figure-lg money money-out" data-offering-total-target="total"><%= yen(@bills.bills.sum { |bill| @bills.amount_for(bill).is_a?(Integer) ? @bills.amount_for(bill) : 0 }) %></span>
+      </div>
+
+      <p class="field-hint px-5 pt-4 sm:px-6">Each bill is saved as its own expense with a voucher number. Other expenses: use Add transaction.</p>
+
+      <div class="flex flex-col gap-3 p-5 sm:flex-row sm:px-6">
+        <%= form.submit "Save bills", class: "btn btn-primary" %>
+        <%= link_to "Cancel", admin_finance_transactions_path(finance_unit_id: unit.id), class: "btn btn-secondary" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

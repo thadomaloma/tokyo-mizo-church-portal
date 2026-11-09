@@ -201,6 +201,23 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert_includes page_text, "Balance ¥10,000 Includes the opening balance"
   end
 
+
+  test "the annual report downloads as a PDF from the report page" do
+    sign_in_user
+    unit = finance_units(:main)
+
+    get admin_finance_report_path(finance_unit_id: unit.id, year: Date.current.year)
+    assert_select "a[href=?]", admin_annual_report_path(Date.current.year, finance_unit_id: unit.id, format: :pdf), text: /annual report/
+
+    get admin_annual_report_path(Date.current.year, finance_unit_id: unit.id, format: :pdf)
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+    assert response.body.start_with?("%PDF")
+
+    get admin_annual_report_path(Date.current.year + 1, finance_unit_id: unit.id, format: :pdf)
+    assert_redirected_to admin_finance_report_path(finance_unit_id: unit.id)
+  end
+
   private
 
   def sign_in_user
