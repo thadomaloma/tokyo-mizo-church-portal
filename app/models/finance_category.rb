@@ -12,7 +12,7 @@ class FinanceCategory < ApplicationRecord
     { code: "opening_balance", name: "Opening Balance", category_type: "income", unit_types: %w[church department fund] },
     { code: "other_income", name: "Other Income (Sum Lut Dang)", category_type: "income", unit_types: %w[church department fund] },
     { code: "rent", name: "Church Rent (Biak In Rent)", category_type: "expense", unit_types: %w[church department] },
-    { code: "utilities", name: "Utilities (Electric, Gas & Water)", category_type: "expense", unit_types: %w[church department] },
+    { code: "utilities", name: "Utilities (Electric, Gas, Water & Wifi)", category_type: "expense", unit_types: %w[church department] },
     { code: "food_refreshments", name: "Food & Refreshments (Ei leh In)", category_type: "expense", unit_types: %w[church department] },
     { code: "transport", name: "Transportation (Kalna)", category_type: "expense", unit_types: %w[church department] },
     { code: "ministry_program", name: "Worship & Ministry (Inkhawm Senso)", category_type: "expense", unit_types: %w[church department] },
