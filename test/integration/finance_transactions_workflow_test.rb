@@ -205,6 +205,19 @@ class FinanceTransactionsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "table.ledger td.num .money-in", text: /700/
   end
 
+
+  test "a long note wraps and the category sits under it, so the action buttons stay in view" do
+    sign_in(users(:one))
+    create_transaction(category: finance_categories(:two), description: "https://example.com/a-very-long-link-without-any-spaces-0123456789")
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:main).id)
+
+    assert_select "table.ledger thead th", text: "Category", count: 0
+    assert_select "table.ledger td .wrap-anywhere", text: /a-very-long-link/
+    assert_select "table.ledger td span.block", text: /Fixture Expense · EXP-/
+    assert_select "table.ledger td a[title=Edit]"
+  end
+
   private
 
   def create_transaction(category:, description:)

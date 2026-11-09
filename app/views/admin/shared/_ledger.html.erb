@@ -10,12 +10,15 @@
   show_unit = local_assigns.fetch(:show_unit, false)
 %>
 
-<table class="ledger hidden md:table">
+<%# Long notes wrap anywhere (even links with no spaces) and the category sits
+    under the note, so the table fits its card and the action buttons stay in
+    view; it scrolls sideways if it still can't. %>
+<div class="hidden overflow-x-auto md:block">
+<table class="ledger">
   <thead>
     <tr>
       <th class="w-28">Date</th>
       <th>Description</th>
-      <th>Category</th>
       <th class="w-24">Account</th>
       <th class="num w-36">Amount</th>
       <% if actions %><th class="w-32"><span class="sr-only">Actions</span></th><% end %>
@@ -27,14 +30,16 @@
       <% closed = closed_periods&.include?([ transaction.transaction_date.year, transaction.transaction_date.month ]) %>
       <tr>
         <td class="whitespace-nowrap text-[var(--ink-muted)]"><%= transaction.transaction_date.strftime("%-d %b %Y") %></td>
-        <td>
+        <td class="min-w-48">
           <span class="flex items-center gap-2.5">
             <span class="row-icon !h-7 !w-7 <%= tone_classes(transaction.transfer? ? :transfer : tone, :icon) %>" aria-hidden="true">
               <%= heroicon transaction_icon(transaction), variant: :outline, options: { class: "h-4 w-4" } %>
             </span>
             <span class="min-w-0">
-              <span class="block font-medium text-[var(--ink)]"><%= transaction.description.presence || (transaction.transfer? ? "Transfer" : transaction.finance_category&.name) %></span>
-              <% extras = [ transaction.expense_voucher_number, (transaction.finance_unit.name if show_unit) ].compact %>
+              <span class="block font-medium text-[var(--ink)] wrap-anywhere"><%= transaction.description.presence || (transaction.transfer? ? "Transfer" : transaction.finance_category&.name) %></span>
+              <%# The title is the note, else the category; the category moves here when there is a note. %>
+              <% category = (transaction.transfer? ? "Transfer" : transaction.finance_category&.name) if transaction.description.present? %>
+              <% extras = [ category, transaction.expense_voucher_number, (transaction.finance_unit.name if show_unit) ].compact %>
               <% if extras.any? || closed %>
                 <span class="block text-[13px] text-[var(--ink-muted)]">
                   <%= extras.join(" · ") %>
@@ -44,8 +49,7 @@
             </span>
           </span>
         </td>
-        <td class="text-[var(--ink-soft)]"><%= transaction.transfer? ? "Transfer" : transaction.finance_category&.name %></td>
-        <td class="whitespace-nowrap text-[var(--ink-soft)]"><%= transaction.transfer? ? transaction.title : transaction.location_label %></td>
+        <td class="text-[var(--ink-soft)]"><%= transaction.transfer? ? transaction.title : transaction.location_label %></td>
         <td class="num font-medium"><%= transaction_money(transaction, location: location) %></td>
         <% if actions %>
           <td>
@@ -72,6 +76,7 @@
     <% end %>
   </tbody>
 </table>
+</div>
 
 <div class="md:hidden">
   <% if actions %>
