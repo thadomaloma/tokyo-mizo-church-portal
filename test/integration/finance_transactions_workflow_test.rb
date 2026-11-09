@@ -152,6 +152,59 @@ class FinanceTransactionsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "a[rel=prev]"
   end
 
+
+  test "search treats % and _ as plain characters" do
+    sign_in(users(:one))
+    create_transaction(category: finance_categories(:two), description: "Paid 10% deposit")
+    create_transaction(category: finance_categories(:two), description: "Plain note")
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:main).id, q: "%")
+
+    assert_response :success
+    assert_includes page_text, "Paid 10% deposit"
+    assert_not_includes page_text, "Plain note"
+    assert_includes page_text, "1 record matching"
+  end
+
+  test "a page past the end goes to the last page" do
+    sign_in(users(:one))
+    3.times { |index| create_transaction(category: finance_categories(:two), description: "overflow-#{index}") }
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:main).id, page: 9)
+
+    assert_redirected_to admin_finance_transactions_path(finance_unit_id: finance_units(:main).id, page: 1)
+  end
+
+  test "deleting goes back to the page it was made from" do
+    sign_in(users(:one))
+    transaction = create_transaction(category: finance_categories(:two), description: "delete-from-report")
+    report = admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: finance_units(:main).id)
+
+    delete admin_finance_transaction_path(transaction), headers: { "HTTP_REFERER" => "http://www.example.com#{report}" }
+
+    assert_redirected_to "http://www.example.com#{report}"
+  end
+
+  test "the chosen finance unit stays selected on the other pages" do
+    sign_in(users(:one))
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:naupang).id)
+    get admin_accounts_path
+
+    assert_response :success
+    assert_select ".page-head-kicker", text: "Naupang Department"
+  end
+
+  test "filtering by account shows transfers as money in or out of it" do
+    sign_in(users(:one))
+    FinanceTransaction.create!(transaction_type: "transfer", finance_unit: finance_units(:main), recorded_by: users(:one),
+                               amount: 700, transaction_date: Date.current, payment_location: "cash", transfer_to_location: "bank")
+
+    get admin_finance_transactions_path(finance_unit_id: finance_units(:main).id, payment_location: "bank")
+
+    assert_select "table.ledger td.num .money-in", text: /700/
+  end
+
   private
 
   def create_transaction(category:, description:)

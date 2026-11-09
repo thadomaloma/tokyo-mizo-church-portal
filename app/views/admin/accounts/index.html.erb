@@ -24,7 +24,7 @@
 
   <%= render "admin/shared/chart",
       title: "Balance over time",
-      subtitle: "Total balance at the end of each month (this month: today).",
+      subtitle: "Total balance at the end of each month (this month: the balance now).",
       type: "line",
       labels: @balance_history.map { |point| point[:label] },
       series: [ { label: "Total balance", color: chart_color(:income), values: @balance_history.map { |point| point[:balance] }, area: true } ],

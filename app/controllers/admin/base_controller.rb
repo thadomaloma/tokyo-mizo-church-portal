@@ -37,13 +37,33 @@ module Admin
                   alert: "Your account doesn't have finance access yet."
     end
 
+    # The unit named in the URL, else the one last picked (so the menu links
+    # keep showing it), else the user's default unit.
     def current_finance_unit
       @current_finance_unit ||= begin
         # "all" is the consolidated report selector, not a unit of its own.
         requested_id = params[:finance_unit_id].presence
         requested_id = nil if requested_id == "all"
-        requested_id ? available_finance_units.find(requested_id) : preferred_accessible_finance_unit
+        requested_id ? remember_finance_unit(available_finance_units.find(requested_id)) : remembered_finance_unit || preferred_accessible_finance_unit
       end
+    end
+
+    def remember_finance_unit(finance_unit)
+      session[:finance_unit_id] = finance_unit.id
+      finance_unit
+    end
+
+    def remembered_finance_unit
+      available_finance_units.find_by(id: session[:finance_unit_id]) if session[:finance_unit_id]
+    end
+
+    # Sends a request for a page past the end (e.g. after deleting the last
+    # record on it) to the last page that has records.
+    def redirect_past_last_page?(pagy)
+      return false unless pagy.page > pagy.last
+
+      redirect_to url_for(request.query_parameters.merge(page: pagy.last, only_path: true))
+      true
     end
 
     # before_action for pages that work on one finance unit.

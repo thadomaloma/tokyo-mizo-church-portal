@@ -93,6 +93,22 @@ class FinancePeriodsWorkflowTest < ActionDispatch::IntegrationTest
     assert_not FinancePeriod.find_by(finance_unit: finance_units(:main), year: 2026, month: 6)&.closed?
   end
 
+
+  test "a closed month's report hides edit and delete" do
+    sign_in(users(:one))
+    FinanceTransaction.create!(transaction_type: "expense", finance_category: create_system_category("Locked Report Category"),
+                               finance_unit: finance_units(:main), recorded_by: users(:one), amount: 900,
+                               transaction_date: Date.new(2026, 3, 5), payment_location: "cash")
+    FinancePeriod.create!(finance_unit: finance_units(:main), year: 2026, month: 3, status: :closed, closed_at: Time.current, closed_by: users(:one))
+
+    get admin_finance_period_path(2026, 3, finance_unit_id: finance_units(:main).id)
+
+    assert_response :success
+    assert_select "table.ledger", text: /Closed/
+    assert_select "table.ledger a[title=Edit]", count: 0
+    assert_select "table.ledger button[title=Delete]", count: 0
+  end
+
   private
 
   def create_system_category(name)

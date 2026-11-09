@@ -77,7 +77,7 @@
     </p>
 
     <% if @transactions.any? %>
-      <%= render "admin/shared/ledger", transactions: @transactions, actions: true, closed_periods: @closed_periods %>
+      <%= render "admin/shared/ledger", transactions: @transactions, actions: true, closed_periods: @closed_periods, location: @payment_location_filter %>
       <%= render "admin/shared/pagination", pagy: @pagy %>
     <% elsif filtering %>
       <%= render "admin/shared/empty_state", icon: "magnifying-glass", title: "No matches", message: "Try other words or clear the filters." %>

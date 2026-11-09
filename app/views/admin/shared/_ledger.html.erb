@@ -55,7 +55,7 @@
                   <%= heroicon "printer", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
                 <% end %>
               <% end %>
-              <% if can_manage_finance? %>
+              <% if can_manage_finance? && !closed %>
                 <%= link_to edit_admin_finance_transaction_path(transaction), class: "btn btn-ghost btn-icon", title: "Edit", aria: { label: "Edit" } do %>
                   <%= heroicon "pencil-square", variant: :outline, options: { class: "h-[18px] w-[18px]" } %>
                 <% end %>
@@ -76,7 +76,7 @@
 <div class="md:hidden">
   <% if actions %>
     <div class="row-list">
-      <%= render partial: "admin/finance_transactions/finance_transaction", collection: transactions, locals: { closed_periods: closed_periods } %>
+      <%= render partial: "admin/finance_transactions/finance_transaction", collection: transactions, locals: { closed_periods: closed_periods, location: location } %>
     </div>
   <% else %>
     <ul class="row-list">

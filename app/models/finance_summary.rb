@@ -122,18 +122,19 @@ class FinanceSummary
     }
   end
 
-  # Total balance (income − expense to date) at the end of each of the last
-  # `count` months; the current month shows today's balance.
+  # Total balance (income − expense) at the end of each of the last `count`
+  # months; the current month matches `current_balance`, so entries dated
+  # after today count too.
   def balance_history(count = 12)
     months = (0...count).map { |offset| today.beginning_of_month << (count - 1 - offset) }
     opening = transactions.income.where(transaction_date: ...months.first).sum(:amount) -
               transactions.expense.where(transaction_date: ...months.first).sum(:amount)
-    movements = transactions.income_or_expense.where(transaction_date: months.first..today)
+    movements = transactions.income_or_expense.where(transaction_date: months.first..)
                             .pluck(:transaction_type, :transaction_date, :amount)
 
     running = opening
     months.map do |month|
-      in_month = movements.select { |_, date, _| date.beginning_of_month == month }
+      in_month = movements.select { |_, date, _| month == months.last ? date >= month : date.beginning_of_month == month }
       running += in_month.sum { |type, _, amount| type == "income" ? amount : -amount }
       { label: month.strftime("%b"), balance: running }
     end

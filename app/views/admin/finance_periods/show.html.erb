@@ -136,7 +136,8 @@
       <%= heroicon "chevron-down", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %>
     </summary>
     <% if @transactions.any? %>
-      <%= render "admin/shared/ledger", transactions: @transactions, actions: true %>
+      <%= render "admin/shared/ledger", transactions: @transactions, actions: true,
+          closed_periods: (Set[[ period.year, period.month ]] if closed) %>
     <% else %>
       <p class="px-6 py-8 text-center text-[15px] text-[var(--ink-muted)]">No transactions this month.</p>
     <% end %>

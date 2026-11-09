@@ -22,6 +22,8 @@ module Admin
       respond_to do |format|
         format.html do
           @pagy, @ledger_transactions = pagy(transactions, limit: 12)
+          next if redirect_past_last_page?(@pagy)
+
           load_overview(period_transactions)
         end
         format.pdf do

@@ -1,5 +1,6 @@
 <%
-  tone = transaction_tone(finance_transaction)
+  location = local_assigns[:location]
+  tone = transaction_tone(finance_transaction, location: location)
   closed = local_assigns[:closed_periods]&.include?([ finance_transaction.transaction_date.year, finance_transaction.transaction_date.month ])
   title = finance_transaction.description.presence || (finance_transaction.transfer? ? "Transfer" : finance_transaction.finance_category&.name)
   meta = []
@@ -10,7 +11,7 @@
 %>
 
 <div class="row flex-wrap sm:flex-nowrap">
-  <span class="row-icon <%= tone_classes(tone, :icon) %>" aria-hidden="true">
+  <span class="row-icon <%= tone_classes(finance_transaction.transfer? ? :transfer : tone, :icon) %>" aria-hidden="true">
     <%= heroicon transaction_icon(finance_transaction), variant: :outline, options: { class: "h-5 w-5" } %>
   </span>
 
@@ -25,18 +26,19 @@
   </div>
 
   <p class="shrink-0 text-[15px] font-medium">
-    <span class="sr-only"><%= { income: "Income", expense: "Expense", transfer: "Transfer" }.fetch(tone) %>:</span>
-    <%= transaction_money(finance_transaction) %>
+    <span class="sr-only"><%= { income: "Income", expense: "Expense", transfer: "Transfer" }.fetch(finance_transaction.transfer? ? :transfer : tone) %>:</span>
+    <%= transaction_money(finance_transaction, location: location) %>
   </p>
 
-  <% if finance_transaction.expense? || can_manage_finance? %>
+  <% editable = can_manage_finance? && !closed %>
+  <% if finance_transaction.expense? || editable %>
     <div class="flex w-full justify-end gap-1 sm:w-auto">
       <% if finance_transaction.expense? %>
         <%= link_to admin_finance_transaction_voucher_path(finance_transaction), class: "btn btn-ghost btn-sm", title: "Voucher print" do %>
           <%= heroicon "printer", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Voucher</span>
         <% end %>
       <% end %>
-      <% if can_manage_finance? %>
+      <% if editable %>
         <%= link_to edit_admin_finance_transaction_path(finance_transaction), class: "btn btn-ghost btn-sm", title: "Edit" do %>
           <%= heroicon "pencil-square", variant: :outline, options: { class: "h-5 w-5" } %><span class="sm:sr-only">Edit</span>
         <% end %>

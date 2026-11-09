@@ -170,6 +170,20 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     end
   end
 
+
+  test "the income view does not list expenses by category" do
+    sign_in_user
+    unit = finance_units(:main)
+    unit.finance_transactions.create!(transaction_type: "expense", finance_category: finance_categories(:two), amount: 400,
+                                      transaction_date: Date.current, payment_location: "cash", recorded_by: users(:one))
+
+    get admin_finance_report_path(finance_unit_id: unit.id, ledger_type: "income")
+    assert_select "[data-spending-by-category]", count: 0
+
+    get admin_finance_report_path(finance_unit_id: unit.id, ledger_type: "expense")
+    assert_select "[data-spending-by-category]", text: /100%/
+  end
+
   private
 
   def sign_in_user

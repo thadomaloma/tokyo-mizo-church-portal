@@ -13,6 +13,8 @@ module Admin
       @filter_categories = @finance_unit.finance_categories.system_defined.order(:category_type, :position, :name)
 
       @pagy, @transactions = pagy(finance_ledger_transactions, limit: 15)
+      return if redirect_past_last_page?(@pagy)
+
       @transactions_count = @pagy.count
       @closed_periods = @finance_unit.finance_periods.closed.pluck(:year, :month).to_set
     end
@@ -57,11 +59,12 @@ module Admin
     end
 
     def destroy
+      # Back to the page the delete was made from (list, monthly report, ...).
+      fallback = admin_finance_transactions_path(finance_unit_id: @finance_unit.id)
       if @finance_transaction.destroy
-        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id), notice: "Transaction deleted."
+        redirect_back_or_to fallback, notice: "Transaction deleted."
       else
-        redirect_to admin_finance_transactions_path(finance_unit_id: @finance_unit.id),
-                    alert: @finance_transaction.errors.full_messages.to_sentence
+        redirect_back_or_to fallback, alert: @finance_transaction.errors.full_messages.to_sentence
       end
     end
 
@@ -77,9 +80,8 @@ module Admin
 
     # The transaction form also sends the unit inside finance_transaction[...].
     def set_finance_unit
-      requested_id = params[:finance_unit_id].presence ||
-                     params.dig(:finance_transaction, :finance_unit_id).presence
-      @finance_unit = requested_id ? available_finance_units.find(requested_id) : current_finance_unit
+      form_unit_id = params.dig(:finance_transaction, :finance_unit_id).presence
+      @finance_unit = form_unit_id && params[:finance_unit_id].blank? ? available_finance_units.find(form_unit_id) : current_finance_unit
       @current_finance_unit = @finance_unit
     end
 
@@ -119,10 +121,11 @@ module Admin
     end
 
     def search_transactions(transactions, query)
-      pattern = "%#{query}%"
+      # Escape % and _ so they are searched as typed, not used as wildcards.
+      pattern = "%#{FinanceTransaction.sanitize_sql_like(query)}%"
 
       transactions.left_joins(:finance_category).where(
-        "finance_categories.name LIKE :q OR finance_transactions.description LIKE :q",
+        "finance_categories.name LIKE :q ESCAPE '\\' OR finance_transactions.description LIKE :q ESCAPE '\\'",
         q: pattern
       )
     end
