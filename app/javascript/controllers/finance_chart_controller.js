@@ -84,6 +84,47 @@ const endLabels = {
   }
 }
 
+// Motion: bars grow up from the axis one month after another, and lines draw
+// themselves left to right, point by point. Charts wait until they scroll
+// into view, so the motion is seen; reduced motion draws them at once.
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+const barAnimation = {
+  duration: 900,
+  easing: "easeOutQuart",
+  delay: (context) => (context.type === "data" && context.mode === "default" ? context.dataIndex * 70 + context.datasetIndex * 30 : 0)
+}
+
+const lineAnimation = (pointCount) => {
+  const step = 1100 / Math.max(pointCount, 1)
+  const delay = (key) => (context) => {
+    if (context.type !== "data" || context[key]) return 0
+    context[key] = true
+    return context.index * step
+  }
+  // Each point starts where the previous one sits, so the line unrolls.
+  const previousY = (context) => {
+    if (context.index === 0) return context.chart.scales.y.getPixelForValue(0)
+    return context.chart.getDatasetMeta(context.datasetIndex).data[context.index - 1].getProps(["y"], true).y
+  }
+
+  return {
+    x: { type: "number", easing: "linear", duration: step, from: NaN, delay: delay("xStarted") },
+    y: { type: "number", easing: "linear", duration: step, from: previousY, delay: delay("yStarted") }
+  }
+}
+
+// Area under a line fades from the series colour down to nothing.
+const areaGradient = (color) => (context) => {
+  const { ctx, chartArea } = context.chart
+  if (!chartArea) return hexToRgba(color, 0.1)
+
+  const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+  gradient.addColorStop(0, hexToRgba(color, 0.22))
+  gradient.addColorStop(1, hexToRgba(color, 0))
+  return gradient
+}
+
 export default class extends Controller {
   static values = { config: Object }
   static targets = ["canvas"]
@@ -91,11 +132,22 @@ export default class extends Controller {
   connect() {
     if (!window.Chart) return
 
-    this.chart = new window.Chart(this.canvasTarget, this.buildConfig())
+    this.observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      this.observer.disconnect()
+      this.chart = new window.Chart(this.canvasTarget, this.buildConfig())
+    }, { threshold: 0.25 })
+    this.observer.observe(this.element)
   }
 
   disconnect() {
+    this.observer?.disconnect()
     this.chart?.destroy()
+  }
+
+  animation(isLine, labels) {
+    if (reducedMotion()) return false
+    return isLine ? lineAnimation(labels.length) : barAnimation
   }
 
   buildConfig() {
@@ -111,7 +163,8 @@ export default class extends Controller {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 250 },
+        animation: this.animation(isLine, labels),
+        transitions: { active: { animation: { duration: 150 } } },
         layout: { padding: { right: showEndLabels ? 72 : 4, top: 8 } },
         interaction: { mode: "index", intersect: false },
         plugins: {
@@ -170,7 +223,7 @@ export default class extends Controller {
         order: item.order ?? 0,
         endLabel: item.endLabel !== false,
         borderColor: item.color,
-        backgroundColor: item.area ? hexToRgba(item.color, 0.1) : item.color,
+        backgroundColor: item.area ? areaGradient(item.color) : item.color,
         fill: item.area ? "origin" : false,
         borderWidth: 2,
         borderCapStyle: "round",
@@ -191,7 +244,7 @@ export default class extends Controller {
       backgroundColor: item.color,
       hoverBackgroundColor: hexToRgba(item.color, 0.8),
       borderWidth: 0,
-      borderRadius: { topLeft: 4, topRight: 4 },
+      borderRadius: { topLeft: 5, topRight: 5 },
       borderSkipped: "start",
       maxBarThickness: 24,
       categoryPercentage: 0.6,

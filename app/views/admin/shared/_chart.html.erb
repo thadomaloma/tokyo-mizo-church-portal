@@ -1,7 +1,8 @@
 <%#
   Finance chart card. Locals: title, subtitle, type ("bar" | "line"),
   labels, series ([{ label:, color:, values:, area: }]), end_labels,
-  table_label (first column heading of the data table), tooltip_title_prefix.
+  table_label (first column heading of the data table), tooltip_title_prefix,
+  class (extra classes for the card), html (other attributes).
   Every chart has a legend for two or more series and a table twin.
 %>
 <%
@@ -17,7 +18,7 @@
 %>
 
 <%# On wide screens the chart grows to fill its card, so cards in a row end level. %>
-<section class="card card-pad flex flex-col" aria-labelledby="<%= chart_id %>-title" <%= tag.attributes(local_assigns[:html] || {}) %>>
+<section class="card card-pad flex flex-col <%= local_assigns[:class] %>" aria-labelledby="<%= chart_id %>-title" <%= tag.attributes(local_assigns[:html] || {}) %>>
   <div class="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
     <div>
       <h2 id="<%= chart_id %>-title" class="card-title"><%= title %></h2>

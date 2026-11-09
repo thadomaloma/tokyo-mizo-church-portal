@@ -1,7 +1,8 @@
 <%#
   This year so far against the same days last year, with income by month
-  for both years as small bars (last year faint, behind). Local: comparison
-  (FinanceSummary#year_comparison).
+  for both years as small bars (last year faint, behind). Locals: comparison
+  (FinanceSummary#year_comparison), class and style for the card (optional).
+  The bars grow to fill any height the card is given.
 %>
 <%
   current, previous = comparison.values_at(:current, :previous)
@@ -16,7 +17,7 @@
   ]
 %>
 
-<section class="card card-pad flex-1" aria-labelledby="year-comparison-title" data-year-comparison>
+<section class="card card-pad lift flex flex-col <%= local_assigns[:class] %>" style="<%= local_assigns[:style] %>" aria-labelledby="year-comparison-title" data-year-comparison>
   <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
     <h2 id="year-comparison-title" class="card-title"><%= year %> so far</h2>
     <span class="text-[13px] text-[var(--ink-muted)]">vs the same days of <%= previous_year %></span>
@@ -34,15 +35,15 @@
     <% end %>
   </dl>
 
-  <div class="mt-5" role="img"
+  <div class="mt-5 flex flex-1 flex-col" role="img"
        aria-label="Income by month, <%= year %> compared with <%= previous_year %>. Values are listed in the table below.">
-    <div class="flex h-16 items-end gap-1">
+    <div class="flex min-h-16 flex-1 items-end gap-1">
       <% bars.each_with_index do |(now, before), index| %>
         <div class="relative h-full flex-1"
              title="<%= comparison[:months][index] %>: <%= year %> <%= now.nil? ? "—" : yen(now) %> · <%= previous_year %> <%= yen(before) %>">
-          <span class="absolute inset-x-0 bottom-0 rounded-t-[3px]" style="height: <%= height.call(before) %>%; background: <%= chart_color(:context) %>"></span>
+          <span class="grow-up absolute inset-x-0 bottom-0 rounded-t-[3px]" style="height: <%= height.call(before) %>%; background: <%= chart_color(:context) %>; --i: <%= index %>"></span>
           <% if now %>
-            <span class="absolute inset-x-[22%] bottom-0 rounded-t-[3px]" style="height: <%= height.call(now) %>%; background: <%= chart_color(:income) %>"></span>
+            <span class="grow-up absolute inset-x-[22%] bottom-0 rounded-t-[3px]" style="height: <%= height.call(now) %>%; background: <%= chart_color(:income) %>; --i: <%= index + 2 %>"></span>
           <% end %>
         </div>
       <% end %>

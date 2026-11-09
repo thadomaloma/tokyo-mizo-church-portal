@@ -13,12 +13,12 @@
       expense_change = FinanceSummary.change_percent(summary.month_expense, summary.previous_month_expense)
     %>
 
-    <section class="hero-card overflow-hidden" data-balance-card>
+    <section class="hero-card rise overflow-hidden" data-balance-card>
       <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div class="p-6 sm:p-8">
-          <p class="eyebrow">Total balance</p>
-          <p class="figure-xl mt-3 text-[var(--ink)]"><%= money(summary.current_balance) %></p>
-          <p class="mt-3 text-sm text-[var(--ink-muted)]">Cash and bank combined, as of today.</p>
+          <p class="eyebrow inline-flex items-center gap-2"><span class="live-dot" aria-hidden="true"></span>Total balance</p>
+          <p class="figure-xl mt-3 text-[var(--ink)]" data-controller="count-up"><%= money(summary.current_balance) %></p>
+          <p class="mt-3 text-sm text-[var(--ink-muted)]">Cash and bank combined, as of <%= Date.current.strftime("%-d %B") %>.</p>
 
           <% if can_manage_finance? %>
             <nav class="mt-6 grid max-w-md grid-cols-2 gap-2" aria-label="Quick actions">
@@ -46,38 +46,79 @@
                 <span class="inline-flex items-center gap-1.5"><%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %><%= name %></span>
                 <%= heroicon "arrow-right", variant: :outline, options: { class: "h-4 w-4 opacity-0 transition group-hover:opacity-100" } %>
               </span>
-              <span class="figure-lg text-[var(--ink)]"><%= money(balance) %></span>
+              <span class="figure-lg text-[var(--ink)]" data-controller="count-up"><%= money(balance) %></span>
             <% end %>
           <% end %>
         </div>
       </div>
     </section>
 
-    <section class="card" aria-labelledby="this-month">
+    <% days_in_month = Date.current.end_of_month.day %>
+    <section class="card rise" style="--i: 1" aria-labelledby="this-month">
       <div class="card-head">
-        <h2 id="this-month" class="card-title"><%= Date.current.strftime("%B %Y") %></h2>
+        <div class="flex min-w-0 items-center gap-3">
+          <h2 id="this-month" class="card-title"><%= Date.current.strftime("%B %Y") %></h2>
+          <span class="hidden items-center gap-2 text-[13px] text-[var(--ink-muted)] sm:inline-flex" title="How much of the month has passed">
+            <span class="bar !h-1 w-16" aria-hidden="true"><span class="bg-[var(--brand-soft)]" style="width: <%= (Date.current.day * 100.0 / days_in_month).round %>%"></span></span>
+            Day <%= Date.current.day %> of <%= days_in_month %>
+          </span>
+        </div>
         <%= link_to "Monthly report", admin_finance_period_path(Date.current.year, Date.current.month, finance_unit_id: @finance_unit.id), class: "link text-sm" %>
       </div>
       <dl class="grid grid-cols-3 divide-x divide-[var(--line)]">
-        <div class="p-4 sm:p-6">
-          <dt class="stat-label">Income</dt>
-          <dd class="stat-value money-in max-sm:!text-base"><%= money(summary.month_income, sign: :plus) %></dd>
-          <dd class="mt-2 flex items-center gap-2 text-[13px] text-[var(--ink-muted)]"><%= percent_change_badge(income_change, good_when: :up) %><span class="max-sm:hidden"><%= "vs last month" if income_change %></span></dd>
-        </div>
-        <div class="p-4 sm:p-6">
-          <dt class="stat-label">Expenses</dt>
-          <dd class="stat-value money-out max-sm:!text-base"><%= money(summary.month_expense, sign: :minus) %></dd>
-          <dd class="mt-2 flex items-center gap-2 text-[13px] text-[var(--ink-muted)]"><%= percent_change_badge(expense_change, good_when: :down) %><span class="max-sm:hidden"><%= "vs last month" if expense_change %></span></dd>
-        </div>
-        <div class="p-4 sm:p-6">
-          <dt class="stat-label">Net</dt>
-          <dd class="stat-value max-sm:!text-base <%= summary.net_change.negative? ? "money-out" : "text-[var(--ink)]" %>"><%= money(summary.net_change, sign: (summary.net_change.negative? ? :minus : :plus)) %></dd>
-          <dd class="mt-2 text-[13px] text-[var(--ink-muted)] max-sm:hidden">Income − expenses</dd>
-        </div>
+        <% [
+             [ "Income", "arrow-down-left", "tone-in", summary.month_income, :plus, "money-in", percent_change_badge(income_change, good_when: :up), ("vs last month" if income_change) ],
+             [ "Expenses", "arrow-up-right", "tone-out", summary.month_expense, :minus, "money-out", percent_change_badge(expense_change, good_when: :down), ("vs last month" if expense_change) ],
+             [ "Net", "scale", "tone-move", summary.net_change, (summary.net_change.negative? ? :minus : :plus), (summary.net_change.negative? ? "money-out" : "text-[var(--ink)]"), nil, "Income − expenses" ]
+           ].each do |label, icon, tone, amount, sign, amount_class, badge, note| %>
+          <div class="stat-cell p-4 transition-colors hover:bg-[var(--surface-sunken)] sm:p-6">
+            <dt class="stat-label flex items-center gap-2">
+              <span class="stat-icon <%= tone %> max-sm:hidden" aria-hidden="true"><%= heroicon icon, variant: :outline, options: { class: "h-4 w-4" } %></span>
+              <%= label %>
+            </dt>
+            <dd class="stat-value <%= amount_class %> max-sm:!text-base" data-controller="count-up"><%= money(amount, sign: sign) %></dd>
+            <dd class="mt-2 flex items-center gap-2 text-[13px] text-[var(--ink-muted)]"><%= badge %><span class="max-sm:hidden"><%= note %></span></dd>
+          </div>
+        <% end %>
       </dl>
     </section>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,1fr)]">
+    <%# One grid, so phones read it in this order (giving first, as it is what
+        people look for on a Sunday), while wide screens place each card in
+        two columns: the charts on the left, the smaller cards beside them. %>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,1fr)] lg:grid-rows-[auto_1fr_auto]">
+      <%
+        giving_total = @sawmapakhat_total.to_i + @weekly_offering_total.to_i
+        tithe_share = giving_total.positive? ? (@sawmapakhat_total.to_i * 100.0 / giving_total).round : 0
+        giving_colors = { tithe: chart_color(:income), offering: "#a5b4fc" }
+      %>
+      <section class="card card-pad lift rise lg:col-start-2 lg:row-start-1" style="--i: 2">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="card-title inline-flex items-center gap-2">
+            <span class="stat-icon tone-move" aria-hidden="true"><%= heroicon "heart", variant: :outline, options: { class: "h-4 w-4" } %></span>
+            This month's giving
+          </h2>
+          <span class="text-sm font-medium text-[var(--ink-soft)]" data-controller="count-up"><%= money(giving_total) %></span>
+        </div>
+        <dl class="mt-4 grid grid-cols-2 gap-4">
+          <% [ [ "Tithe", @sawmapakhat_total, :tithe, tithe_share ], [ "Offering", @weekly_offering_total, :offering, 100 - tithe_share ] ].each do |label, amount, key, share| %>
+            <div>
+              <dt class="stat-label inline-flex items-center gap-1.5">
+                <span class="h-2 w-2 rounded-full" style="background: <%= giving_colors[key] %>" aria-hidden="true"></span><%= label %>
+                <% if giving_total.positive? %><span class="text-[var(--ink-muted)]">· <%= share %>%</span><% end %>
+              </dt>
+              <dd class="figure-lg mt-1 !text-[1.5rem] text-[var(--ink)]" data-controller="count-up"><%= money(amount) %></dd>
+            </div>
+          <% end %>
+        </dl>
+        <% if giving_total.positive? %>
+          <div class="bar bar-split mt-4 !h-2" role="img" aria-label="Tithe <%= tithe_share %>%, offering <%= 100 - tithe_share %>%">
+            <% if tithe_share.positive? %><span style="width: <%= tithe_share %>%; background: <%= giving_colors[:tithe] %>"></span><% end %>
+            <% if tithe_share < 100 %><span style="width: <%= 100 - tithe_share %>%; background: <%= giving_colors[:offering] %>; --i: 2"></span><% end %>
+          </div>
+        <% end %>
+      </section>
+
       <%= render "admin/shared/chart",
           title: "Cash flow",
           subtitle: "Money in and out over the last 6 months.",
@@ -88,43 +129,50 @@
             { label: "Expenses", color: chart_color(:expense), values: @monthly_overview.map { |month| month[:expense] } }
           ],
           table_label: "Month",
-          html: { data: { cash_flow_chart: true } } %>
+          class: "rise lg:col-start-1 lg:row-span-2 lg:row-start-1",
+          html: { style: "--i: 2", data: { cash_flow_chart: true } } %>
 
-      <div class="flex flex-col gap-6">
-        <section class="card card-pad flex-1" data-budget-card>
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="card-title"><%= Date.current.year %> Budget</h2>
-            <%= link_to (@budget_progress.planned? ? "View" : "Create"), admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "link text-sm" %>
-          </div>
-
+      <section class="card card-pad lift rise flex flex-col lg:col-start-2 lg:row-start-2" style="--i: 3" data-budget-card>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="card-title inline-flex items-center gap-2">
+            <span class="stat-icon tone-move" aria-hidden="true"><%= heroicon "chart-pie", variant: :outline, options: { class: "h-4 w-4" } %></span>
+            <%= Date.current.year %> Budget
+          </h2>
           <% if @budget_progress.planned? %>
-            <p class="mt-4 flex items-baseline gap-2">
-              <span class="figure-lg text-[var(--ink)]"><%= @budget_progress.percent_used %>%</span>
-              <span class="text-sm text-[var(--ink-muted)]">used</span>
-            </p>
-            <div class="bar mt-3"><span class="<%= @budget_progress.status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
-            <p class="mt-2 text-[13px] text-[var(--ink-muted)]"><%= money(@budget_progress.spent_total) %> / <%= money(@budget_progress.planned_total) %></p>
-
-            <ul class="mt-5 space-y-3.5 border-t border-[var(--line)] pt-4">
-              <% @budget_progress.lines.sort_by { |line| -line.percent_used }.first(3).each do |line| %>
-                <li>
-                  <div class="flex justify-between gap-2 text-sm">
-                    <span class="truncate text-[var(--ink-soft)]"><%= line.category.name %></span>
-                    <span class="money shrink-0 font-medium <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= line.percent_used %>%</span>
-                  </div>
-                  <div class="bar mt-1.5 !h-1"><span class="<%= line.over? ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ line.percent_used, 100 ].min %>%"></span></div>
-                </li>
-              <% end %>
-            </ul>
-          <% else %>
-            <p class="card-note mt-2">No budget for <%= Date.current.year %> yet. Plan how much to spend in each category and track it here.</p>
+            <%= link_to "View", admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "link text-sm" %>
           <% end %>
-        </section>
+        </div>
 
-      </div>
-    </div>
+        <% if @budget_progress.planned? %>
+          <p class="mt-4 flex items-baseline gap-2">
+            <span class="figure-lg text-[var(--ink)]" data-controller="count-up"><%= @budget_progress.percent_used %>%</span>
+            <span class="text-sm text-[var(--ink-muted)]">used</span>
+          </p>
+          <div class="bar mt-3"><span class="<%= @budget_progress.status == :over ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ @budget_progress.percent_used, 100 ].min %>%"></span></div>
+          <p class="mt-2 text-[13px] text-[var(--ink-muted)]"><%= money(@budget_progress.spent_total) %> / <%= money(@budget_progress.planned_total) %></p>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,1fr)]">
+          <ul class="mt-5 space-y-3.5 border-t border-[var(--line)] pt-4">
+            <% @budget_progress.lines.sort_by { |line| -line.percent_used }.first(3).each_with_index do |line, index| %>
+              <li>
+                <div class="flex justify-between gap-2 text-sm">
+                  <span class="truncate text-[var(--ink-soft)]"><%= line.category.name %></span>
+                  <span class="money shrink-0 font-medium <%= line.over? ? "money-out" : "text-[var(--ink)]" %>"><%= line.percent_used %>%</span>
+                </div>
+                <div class="bar mt-1.5 !h-1"><span class="<%= line.over? ? "bg-[var(--money-out)]" : "bg-[var(--brand-soft)]" %>" style="width: <%= [ line.percent_used, 100 ].min %>%; --i: <%= index + 1 %>"></span></div>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <%# Centred, so the space a taller chart beside it leaves reads as intended. %>
+          <div class="flex flex-1 flex-col items-center justify-center gap-3 py-4 text-center">
+            <p class="card-note max-w-64">No budget for <%= Date.current.year %> yet. Plan how much to spend in each category and track it here.</p>
+            <%= link_to admin_budget_path(Date.current.year, finance_unit_id: @finance_unit.id), class: "btn btn-secondary btn-sm" do %>
+              <%= heroicon "plus", variant: :outline, options: { class: "h-4 w-4" } %> Create budget
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+
       <%= render "admin/shared/chart",
           title: "Spending pace",
           subtitle: "Running total of expenses this month compared with last month.",
@@ -132,33 +180,18 @@
           labels: @spending_pace[:days],
           series: [
             { label: @spending_pace[:last_label], color: chart_color(:context), values: @spending_pace[:last_month], order: 1, endLabel: false },
-            { label: @spending_pace[:this_label], color: chart_color(:expense), values: @spending_pace[:this_month], order: 0 }
+            { label: @spending_pace[:this_label], color: chart_color(:expense), values: @spending_pace[:this_month], order: 0, area: true }
           ],
           end_labels: true,
           table_label: "Day",
           tooltip_title_prefix: "Day ",
-          html: { data: { spending_pace_chart: true } } %>
+          class: "rise lg:col-start-1 lg:row-start-3",
+          html: { style: "--i: 4", data: { spending_pace_chart: true } } %>
 
-      <div class="flex flex-col gap-6">
-        <section class="card card-pad">
-          <h2 class="card-title">This month's giving</h2>
-          <dl class="mt-4 grid grid-cols-2 gap-4">
-            <div>
-              <dt class="stat-label">Tithe</dt>
-              <dd class="figure-lg mt-1 !text-[1.5rem] text-[var(--ink)]"><%= money(@sawmapakhat_total) %></dd>
-            </div>
-            <div>
-              <dt class="stat-label">Offering</dt>
-              <dd class="figure-lg mt-1 !text-[1.5rem] text-[var(--ink)]"><%= money(@weekly_offering_total) %></dd>
-            </div>
-          </dl>
-        </section>
-
-        <%= render "year_comparison", comparison: @year_comparison %>
-      </div>
+      <%= render "year_comparison", comparison: @year_comparison, class: "rise lg:col-start-2 lg:row-start-3", style: "--i: 4" %>
     </div>
 
-    <section class="card overflow-hidden">
+    <section class="card rise rows-in overflow-hidden" style="--i: 5">
       <div class="card-head">
         <h2 class="card-title">Recent activity</h2>
         <%= link_to "View all", admin_finance_transactions_path(finance_unit_id: @finance_unit.id), class: "link text-sm" %>
