@@ -14,6 +14,7 @@ gem "prawn"
 gem "prawn-table"
 gem "caxlsx"
 gem "caxlsx_rails"
+gem "csv" # finance:import_cash_book reads CSV; no longer bundled with Ruby
 gem "audited"
 gem "pagy"
 gem "dotenv-rails", groups: [ :development, :test ]
