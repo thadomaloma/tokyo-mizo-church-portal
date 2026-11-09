@@ -10,7 +10,7 @@
     title: "Monthly bills",
     subtitle: "The bills paid every month, filled in with last time's amount. Change what's different and leave a box empty to skip it." %>
 
-<div class="mx-auto max-w-2xl space-y-4">
+<div class="max-w-2xl space-y-4">
   <nav class="card flex items-center justify-between px-3 py-2" aria-label="Choose month">
     <%= link_to new_admin_monthly_bill_path(month: previous_month.strftime("%Y-%m"), finance_unit_id: unit.id), class: "btn btn-ghost" do %>
       <%= heroicon "chevron-left", variant: :outline, options: { class: "h-5 w-5" } %><%= previous_month.strftime("%b %Y") %>

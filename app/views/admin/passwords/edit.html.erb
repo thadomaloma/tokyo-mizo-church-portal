@@ -2,7 +2,7 @@
     title: "Change password",
     subtitle: "Type your current password, then the new one twice." %>
 
-<%= form_with model: current_user, scope: :user, url: admin_password_path, method: :patch, class: "card mx-auto max-w-xl" do |form| %>
+<%= form_with model: current_user, scope: :user, url: admin_password_path, method: :patch, class: "card max-w-xl" do |form| %>
   <div class="card-pad space-y-5">
     <%= render "admin/shared/form_errors", object: current_user %>
 

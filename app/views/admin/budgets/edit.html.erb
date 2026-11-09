@@ -3,7 +3,7 @@
     title: "#{@year} Budget",
     subtitle: "Enter the amount planned for each category this year. Leave a box empty to skip it." %>
 
-<%= form_with url: admin_budget_path(@year), method: :patch, class: "card mx-auto max-w-3xl overflow-hidden" do |form| %>
+<%= form_with url: admin_budget_path(@year), method: :patch, class: "card max-w-3xl overflow-hidden" do |form| %>
   <%= hidden_field_tag :finance_unit_id, @finance_unit.id %>
   <% if @budget.errors.any? %>
     <div class="card-pad !pb-0"><%= render "admin/shared/form_errors", object: @budget %></div>

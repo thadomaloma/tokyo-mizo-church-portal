@@ -6,7 +6,7 @@
   type_labels = { "income" => "Income", "expense" => "Expense", "transfer" => "Transfer" }
 %>
 
-<%= form_with model: [:admin, finance_transaction], class: "card mx-auto max-w-2xl" do |form| %>
+<%= form_with model: [:admin, finance_transaction], class: "card max-w-2xl" do |form| %>
   <%= form.hidden_field :transaction_type, value: transaction_type %>
   <%= form.hidden_field :finance_unit_id, value: @finance_unit.id %>
 

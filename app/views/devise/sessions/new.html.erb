@@ -1,25 +1,27 @@
-<div class="flex min-h-screen items-center justify-center px-4 py-10">
+<%# A soft indigo glow behind the logo, the same family as the balance card. %>
+<div class="flex min-h-screen items-center justify-center px-4 py-10"
+     style="background: radial-gradient(60rem 28rem at 50% -6rem, rgb(99 102 241 / 0.14), transparent 70%), var(--app-bg)">
   <div class="w-full max-w-md">
     <div class="mb-8 text-center">
-      <%= image_tag "tokyo_mizo_church_logo.png", alt: "Tokyo Mizo Church", class: "mx-auto h-20 w-20 rounded-2xl bg-white object-contain p-1.5 shadow-sm ring-1 ring-[var(--line)]" %>
-      <p class="mt-5 text-[15px] font-semibold text-[var(--brand-soft)]">Tokyo Mizo Church Finance</p>
-      <h1 class="mt-1 text-3xl font-bold tracking-tight text-[var(--ink)]">Welcome Back</h1>
+      <%= image_tag "tokyo_mizo_church_logo.png", alt: "Tokyo Mizo Church", class: "mx-auto h-20 w-20 rounded-2xl bg-white object-contain p-1.5 shadow-[var(--shadow-raised)] ring-1 ring-[var(--line)]" %>
+      <p class="page-head-kicker mt-6">Tokyo Mizo Church Finance</p>
+      <h1 class="font-display mt-2 text-[2.5rem] leading-tight tracking-[-0.015em] text-[var(--ink)]">Welcome back</h1>
       <p class="mt-2 text-[15px] text-[var(--ink-muted)]">Sign in to manage church finances.</p>
     </div>
 
-    <div class="card card-pad">
+    <div class="card card-pad sm:!p-7 shadow-[var(--shadow-raised)]">
       <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
         <div class="space-y-5">
           <div>
-            <%= f.label :email, "Email Address", class: "field-label" %>
+            <%= f.label :email, "Email address", class: "field-label" %>
             <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "name@example.com", class: "input" %>
           </div>
 
           <div>
             <%= f.label :password, "Password", class: "field-label" %>
-            <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
+            <div class="flex items-center rounded-[0.625rem] border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
               <%= f.password_field :password, autocomplete: "current-password", data: { password_input: true },
-                  class: "min-h-[2.875rem] min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3.5 text-[var(--ink)] focus:outline-none focus:ring-0" %>
+                  class: "min-h-[2.75rem] min-w-0 flex-1 rounded-[0.625rem] border-0 bg-transparent px-3.5 text-[var(--ink)] focus:outline-none focus:ring-0" %>
               <button type="button" class="mr-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--ink-muted)] hover:bg-[var(--app-bg)]"
                       data-password-toggle aria-label="Show password" title="Show password">
                 <span data-password-show-icon><%= heroicon "eye", variant: :outline, options: { class: "h-5 w-5" } %></span>
@@ -30,12 +32,12 @@
 
           <% if devise_mapping.rememberable? %>
             <div class="flex items-center gap-2.5">
-              <%= f.check_box :remember_me, class: "h-5 w-5 rounded border-[var(--line-strong)]" %>
+              <%= f.check_box :remember_me, class: "h-5 w-5 rounded border-[var(--line-strong)] accent-[var(--brand)]" %>
               <%= f.label :remember_me, "Remember me", class: "text-[15px] text-[var(--ink-soft)]" %>
             </div>
           <% end %>
 
-          <%= f.submit "Sign In", class: "btn btn-primary w-full" %>
+          <%= f.submit "Sign in", class: "btn btn-primary w-full" %>
         </div>
       <% end %>
     </div>

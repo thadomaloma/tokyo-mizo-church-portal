@@ -26,9 +26,6 @@
     <%= link_to admin_finance_report_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
       <%= heroicon "arrow-down-tray", variant: :outline, options: { class: "h-4 w-4" } %> PDF / Excel
     <% end %>
-    <%= link_to admin_finance_categories_path(finance_unit_id: @finance_unit.id), class: "chip chip-muted shrink-0 !px-3.5 !py-2" do %>
-      <%= heroicon "tag", variant: :outline, options: { class: "h-4 w-4" } %> Categories
-    <% end %>
   </nav>
 
   <section class="card overflow-hidden">

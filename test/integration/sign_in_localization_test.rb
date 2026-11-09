@@ -5,11 +5,11 @@ class SignInLocalizationTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    assert_select "h1", text: "Welcome Back"
-    assert_select "label", text: "Email Address"
+    assert_select "h1", text: "Welcome back"
+    assert_select "label", text: "Email address"
     assert_select "label", text: "Password"
     assert_select "label", text: "Remember me"
-    assert_select "input[type='submit'][value='Sign In']"
+    assert_select "input[type='submit'][value='Sign in']"
     assert_match(/Forgot your password\?/, response.body)
     assert_select "[data-app-version]", text: "Version #{Rails.configuration.x.app_version} · Developed by Maloma Thado"
     assert_no_match(/Sign in to continue/, response.body)

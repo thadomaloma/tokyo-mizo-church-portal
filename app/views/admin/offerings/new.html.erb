@@ -4,7 +4,7 @@
     subtitle: "After counting, enter the amount for each category. Leave a box empty to skip it." %>
 
 <%= form_with model: @offering, url: admin_offerings_path(finance_unit_id: current_finance_unit.id),
-    class: "card mx-auto max-w-2xl", data: { controller: "offering-total" } do |form| %>
+    class: "card max-w-2xl", data: { controller: "offering-total" } do |form| %>
   <div class="card-pad">
     <%= render "admin/shared/form_errors", object: @offering %>
 

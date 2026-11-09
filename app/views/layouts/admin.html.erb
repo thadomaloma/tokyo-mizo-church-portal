@@ -50,7 +50,7 @@
             <p class="truncate text-xs text-[var(--ink-muted)]"><%= current_user.role.humanize %></p>
           </div>
           <%= button_to destroy_user_session_path, method: :delete,
-              class: "flex h-8 w-8 items-center justify-center rounded-full text-[var(--ink-muted)] hover:bg-white hover:text-[var(--ink)]",
+              class: "flex h-8 w-8 items-center justify-center rounded-full text-[var(--ink-muted)] hover:bg-[var(--tint)] hover:text-[var(--ink)]",
               title: "Logout", aria: { label: "Logout" } do %>
             <%= heroicon "arrow-right-on-rectangle", variant: :outline, options: { class: "h-5 w-5" } %>
           <% end %>
@@ -58,7 +58,7 @@
       </aside>
 
       <div class="admin-content">
-        <header data-mobile-admin-header class="relative z-[100] border-b border-[var(--line)] bg-[var(--app-bg)] px-4 pb-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] lg:hidden">
+        <header data-mobile-admin-header class="relative z-[100] border-b border-[var(--line)] px-4 pb-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] lg:hidden">
           <div class="flex items-center justify-between gap-3">
             <%= link_to admin_root_path, class: "flex min-w-0 items-center gap-2.5" do %>
               <%= image_tag "tokyo_mizo_church_logo.png", alt: "", class: "h-8 w-8 rounded-full object-contain" %>

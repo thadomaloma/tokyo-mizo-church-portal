@@ -7,7 +7,7 @@ class SignInTest < ApplicationSystemTestCase
     visit root_path
     fill_in "Email", with: user.email
     fill_in "Password", with: "password"
-    click_button "Sign In"
+    click_button "Sign in"
 
     assert_current_path authenticated_root_path
     assert_text "Hello, #{user.name.split.first}"
