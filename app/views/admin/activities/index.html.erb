@@ -1,0 +1,53 @@
+<%
+  multi_unit = available_finance_units.many?
+  filtering = @unit_filter || @kind_filter || @user_filter
+%>
+
+<%= render "admin/shared/page_header",
+    title: "Activity",
+    subtitle: "Who added, changed or deleted what, and when." %>
+
+<section class="card overflow-hidden">
+  <%= form_with url: admin_activities_path, method: :get, data: { turbo: false }, class: "border-b border-[var(--line)] p-4 sm:p-5" do |form| %>
+    <div class="grid grid-cols-1 gap-3 sm:items-end <%= multi_unit ? "sm:grid-cols-[1fr_1fr_1fr_auto]" : "sm:grid-cols-[1fr_1fr_auto]" %>">
+      <% if multi_unit %>
+        <div>
+          <%= label_tag :unit, "Finance unit", class: "field-label" %>
+          <%= form.select :unit, options_from_collection_for_select(available_finance_units, :id, :name, @unit_filter&.id),
+              { include_blank: "All units" }, class: "input" %>
+        </div>
+      <% end %>
+      <div>
+        <%= label_tag :user_id, "Person", class: "field-label" %>
+        <%= form.select :user_id, options_for_select(@people.map { |person| [ person.name, person.id ] }, @user_filter&.id),
+            { include_blank: "Everyone" }, class: "input" %>
+      </div>
+      <div>
+        <%= label_tag :kind, "Change", class: "field-label" %>
+        <%= form.select :kind, options_for_select(ActivityFeed::KINDS.invert, @kind_filter), { include_blank: "All changes" }, class: "input" %>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <% if filtering %><%= link_to "Clear", admin_activities_path, class: "btn btn-secondary" %><% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @events.any? %>
+    <% @events.chunk_while { |a, b| a.at.to_date == b.at.to_date }.each do |day| %>
+      <h2 class="border-b border-[var(--line)] bg-[var(--surface-sunken)] px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--ink-muted)] sm:px-6">
+        <%= activity_day_label(day.first.at.to_date) %>
+      </h2>
+      <ul class="row-list border-b border-[var(--line)] last:border-b-0">
+        <%= render partial: "event", collection: day, locals: { feed: @feed, show_unit: multi_unit && !@unit_filter } %>
+      </ul>
+    <% end %>
+    <%= render "admin/shared/pagination", pagy: @pagy %>
+  <% else %>
+    <%= render "admin/shared/empty_state", icon: "clock",
+        title: (filtering ? "No matches" : "No activity yet"),
+        message: (filtering ? "Try other filters or clear them." : "Entries that are added, changed or deleted will show here.") %>
+  <% end %>
+</section>
+
+<p class="mt-3 text-sm text-[var(--ink-muted)]">Closing or reopening a month and budget changes are listed from 9 November 2026 on.</p>

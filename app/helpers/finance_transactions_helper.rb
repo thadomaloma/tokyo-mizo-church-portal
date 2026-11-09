@@ -105,7 +105,7 @@ module FinanceTransactionsHelper
     AUDIT_ATTRIBUTE_LABELS.fetch(attribute, attribute.humanize)
   end
 
-  def audit_change_value(attribute, value)
+  def audit_change_value(attribute, value, finance_unit: nil)
     case attribute
     when "amount"
       "¥#{number_with_delimiter(value.to_i)}"
@@ -114,7 +114,9 @@ module FinanceTransactionsHelper
     when "transaction_date"
       value.present? ? value.to_date.strftime("%b %d, %Y") : "—"
     when "payment_location", "transfer_to_location"
-      value.present? ? value.to_s.titleize : "—"
+      return "—" if value.blank?
+
+      finance_unit ? finance_unit.account_label(value) : value.to_s.titleize
     else
       value.presence || "—"
     end

@@ -1,4 +1,7 @@
 class FinanceBudgetLine < ApplicationRecord
+  # Budget changes show on the Activity page, one event per save.
+  audited associated_with: :finance_budget, only: %i[amount finance_category_id]
+
   belongs_to :finance_budget, inverse_of: :lines, touch: true
   belongs_to :finance_category
 

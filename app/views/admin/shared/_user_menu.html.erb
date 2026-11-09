@@ -22,6 +22,9 @@
         <%= link_to admin_accounts_path, class: "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-[var(--ink)] hover:bg-[var(--app-bg)]" do %>
           <%= heroicon "wallet", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %> Accounts
         <% end %>
+        <%= link_to admin_activities_path, class: "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-[var(--ink)] hover:bg-[var(--app-bg)]" do %>
+          <%= heroicon "clock", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %> Activity
+        <% end %>
       <% end %>
       <%= link_to admin_settings_path, class: "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-[var(--ink)] hover:bg-[var(--app-bg)]" do %>
         <%= heroicon "cog-6-tooth", variant: :outline, options: { class: "h-5 w-5 text-[var(--ink-muted)]" } %> Settings

@@ -1,13 +1,14 @@
 module AdminHelper
   # Main destinations, in Sumvon's order. Users without finance access only
-  # get Home; Settings sits apart in the "More" group and the account menu.
+  # get Home; Activity, Categories and Settings sit apart in the "More"
+  # group (Activity and Settings are also in the account menu).
   def primary_nav_items
     items = [ nav_item("Home", admin_root_path, "home", active: current_page?(admin_root_path)) ]
     return items unless finance_access?
 
     items + [
       nav_item("Transactions", admin_finance_transactions_path, "arrows-right-left",
-               prefixes: %w[/admin/finance_transactions /admin/finance_categories /admin/offerings]),
+               prefixes: %w[/admin/finance_transactions /admin/offerings]),
       nav_item("Budget", admin_budgets_path, "chart-pie", prefixes: %w[/admin/budgets]),
       nav_item("Reports", admin_finance_period_path(Date.current.year, Date.current.month), "chart-bar",
                prefixes: %w[/admin/finance_report /admin/finance_periods]),
@@ -16,7 +17,11 @@ module AdminHelper
   end
 
   def secondary_nav_items
-    [ nav_item("Settings", admin_settings_path, "cog-6-tooth", prefixes: %w[/admin/settings /admin/password /admin/users /admin/finance_units]) ]
+    items = [ nav_item("Settings", admin_settings_path, "cog-6-tooth", prefixes: %w[/admin/settings /admin/password /admin/users /admin/finance_units]) ]
+    return items unless finance_access?
+
+    [ nav_item("Activity", admin_activities_path, "clock", prefixes: %w[/admin/activities]),
+      nav_item("Categories", admin_finance_categories_path, "tag", prefixes: %w[/admin/finance_categories]) ] + items
   end
 
   # Phone dock: the four most used destinations around a central Add button.

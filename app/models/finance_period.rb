@@ -4,6 +4,9 @@
 # with no row here is simply "open" by default — a row only needs to exist
 # once someone actually closes that month.
 class FinancePeriod < ApplicationRecord
+  # Closing and reopening show on the Activity page.
+  audited only: :status
+
   belongs_to :finance_unit
   belongs_to :closed_by, class_name: "User", optional: true
   belongs_to :reopened_by, class_name: "User", optional: true

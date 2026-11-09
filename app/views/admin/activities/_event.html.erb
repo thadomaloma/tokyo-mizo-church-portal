@@ -1,0 +1,77 @@
+<%# One Activity row. Locals: event, feed, show_unit. %>
+<% audit = event.audit %>
+<% month_status = activity_month_status(audit) if event.kind == :month %>
+
+<li class="flex items-start gap-3 px-5 py-4 sm:px-6" data-activity="<%= event.kind %>">
+  <%= activity_icon(event, month_status: month_status) %>
+
+  <div class="min-w-0 flex-1">
+    <p class="text-[15px] text-[var(--ink)] wrap-anywhere">
+      <span class="font-semibold"><%= activity_person(event) %></span>
+      <% if event.kind.in?(%i[added deleted]) %>
+        <% if event.group? %>
+          added <%= pluralize(event.audits.size, "entry") %>
+        <% else %>
+          <%= event.kind == :added ? "added" : "deleted" %> <%= activity_entry_kind(feed.as_recorded(audit)) %>
+        <% end %>
+      <% elsif event.kind == :edited %>
+        edited <span class="font-medium"><%= feed.transaction(audit).description.presence || feed.transaction(audit).title %></span>
+      <% elsif event.kind == :month %>
+        <%= month_status == :closed ? "closed" : "reopened" %> <span class="font-medium"><%= feed.finance_period(audit)&.label %></span>
+      <% elsif event.kind == :budget %>
+        changed the <span class="font-medium"><%= feed.budget(audit)&.year %> budget</span>
+      <% end %>
+      <% if show_unit && event.finance_unit %>
+        <span class="chip chip-muted ml-1 !py-0 align-middle"><%= event.finance_unit.name %></span>
+      <% end %>
+    </p>
+
+    <% if event.group? %>
+      <% entries = event.audits.map { |item| feed.as_recorded(item) }.sort_by(&:transaction_date) %>
+      <p class="row-meta">
+        <%= entries.first.transaction_date.strftime("%-d %b %Y") %> – <%= entries.last.transaction_date.strftime("%-d %b %Y") %> ·
+        income <%= yen(entries.select(&:income?).sum(&:amount)) %> · expenses <%= yen(entries.select(&:expense?).sum(&:amount)) %>
+      </p>
+      <details class="mt-1.5">
+        <summary class="link inline-flex cursor-pointer list-none text-[13px]">Show entries</summary>
+        <ul class="mt-2 max-h-80 space-y-1 overflow-y-auto text-sm text-[var(--ink-soft)]">
+          <% entries.each do |entry| %>
+            <li class="flex justify-between gap-3">
+              <span class="min-w-0 truncate"><%= entry.transaction_date.strftime("%-d %b") %> · <%= entry.description.presence || entry.title %></span>
+              <%= transaction_money(entry) %>
+            </li>
+          <% end %>
+        </ul>
+      </details>
+    <% elsif event.kind.in?(%i[added deleted]) %>
+      <% entry = feed.as_recorded(audit) %>
+      <p class="row-meta wrap-anywhere">
+        <%= [ entry.description.presence, entry.title, entry.expense_voucher_number ].compact.uniq(&:downcase).join(" · ") %>
+      </p>
+      <p class="row-meta">
+        <%= transaction_money(entry) %> · <%= entry.transfer? ? entry.title : entry.location_label %> · <%= entry.transaction_date&.strftime("%-d %b %Y") %>
+      </p>
+    <% elsif event.kind == :edited %>
+      <ul class="mt-1 space-y-0.5 text-sm text-[var(--ink-soft)]">
+        <% activity_changes(audit, event.finance_unit).each do |label, before, after| %>
+          <li class="wrap-anywhere"><span class="font-medium"><%= label %>:</span> <%= before %> → <%= after %></li>
+        <% end %>
+      </ul>
+    <% elsif event.kind == :budget %>
+      <ul class="mt-1 space-y-0.5 text-sm text-[var(--ink-soft)]">
+        <% event.audits.each do |line| %>
+          <% amount = line.audited_changes["amount"] %>
+          <li>
+            <span class="font-medium"><%= feed.budget_category_name(line) %>:</span>
+            <% if line.action == "create" %>set to <%= yen(amount) %>
+            <% elsif line.action == "destroy" %>removed (was <%= yen(amount) %>)
+            <% else %><%= yen(Array(amount).first) %> → <%= yen(Array(amount).last) %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <time class="shrink-0 pt-0.5 text-[13px] text-[var(--ink-muted)]" datetime="<%= event.at.iso8601 %>"><%= event.at.strftime("%H:%M") %></time>
+</li>
