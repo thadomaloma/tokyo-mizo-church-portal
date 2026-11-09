@@ -10,7 +10,7 @@ month and exports reports, from a laptop or a phone.
   <img src="docs/mobile-preview.png" alt="The same dashboard on a phone, with the bottom navigation bar" width="22%">
 </p>
 
-Version 2.1 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thado
+Version 2.2 · Built with Ruby on Rails 8 and SQLite · Developed by Maloma Thado
 
 ## What it does
 
@@ -63,6 +63,18 @@ vouchers.
   fixed 100% zoom.
 
 ## What's new
+
+**2.2** · 9 November 2026
+
+* A refined design that keeps the indigo/violet brand: the sidebar is deep
+  indigo, every page has a faint indigo glow at the top, and cards have a
+  softer border and shadow.
+* Home: the balance card is a deeper indigo with its four actions in a
+  tidy 2 × 2 grid; cards in a row end level; "Add to your phone" is a slim
+  banner.
+* Forms and Settings line up under the page title; money boxes have no
+  spinner arrows; page header buttons stay on one row.
+* A new sign-in page in the same style.
 
 **2.1** · 9 November 2026
 
