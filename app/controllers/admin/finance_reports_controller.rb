@@ -77,14 +77,19 @@ module Admin
     end
 
     # Change against the previous period of the same length, monthly cash
-    # flow, and where the money went.
+    # flow, and where the money went. Opening balances are money brought
+    # forward, not received, so they stay out of the income figure and chart
+    # (the balance and the exports still include them).
     def load_overview(period_transactions)
-      previous = @finance_scope.income_or_expense.where(transaction_date: @period.previous_range)
+      @opening_balances = @ledger_type == "expense" ? 0 : @income - period_transactions.without_opening_balances.income.sum(:amount)
+      @received_income = @income - @opening_balances
+
+      previous = @finance_scope.without_opening_balances.where(transaction_date: @period.previous_range)
       @previous_income = previous.income.sum(:amount)
       @previous_expense = previous.expense.sum(:amount)
       @previous_period_label = @period.previous_label
 
-      rows = period_transactions.reorder(nil).pluck(:transaction_type, :transaction_date, :amount)
+      rows = period_transactions.without_opening_balances.reorder(nil).pluck(:transaction_type, :transaction_date, :amount)
       @monthly_cash_flow = @period.months.map do |month|
         in_month = rows.select { |_, date, _| date.month == month.month }
         {

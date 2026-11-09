@@ -184,6 +184,23 @@ class FinanceReportExportTest < ActionDispatch::IntegrationTest
     assert_select "[data-spending-by-category]", text: /100%/
   end
 
+
+  test "opening balances are shown apart from income" do
+    sign_in_user
+    unit = finance_units(:main)
+    FinanceCategory.install_system_catalog_for!(unit)
+    unit.finance_transactions.create!(transaction_type: "income", finance_category: unit.finance_categories.find_by!(code: "opening_balance"),
+                                      amount: 9_000, transaction_date: Date.new(2025, 1, 1), payment_location: "cash", recorded_by: users(:one))
+    unit.finance_transactions.create!(transaction_type: "income", finance_category: finance_categories(:one), amount: 1_000,
+                                      transaction_date: Date.new(2025, 1, 5), payment_location: "cash", recorded_by: users(:one))
+
+    get admin_finance_report_path(finance_unit_id: unit.id, year: 2025, start_month: 1, end_month: 1)
+
+    assert_includes page_text, "Income +¥1,000"
+    assert_select "[data-opening-balance-note]", text: "Not counted: ¥9,000 opening balance"
+    assert_includes page_text, "Balance ¥10,000 Includes the opening balance"
+  end
+
   private
 
   def sign_in_user

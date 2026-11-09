@@ -26,6 +26,7 @@ class DashboardGivingTest < ActionDispatch::IntegrationTest
     assert_match Date.current.strftime("%b"), response.body
     assert_includes page_text, "¥12,000"
     assert_includes page_text, "¥8,000"
+    assert_select "[data-year-comparison]", text: /#{Date.current.year} so far.*Giving\s*¥20,000/m
   end
 
   test "dashboard hides finance cards when the user has no finance assignment" do

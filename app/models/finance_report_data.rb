@@ -127,24 +127,30 @@ class FinanceReportData
   end
 
   def giving_kind(category)
-    return if category.nil?
-    return category.code if category.code.in?(GIVING_CODES)
-    return if category.code.present?
+    self.class.giving_kind(category&.code, category&.name)
+  end
 
-    name = normalize_keyword(category.name)
+  # "tithe", "offering" or nil for a category's code and name; also used by
+  # the yearly comparison on Home.
+  def self.giving_kind(code, name)
+    return code if code.in?(GIVING_CODES)
+    return if code.present? || name.blank?
+
+    name = normalize_keyword(name)
     return "tithe" if keyword_match?(name, TITHE_KEYWORDS)
 
     "offering" if keyword_match?(name, OFFERING_KEYWORDS)
   end
 
-  def keyword_match?(name, keywords)
+  def self.keyword_match?(name, keywords)
     keywords.any? do |keyword|
       keyword = normalize_keyword(keyword)
       name.include?(keyword) || name.delete(" ").include?(keyword.delete(" "))
     end
   end
 
-  def normalize_keyword(value)
+  def self.normalize_keyword(value)
     value.to_s.downcase.squish
   end
+  private_class_method :keyword_match?, :normalize_keyword
 end

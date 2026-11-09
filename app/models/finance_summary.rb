@@ -80,7 +80,7 @@ class FinanceSummary
   # Income and expense totals for the last `count` months, oldest first.
   def monthly_overview(count = 6)
     months = (0...count).map { |offset| today.beginning_of_month << (count - 1 - offset) }
-    rows = transactions.income_or_expense
+    rows = transactions.without_opening_balances
                        .where(transaction_date: months.first..today.end_of_month)
                        .pluck(:transaction_type, :transaction_date, :amount)
 
@@ -140,12 +140,49 @@ class FinanceSummary
     end
   end
 
+  # This year so far against the same days of last year: income, expenses
+  # and giving (tithe + offering), plus income by month for both years.
+  def year_comparison
+    this_year = today.beginning_of_year..today
+    last_year = this_year.begin.prev_year..today.prev_year
+    rows = transactions.without_opening_balances.left_joins(:finance_category)
+                       .where(transaction_date: last_year.begin..today.end_of_year)
+                       .pluck(:transaction_type, :transaction_date, :amount, "finance_categories.code", "finance_categories.name")
+                       .map { |type, date, amount, code, name| [ type, date, amount, FinanceReportData.giving_kind(code, name) ] }
+
+    totals = lambda do |range|
+      in_range = rows.select { |_, date, _, _| range.cover?(date) }
+      {
+        income: in_range.sum { |type, _, amount, _| type == "income" ? amount : 0 },
+        expense: in_range.sum { |type, _, amount, _| type == "expense" ? amount : 0 },
+        giving: in_range.sum { |type, _, amount, giving| type == "income" && giving ? amount : 0 }
+      }
+    end
+    monthly_income = lambda do |year, last_month|
+      (1..12).map do |month|
+        next if month > last_month
+
+        rows.sum { |type, date, amount, _| type == "income" && date.year == year && date.month == month ? amount : 0 }
+      end
+    end
+
+    {
+      year: today.year,
+      previous_year: today.year - 1,
+      current: totals.call(this_year),
+      previous: totals.call(last_year),
+      months: (1..12).map { |month| Date::ABBR_MONTHNAMES[month] },
+      income_by_month: monthly_income.call(today.year, today.month),
+      previous_income_by_month: monthly_income.call(today.year - 1, 12)
+    }
+  end
+
   private
 
   attr_reader :finance_unit, :today
 
   def month_total(type, date)
-    transactions.public_send(type)
+    transactions.without_opening_balances.public_send(type)
                 .where(transaction_date: date.beginning_of_month..date.end_of_month)
                 .sum(:amount)
   end

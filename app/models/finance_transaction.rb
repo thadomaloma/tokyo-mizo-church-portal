@@ -36,6 +36,11 @@ class FinanceTransaction < ApplicationRecord
 
   scope :latest, -> { order(transaction_date: :desc, created_at: :desc) }
   scope :income_or_expense, -> { where(transaction_type: %w[income expense]) }
+  # Income and expenses without opening balances, which bring money forward
+  # from before the books began instead of being money received.
+  scope :without_opening_balances, -> {
+    income_or_expense.where.not(finance_category_id: FinanceCategory.where(code: "opening_balance").select(:id))
+  }
   scope :this_month, -> { where(transaction_date: Date.current.all_month) }
 
   def location_label

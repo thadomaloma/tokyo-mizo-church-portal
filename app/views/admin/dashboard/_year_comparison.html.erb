@@ -1,0 +1,82 @@
+<%#
+  This year so far against the same days last year, with income by month
+  for both years as small bars (last year faint, behind). Local: comparison
+  (FinanceSummary#year_comparison).
+%>
+<%
+  current, previous = comparison.values_at(:current, :previous)
+  year, previous_year = comparison.values_at(:year, :previous_year)
+  bars = comparison[:income_by_month].zip(comparison[:previous_income_by_month])
+  top = [ *bars.flatten.compact, 1 ].max
+  height = ->(amount) { amount.to_i.positive? ? [ (amount * 100.0 / top).round, 3 ].max : 0 }
+  figures = [
+    [ "Income", current[:income], previous[:income], :up ],
+    [ "Expenses", current[:expense], previous[:expense], :down ],
+    [ "Giving", current[:giving], previous[:giving], :up ]
+  ]
+%>
+
+<section class="card card-pad" aria-labelledby="year-comparison-title" data-year-comparison>
+  <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+    <h2 id="year-comparison-title" class="card-title"><%= year %> so far</h2>
+    <span class="text-[13px] text-[var(--ink-muted)]">vs the same days of <%= previous_year %></span>
+  </div>
+
+  <dl class="mt-4 space-y-2.5">
+    <% figures.each do |label, now, before, good_when| %>
+      <div class="flex items-center justify-between gap-3">
+        <dt class="text-[var(--ink-soft)]"><%= label %></dt>
+        <dd class="flex items-center gap-2">
+          <span class="font-medium text-[var(--ink)]"><%= money(now) %></span>
+          <%= percent_change_badge(FinanceSummary.change_percent(now, before), good_when: good_when, compared_with: "the same days of #{previous_year}") %>
+        </dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <div class="mt-5" role="img"
+       aria-label="Income by month, <%= year %> compared with <%= previous_year %>. Values are listed in the table below.">
+    <div class="flex h-16 items-end gap-1">
+      <% bars.each_with_index do |(now, before), index| %>
+        <div class="relative h-full flex-1"
+             title="<%= comparison[:months][index] %>: <%= year %> <%= now.nil? ? "—" : yen(now) %> · <%= previous_year %> <%= yen(before) %>">
+          <span class="absolute inset-x-0 bottom-0 rounded-t-[3px]" style="height: <%= height.call(before) %>%; background: <%= chart_color(:context) %>"></span>
+          <% if now %>
+            <span class="absolute inset-x-[22%] bottom-0 rounded-t-[3px]" style="height: <%= height.call(now) %>%; background: <%= chart_color(:income) %>"></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-1 flex gap-1 text-center text-[11px] text-[var(--ink-muted)]" aria-hidden="true">
+      <% comparison[:months].each do |month| %><span class="flex-1"><%= month.first %></span><% end %>
+    </div>
+  </div>
+
+  <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-[13px]">
+    <ul class="flex items-center gap-3 text-[var(--ink-soft)]" aria-label="Legend">
+      <li class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-[3px]" style="background: <%= chart_color(:income) %>" aria-hidden="true"></span><%= year %> income</li>
+      <li class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-[3px]" style="background: <%= chart_color(:context) %>" aria-hidden="true"></span><%= previous_year %></li>
+    </ul>
+    <%= link_to "View report", admin_finance_report_path(year: year, start_month: 1, end_month: Date.current.month, finance_unit_id: @finance_unit.id), class: "link" %>
+  </div>
+
+  <details class="mt-2 text-sm">
+    <summary class="link inline-flex cursor-pointer list-none items-center gap-1 text-[13px]">
+      <%= heroicon "table-cells", variant: :outline, options: { class: "h-4 w-4" } %> Show as table
+    </summary>
+    <div class="mt-2 overflow-x-auto">
+      <table class="ledger">
+        <thead><tr><th>Month</th><th class="num"><%= year %></th><th class="num"><%= previous_year %></th></tr></thead>
+        <tbody>
+          <% bars.each_with_index do |(now, before), index| %>
+            <tr>
+              <td><%= comparison[:months][index] %></td>
+              <td class="num"><%= now.nil? ? "—" : money(now) %></td>
+              <td class="num"><%= money(before) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>

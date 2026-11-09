@@ -83,14 +83,14 @@ module FinanceTransactionsHelper
 
   # "↑12%" style chip; green when the change is good news, red otherwise.
   # The arrow keeps the meaning readable without relying on colour.
-  def percent_change_badge(percent, good_when: :up)
+  def percent_change_badge(percent, good_when: :up, compared_with: "last month")
     return if percent.nil?
 
     good = percent.zero? || (good_when == :up ? percent.positive? : percent.negative?)
     arrow = percent.positive? ? "↑" : (percent.negative? ? "↓" : "")
 
     tag.span("#{arrow}#{percent.abs}%", class: "chip #{good ? "chip-in" : "chip-out"}",
-             title: "Compared with last month")
+             title: "Compared with #{compared_with}")
   end
 
   def audit_action_label(audit)
