@@ -1,0 +1,22 @@
+<%= render "admin/shared/page_header",
+    title: "Change password",
+    subtitle: "Type your current password, then the new one twice." %>
+
+<%= form_with model: current_user, scope: :user, url: admin_password_path, method: :patch, class: "card mx-auto max-w-xl" do |form| %>
+  <div class="card-pad space-y-5">
+    <%= render "admin/shared/form_errors", object: current_user %>
+
+    <%= render "field", form: form, attribute: :current_password, label: "Current password", autocomplete: "current-password" %>
+    <%= render "field", form: form, attribute: :password, label: "New password", autocomplete: "new-password",
+        placeholder: "At least #{Devise.password_length.min} characters" %>
+    <%= render "field", form: form, attribute: :password_confirmation, label: "Confirm new password", autocomplete: "new-password",
+        placeholder: "Type the new password again" %>
+
+    <p class="field-hint !mt-0">You will stay signed in here. Other phones and computers will need the new password.</p>
+  </div>
+
+  <div class="flex flex-col gap-3 border-t border-[var(--line)] p-5 sm:flex-row sm:px-6">
+    <%= form.submit "Change password", class: "btn btn-primary" %>
+    <%= link_to "Cancel", admin_settings_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

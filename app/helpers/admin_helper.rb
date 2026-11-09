@@ -16,7 +16,7 @@ module AdminHelper
   end
 
   def secondary_nav_items
-    [ nav_item("Settings", admin_settings_path, "cog-6-tooth", prefixes: %w[/admin/settings /admin/users /admin/finance_units]) ]
+    [ nav_item("Settings", admin_settings_path, "cog-6-tooth", prefixes: %w[/admin/settings /admin/password /admin/users /admin/finance_units]) ]
   end
 
   # Phone dock: the four most used destinations around a central Add button.

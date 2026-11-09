@@ -13,7 +13,9 @@
         <p class="mt-1.5"><span class="chip chip-brand"><%= current_user.role.humanize %></span></p>
       </div>
     </div>
-    <p class="field-hint mt-4">To change your password, log out and use "Forgot your password?" on the sign-in page.</p>
+    <%= link_to edit_admin_password_path, class: "btn btn-secondary btn-sm mt-4" do %>
+      <%= heroicon "key", variant: :outline, options: { class: "h-4 w-4" } %> Change password
+    <% end %>
   </section>
 
   <% if current_user.super_admin? %>
@@ -94,8 +96,4 @@
       <dd class="text-[var(--ink)]"><%= Rails.configuration.x.app_developer %></dd>
     </dl>
   </section>
-
-  <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-danger w-full" do %>
-    <%= heroicon "arrow-right-on-rectangle", variant: :outline, options: { class: "h-5 w-5" } %> Logout
-  <% end %>
 </div>

@@ -1,0 +1,14 @@
+<%# Password box with a show/hide button. Locals: form, attribute, label, autocomplete, placeholder. %>
+<div>
+  <%= form.label attribute, label, class: "field-label" %>
+  <div class="flex items-center rounded-xl border border-[var(--line-strong)] bg-white focus-within:border-[var(--brand-soft)] focus-within:outline focus-within:outline-[3px] focus-within:outline-[var(--focus)]" data-password-wrapper>
+    <%= form.password_field attribute, autocomplete: autocomplete, placeholder: local_assigns[:placeholder], required: true,
+        data: { password_input: true },
+        class: "min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-[var(--ink)] placeholder-[#9b9cb5] focus:outline-none focus:ring-0" %>
+    <button type="button" class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--brand)] hover:bg-[var(--brand-bg)]"
+            data-password-toggle aria-label="Show password" title="Show password">
+      <span data-password-show-icon><%= heroicon "eye", variant: :outline, options: { class: "h-5 w-5" } %></span>
+      <span class="hidden" data-password-hide-icon><%= heroicon "eye-slash", variant: :outline, options: { class: "h-5 w-5" } %></span>
+    </button>
+  </div>
+</div>
